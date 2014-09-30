@@ -116,7 +116,7 @@ def strikediprake_2_moments(strike,dip,rake):
 #    print ' Percentage of Iso component is : ',iso_percentage
 #    hiddc=mt.get_DC()
 #    print ' DC = ',hiddc
-    #print ' MT = ',iso + ' + ',dc + ' + ',clvd
+#    print ' MT = ',iso + ' + ',dc + ' + ',clvd
     return Moments
 
 
@@ -156,7 +156,7 @@ def assignSpacing(inv_param):
     f.close()
     cod="RADIUS0"
     val=str(max(dx,dz))
-#   val="1000"
+    # val="1000"
     inv_param[cod]=val
     print "radius 0 set to ",val
 
@@ -398,8 +398,8 @@ def calculateAverageSlip(smom,area_m2,mu):
 
 
 def sdisl2mt(strike_gra,dip_gra,rake_gra):
-#  based on sdisl2mt.f Fortran code from MT inversion student course
-#  by T. Dahm and F. Krueger
+    # based on sdisl2mt.f Fortran code from MT inversion student course
+    # by T. Dahm and F. Krueger
     strike = math.radians(strike_gra)
     dip    = math.radians(dip_gra)
     rake   = math.radians(rake_gra)
@@ -644,7 +644,7 @@ def getWindowsTaper(comp,depth,edist,inv_param,inv_step):
         if (inv_param['SW_WEIGHT_DIST'].upper()=='TRUE'):
             print "Distance-dipendent weight applied"
             y=y*(float(edist)/float(inv_param['EPIC_DIST_MAX']))
-#      if (inv_step=='3'):
+#     if (inv_step=='3'):
 #         edistmax=float(inv_param['EPIC_DIST_MAXKIN'])
 #         if (float(edist)>edistmax):
 #           y=y*0.001
@@ -679,8 +679,8 @@ def writeMTSolutions(inv_step,mts,n_sol,dinv,filename):
     for i in range(n_sol):
         if (mts[i].inv_step == inv_step):
             linsol=str(mts[i].misfit)+" "+str(mts[i].depth)+" "+str(mts[i].m11)+" "
-#simone         linsol=linsol+str(mts[i].m12)+" "+str(mts[i].m13)+" "+str(mts[i].m22)+" "
-#simone         linsol=linsol+str(mts[i].m23)+" "+str(mts[i].m33)+" "
+            #simone  linsol=linsol+str(mts[i].m12)+" "+str(mts[i].m13)+" "+str(mts[i].m22)+" "
+            #simone  linsol=linsol+str(mts[i].m23)+" "+str(mts[i].m33)+" "
             linsol=linsol+str(mts[i].m22)+" "+str(mts[i].m33)+" "+str(mts[i].m12)+" "
             linsol=linsol+str(mts[i].m13)+" "+str(mts[i].m23)+" "
             linsol=linsol+str(mts[i].time)+" "+str(mts[i].rest)+" "+str(mts[i].rnor)+" "+\
@@ -691,9 +691,9 @@ def writeMTSolutions(inv_step,mts,n_sol,dinv,filename):
 
 
 def writeDecomposition(DC,DC_pr,CLVD,CLVD_pr,ISO,ISO_pr,dinv,filename):
-#creates decomposition file. First line DC (M11 M22 M33 M21 M31 M32 DC%)
-#Second line CLVD (M11 M22 M33 M21 M31 M32 CLVD%)
-#Third line ISO (M11 M22 M33 M21 M31 M32 ISO%)
+    # creates decomposition file. First line DC (M11 M22 M33 M21 M31 M32 DC%)
+    # Second line CLVD (M11 M22 M33 M21 M31 M32 CLVD%)
+    # Third line ISO (M11 M22 M33 M21 M31 M32 ISO%)
     fpath=os.path.join(dinv,filename)
     f=open(fpath,'w')
     DCWR=str(DC[0][0])+" "+str(DC[1][1])+" "+str(DC[2][2])+" "+str(DC[0][1])+" "+str(DC[0][2])+" "+str(DC[1][2])+" "+str(DC_pr)+"\n"
@@ -707,7 +707,7 @@ def writeDecomposition(DC,DC_pr,CLVD,CLVD_pr,ISO,ISO_pr,dinv,filename):
 
 
 def writeBB(BB,dinv,filename):
-#creates BB file.
+    # creates BB file.
     fpath=os.path.join(dinv,filename)
     f=open(fpath,'w')
     BB1=str(BB)
@@ -741,7 +741,7 @@ def prepInvDir(inv_param):
 
 
 def prepStations(inv_param,traces):
-# Check range of distances
+    # Check range of distances
     fstations=os.path.join(".",inv_param['STAT_INP_FILE'])
     fstationsok=fstations+'.tmp'
     f = open(fstations,'r')
@@ -773,7 +773,7 @@ def prepStations(inv_param,traces):
     else:
         traces0time=str(getParseTime(inv_param))
     f.write('set_source_location '+inv_param['LATITUDE_NORTH']+' '+inv_param['LONGITUDE_EAST']+' '+traces0time+'\n')
-#   f.write('set_source_location '+inv_param['LATITUDE_NORTH']+' '+inv_param['LONGITUDE_EAST']+' 0\n')
+    # f.write('set_source_location '+inv_param['LATITUDE_NORTH']+' '+inv_param['LONGITUDE_EAST']+' 0\n')
     f.write('output_distances '+fdistazitmp+'\n')
     f.flush()
     f.close()
@@ -798,7 +798,7 @@ def prepStations(inv_param,traces):
     f.close()
     nstatok=istatok+1
 
-#   fstatinp=os.path.join(inv_param['INVERSION_DIR'],inv_param['STAT_INP_FILE'])
+    # fstatinp=os.path.join(inv_param['INVERSION_DIR'],inv_param['STAT_INP_FILE'])
     fstatinp=os.path.join(".",inv_param['STAT_INP_FILE'])
     fstatout=os.path.join(inv_param['INVERSION_DIR'],inv_param['STAT_OUT_FILE'])
     f = open(fstatinp,'r')
@@ -827,7 +827,7 @@ def prepStations(inv_param,traces):
     f2.close()
     f.close()
 
-# Check available traces, build traces as a list of Metatrace objects
+    # Check available traces, build traces as a list of Metatrace objects
     fstations=os.path.join(inv_param['INVERSION_DIR'],inv_param['STAT_OUT_FILE'])
     i=j=k=istatok=0
     f = open(fstations,'r')
@@ -877,7 +877,7 @@ def prepStations(inv_param,traces):
     if k>0:
         print "WARNING: File "+fstations+" has wrong format, "+k+" lines have been skipped!"
 
-# Rename data files
+    # Rename data files
     traces.sort(key=operator.attrgetter('dist'))
     i=j=0
     for trace in traces:
@@ -905,10 +905,10 @@ def checkDataQuality(inv_step,inv_param,traces,freceivers,fdata):
     else:
         traces0time=str(getParseTime(inv_param))
     f.write('set_source_location '+inv_param['LATITUDE_NORTH']+' '+inv_param['LONGITUDE_EAST']+' '+traces0time+'\n')
-#   f.write('set_source_location '+inv_param['LATITUDE_NORTH']+' '+inv_param['LONGITUDE_EAST']+' 0\n')
+    # f.write('set_source_location '+inv_param['LATITUDE_NORTH']+' '+inv_param['LONGITUDE_EAST']+' 0\n')
     f.write("set_ref_seismograms "+fdata+" "+inv_param['DATA_FORMAT']+"\n")
     f.write("set_local_interpolation "+inv_param['GF_INTERPOLATION']+"\n")
-#   f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
+    # f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
     f.write("set_misfit_method peak\n")
     line_mf="set_misfit_filter "+inv_param['BP_F1_STEP'+inv_step]+" 0 "+inv_param['BP_F2_STEP'+inv_step]+" 1 "\
             +inv_param['BP_F3_STEP'+inv_step]+" 1 "+inv_param['BP_F4_STEP'+inv_step]+" 0\n"
@@ -1011,7 +1011,7 @@ def checkDataQuality(inv_step,inv_param,traces,freceivers,fdata):
 
 
 def prepData(inv_step,inv_param,traces,apply_taper):
-# Prepare file stations.table
+    # Prepare file stations.table
     freceivers=os.path.join(inv_param['INVERSION_DIR'],'stations.table')
     f = open (freceivers,'w')
     for trace in traces:
@@ -1034,7 +1034,7 @@ def prepData(inv_step,inv_param,traces,apply_taper):
     latlon=[]
     for trace in traces:
         if len(trace.comp) >= 1:
-#         f.write(trace.lat+" "+trace.lon+" "+trace.comp+"\n")
+            # f.write(trace.lat+" "+trace.lon+" "+trace.comp+"\n")
             if 'u' in (trace.comp):
                 if (trace.quality=="ok"):
                     fz.write(trace.lat+" "+trace.lon+" u\n")
@@ -1101,7 +1101,7 @@ def processInvParam(finput,fdefaults,facceptables,inv_param,active_comp,active_c
 
 
 def checkTaper(inv_param,inv_step):
-# Check if taper is required and well formatted
+    # Check if taper is required and well formatted
     apply_taper=False
     if inv_param['SW_APPLY_TAPER']:
         apply_taper=True
@@ -1159,7 +1159,7 @@ def callParallelizedMinimizer(fmininp,fminout,nproc):
         print '1',fmininp,fminout
         print '2',cmd
         os.system(cmd)
-    #check all have finished
+    # check all have finished
     os.system("whoami > whoami.tmp")
     f=open("whoami.tmp","r")
     for line in f:
@@ -1281,31 +1281,31 @@ def point2mt(point_solution,inv_param,predef_inv_step):
     clvd=0.
     return MTsource(inv_step, misfit, rnor, rest, time, depth, m11, m12, m13, m22, m23, m33, \
                     iso, dc, clvd, misf_shift, strise)
-#   fmtdecompinp=os.path.join(inv_param['INVERSION_DIR'],'mtdecomp.inp'+inv_step)
-#   fmtdecompout=os.path.join(inv_param['INVERSION_DIR'],'mtdecomp.out'+inv_step)
-#   f = open (fmtdecompinp,'w')
-#   f2 = open (fmtdecompout,'r')
-#   f.write(str(int(float(strike)))+'\n')
-#   f.write(str(int(float(dip)))+'\n')
-#   f.write(str(int(float(rake)))+'\n')
-#   f.close()
-#   cmd = 'rapidmtdecomp < '+fmtdecompinp+' > '+fmtdecompout
-#   os.system(cmd)
-#   f = open (fmtdecompout,'r')
-#   text=[]
-#   for line in f:
-#      text.append(line)
-#   f.close()
-#   mstrike,mdip,mrake=text[0].split()
-#   miso,mdc,mclvd=text[1].split()
-#   strike=float(mstrike)
-#   dip=float(mdip)
-#   rake=float(mrake)
-#   iso=float(miso)
-#   dc=float(mdc)
-#   clvd=float(mclvd)
-#   return MTsource(inv_step, misfit, rnor, rest, time, depth, m11, m12, m13, m22, m23, m33, \
-#                   iso, dc, clvd, misf_shift)
+    # fmtdecompinp=os.path.join(inv_param['INVERSION_DIR'],'mtdecomp.inp'+inv_step)
+    # fmtdecompout=os.path.join(inv_param['INVERSION_DIR'],'mtdecomp.out'+inv_step)
+    # f = open (fmtdecompinp,'w')
+    # f2 = open (fmtdecompout,'r')
+    # f.write(str(int(float(strike)))+'\n')
+    # f.write(str(int(float(dip)))+'\n')
+    # f.write(str(int(float(rake)))+'\n')
+    # f.close()
+    # cmd = 'rapidmtdecomp < '+fmtdecompinp+' > '+fmtdecompout
+    # os.system(cmd)
+    # f = open (fmtdecompout,'r')
+    # text=[]
+    # for line in f:
+    #    text.append(line)
+    # f.close()
+    # mstrike,mdip,mrake=text[0].split()
+    # miso,mdc,mclvd=text[1].split()
+    # strike=float(mstrike)
+    # dip=float(mdip)
+    # rake=float(mrake)
+    # iso=float(miso)
+    # dc=float(mdc)
+    # clvd=float(mclvd)
+    # return MTsource(inv_step, misfit, rnor, rest, time, depth, m11, m12, m13, m22, m23, m33, \
+    #                 iso, dc, clvd, misf_shift)
 
 
 def defineGridWalkDCsource(inv_step,start_point_solutions,point_solutions,inv_param):
@@ -1321,8 +1321,8 @@ def defineGridWalkDCsource(inv_step,start_point_solutions,point_solutions,inv_pa
         str1,str2,strstep = int(inv_param['STRIKE_1']),int(inv_param['STRIKE_2']),int(inv_param['STRIKE_STEP'])
         dip1,dip2,dipstep = int(inv_param['DIP_1']),int(inv_param['DIP_2']),int(inv_param['DIP_STEP'])
         rak1,rak2,rakstep = int(inv_param['RAKE_1']),int(inv_param['RAKE_2']),int(inv_param['RAKE_STEP'])
-#      ris1,ris2,risstep = float(inv_param['RISE_TIME']),float(inv_param['RISE_TIME_2']),float(inv_param['RISE_TIME_STEP'])
-#      ris1,ris2,risstep = float(inv_param['RISE_TIME']),float(inv_param['RISE_TIME']),float(inv_param['RISE_TIME_STEP'])
+        # ris1,ris2,risstep = float(inv_param['RISE_TIME']),float(inv_param['RISE_TIME_2']),float(inv_param['RISE_TIME_STEP'])
+        # ris1,ris2,risstep = float(inv_param['RISE_TIME']),float(inv_param['RISE_TIME']),float(inv_param['RISE_TIME_STEP'])
         depu,depl=float(inv_param['DEPTH_UPPERLIM']),float(inv_param['DEPTH_BOTTOMLIM'])
         if (depu>depl):
             sys.exit("ERROR: upper limit for depths is below lower limit")
@@ -1360,9 +1360,9 @@ def defineGridWalkDCsource(inv_step,start_point_solutions,point_solutions,inv_pa
         est1=int(inv_param['ORIG_EAST_SHIFT'])+int(inv_param['REL_EAST_1'])
         est2=int(inv_param['ORIG_EAST_SHIFT'])+int(inv_param['REL_EAST_2'])
         eststep=int(inv_param['REL_EAST_STEP'])
-#      tim1=int(inv_param['ORIG_TIME'])+int(inv_param['REL_TIME_1'])
-#      tim2=int(inv_param['ORIG_TIME'])+int(inv_param['REL_TIME_2'])
-#      timstep=int(inv_param['REL_TIME_STEP'])
+        # tim1=int(inv_param['ORIG_TIME'])+int(inv_param['REL_TIME_1'])
+        # tim2=int(inv_param['ORIG_TIME'])+int(inv_param['REL_TIME_2'])
+        # timstep=int(inv_param['REL_TIME_STEP'])
         tim1=float(inv_param['ORIG_TIME'])+float(inv_param['REL_TIME_1'])
         tim2=float(inv_param['ORIG_TIME'])+float(inv_param['REL_TIME_2'])
         if tim2<tim1:
@@ -1374,14 +1374,14 @@ def defineGridWalkDCsource(inv_step,start_point_solutions,point_solutions,inv_pa
             relativetimes.append(loctim)
             loctim=loctim+timstep
         print "times",tim1,tim2,timstep
-#      refdep=1000*int(round(0.001*float(point_solutions[0].depth)))
+        # refdep=1000*int(round(0.001*float(point_solutions[0].depth)))
         refdep=int(round(float(point_solutions[0].depth)))
         dep1=refdep+int(float(inv_param['REL_DEPTH_1']))
         dep2=refdep+int(float(inv_param['REL_DEPTH_2']))
         depstep=int(float(inv_param['REL_DEPTH_STEP']))
         print "DEPs ",dep1,dep2,depstep,point_solutions[0].depth
         sttim,stmis,stmsh=point_solutions[0].time,99999,99999
-#      stdep=point_solutions[0].depth
+        # stdep=point_solutions[0].depth
         stmom=point_solutions[0].smom
         ststr=point_solutions[0].strike
         stdip=point_solutions[0].dip
@@ -1397,7 +1397,7 @@ def defineGridWalkDCsource(inv_step,start_point_solutions,point_solutions,inv_pa
                         sttim,stnor,stest,stdep=str(time),str(north),str(east),str(localdepth)
                         start_point_solutions.append(DCsource(inv_step,stmis,stnor,stest,sttim,stdep,ststr,stdip,strak,\
                                                            stmom,stmsh,strise))
-#      start_point_solutions.sort(key=operator.attrgetter('depth'))
+        # start_point_solutions.sort(key=operator.attrgetter('depth'))
 
 
 def calcScMoment(m1,m2,m3,m4,m5,m6):
@@ -1410,15 +1410,15 @@ def defineGridWalkMTsource(inv_step,bestdc,start_mt_solutions,mt_solutions,inv_p
         stmis,stmsh=str(bestdc.misfit),str(bestdc.misf_shift)
         sttim,stnor,stest=str(bestdc.time),str(bestdc.rnor),str(bestdc.rest)
         stdep,strise,smom=str(bestdc.depth),str(bestdc.risetime),str(bestdc.smom)
-    #   scmoment=calcScMoment(mt_solutions[0].m11,mt_solutions[0].m12,mt_solutions[0].m13,\
-    #                         mt_solutions[0].m22,mt_solutions[0].m23,mt_solutions[0].m33)
+        # scmoment=calcScMoment(mt_solutions[0].m11,mt_solutions[0].m12,mt_solutions[0].m13,\
+        #                       mt_solutions[0].m22,mt_solutions[0].m23,mt_solutions[0].m33)
         print 'smom!',smom
         omts=[]
         omts=strikediprake_2_moments(float(bestdc.strike),float(bestdc.dip),float(bestdc.rake))
         print omts
-#      scmom=[]
+        # scmom=[]
         scmom=float(smom)*calcScMoment(float(omts[0]),float(omts[1]),float(omts[2]),float(omts[3]),float(omts[4]),float(omts[5]))
-#      scmom=calcScMoment(float(omts[0]),float(omts[1]),float(omts[2]),float(omts[3]),float(omts[4]),float(omts[5]))
+        # scmom=calcScMoment(float(omts[0]),float(omts[1]),float(omts[2]),float(omts[3]),float(omts[4]),float(omts[5]))
         print 'smom=',scmom
         m0pert=float(scmom)
         mtperts=[]
@@ -1496,9 +1496,9 @@ def defineGridWalkMTsource(inv_step,bestdc,start_mt_solutions,mt_solutions,inv_p
         est1=int(inv_param['ORIG_EAST_SHIFT'])+int(inv_param['REL_EAST_1'])
         est2=int(inv_param['ORIG_EAST_SHIFT'])+int(inv_param['REL_EAST_2'])
         eststep=int(inv_param['REL_EAST_STEP'])
-#      tim1=int(inv_param['ORIG_TIME'])+int(inv_param['REL_TIME_1'])
-#      tim2=int(inv_param['ORIG_TIME'])+int(inv_param['REL_TIME_2'])
-#      timstep=int(inv_param['REL_TIME_STEP'])
+        # tim1=int(inv_param['ORIG_TIME'])+int(inv_param['REL_TIME_1'])
+        # tim2=int(inv_param['ORIG_TIME'])+int(inv_param['REL_TIME_2'])
+        # timstep=int(inv_param['REL_TIME_STEP'])
         tim1=float(inv_param['ORIG_TIME'])+float(inv_param['REL_TIME_1'])
         tim2=float(inv_param['ORIG_TIME'])+float(inv_param['REL_TIME_2'])
         if tim2<tim1:
@@ -1510,15 +1510,15 @@ def defineGridWalkMTsource(inv_step,bestdc,start_mt_solutions,mt_solutions,inv_p
             relativetimes.append(loctim)
             loctim=loctim+timstep
         print "times",tim1,tim2,timstep
-#      refdep=1000*int(round(0.001*float(point_solutions[0].depth)))
+        # refdep=1000*int(round(0.001*float(point_solutions[0].depth)))
         refdep=int(round(float(mt_solutions[0].depth)))
         dep1=refdep+int(float(inv_param['REL_DEPTH_1']))
         dep2=refdep+int(float(inv_param['REL_DEPTH_2']))
         depstep=int(float(inv_param['REL_DEPTH_STEP']))
         print "DEPs ",dep1,dep2,depstep,mt_solutions[0].depth
         sttim,stmis,stmsh=mt_solutions[0].time,99999,99999
-#      stdep=mt_solutions[0].depth
-#      stmom=mt_solutions[0].smom
+        # stdep=mt_solutions[0].depth
+        # stmom=mt_solutions[0].smom
         stm11=mt_solutions[0].m11
         stm12=mt_solutions[0].m12
         stm13=mt_solutions[0].m13
@@ -1558,33 +1558,33 @@ def defineGridWalkEikonalsource(inv_step,start_eikonals,eikonals,inv_param):
         risetimes=[ref_risetime]
         if (mw<3.0):
             radiuses=[50.,100.,150.,200.,250.,350.]
-#        risetimes=[1]
+            # risetimes=[1]
         elif (mw<5.1):
             radiuses=[500.,1000.,2000.,3000.,4000.,5000.]
-#        risetimes=[1]
+            # risetimes=[1]
         elif (mw<5.6):
             radiuses=[1000.,2000.,3000.,5000.,7500.,10000.]
-#        risetimes=[2]
+            # risetimes=[2]
         elif (mw <6.1):
-#         radiuses=[2500.,5000.,7500.,10000.,12500.,15000.,20000.]
+            # radiuses=[2500.,5000.,7500.,10000.,12500.,15000.,20000.]
             radiuses=[1000.,2500.,5000.,7500.,10000.,15000.]
-#        risetimes=[1]
+            # risetimes=[1]
         elif (mw <6.6):
-#         radiuses=[2500.,5000.,7500.,10000.,12500.,15000.,20000.]
+            #  radiuses=[2500.,5000.,7500.,10000.,12500.,15000.,20000.]
             radiuses=[2000.,5000.,7500.,10000.,15000.,20000.,25000.]
-#        risetimes=[1]
+            # risetimes=[1]
         elif (mw <7.1):
-#         radiuses=[5000., 10000.,20000., 50000.]
+            # radiuses=[5000., 10000.,20000., 50000.]
             radiuses=[5000.,10000.,15000.,20000.,25000.,35000.]
-#        risetimes=[1]
+            # risetimes=[1]
         elif (mw <7.6):
-#         radiuses=[5000., 10000.,20000., 50000.]
+            # radiuses=[5000., 10000.,20000., 50000.]
             radiuses=[7500.,15000.,25000.,35000.,50000.]
-#        risetimes=[1]
+            # risetimes=[1]
         else:
-#         radiuses=[5000., 10000.,20000., 50000.]
+            # radiuses=[5000., 10000.,20000., 50000.]
             radiuses=[10000.,25000.,50000.,100000.]
-#        risetimes=[1]
+            # risetimes=[1]
         if inv_param['SW_INVSMOM_ST3'].upper()=='TRUE':
             locsmom1=0.5*float(eikonals[0].smom)
             locsmom2=1.5*float(eikonals[0].smom)
@@ -1610,11 +1610,11 @@ def defineGridWalkEikonalsource(inv_step,start_eikonals,eikonals,inv_param):
                     by3=0
                     by4=0.45*modradius
                     by5=0.9*modradius
-#           bx1=by1=-0.9*radius
-#            bx2=by2=-0.45*radius
-#            bx3=by3=0
-#            bx4=by4=0.45*radius
-#            bx5=by5=0.9*radius
+                    # bx1=by1=-0.9*radius
+                    # bx2=by2=-0.45*radius
+                    # bx3=by3=0
+                    # bx4=by4=0.45*radius
+                    # bx5=by5=0.9*radius
                     if (mw<5.6):
                         nucleations=[(bx1,by3),(bx3,by3),(bx5,by3),(bx3,by1),(bx3,by5)]
                     elif (mw<6.1):
@@ -1622,7 +1622,7 @@ def defineGridWalkEikonalsource(inv_step,start_eikonals,eikonals,inv_param):
                     else:
                         nucleations=[(bx3,by1),(bx1,by3),(bx2,by3),(bx3,by3),\
                                      (bx4,by3),(bx5,by3),(bx3,by5)]
-#               nucleations=[(bx1,by3),(bx2,by3),(bx3,by3),(bx4,by3),(bx5,by3)]
+                        # nucleations=[(bx1,by3),(bx2,by3),(bx3,by3),(bx4,by3),(bx5,by3)]
                     for nukl in nucleations:
                         r_rupt_vel=float(inv_param['REL_RUPT_VEL_1'])
                         while r_rupt_vel <= float(inv_param['REL_RUPT_VEL_2']):
@@ -1652,22 +1652,22 @@ def defineGridWalkEikonalsource(inv_step,start_eikonals,eikonals,inv_param):
 
 def updateGridWalkDCsource(inv_step,point_solutions,start_point_solutions,inv_param,irun):
     if (inv_step == '1'):
-#      depth=point_solutions[0].depth
+        # depth=point_solutions[0].depth
         smom=point_solutions[0].smom
         misfit=stmsh=99999
-#      strise=point_solutions[0].risetime
+        # strise=point_solutions[0].risetime
         strise=inv_param['RISE_TIME']
         rnor,rest=inv_param['ORIG_NORTH_SHIFT'],inv_param['ORIG_EAST_SHIFT']
         time=inv_param['ORIG_TIME']
-#      str1=int(point_solutions[0].strike)-int(inv_param['STRIKE_STEP'])
-#      str2=int(point_solutions[0].strike)+int(inv_param['STRIKE_STEP'])
-#      strs=int(float(inv_param['STRIKE_STEP'])/(irun*float(inv_param['REDUCE_SDS_CONF'])))
-#      dip1=int(point_solutions[0].dip)-int(inv_param['DIP_STEP'])
-#      dip2=int(point_solutions[0].dip)+int(inv_param['DIP_STEP'])
-#      dips=int(float(inv_param['DIP_STEP'])/(irun*float(inv_param['REDUCE_SDS_CONF'])))
-#      rak1=int(point_solutions[0].rake)-int(inv_param['RAKE_STEP'])
-#      rak2=int(point_solutions[0].rake)+int(inv_param['RAKE_STEP'])
-#      raks=int(float(inv_param['RAKE_STEP'])/(irun*float(inv_param['REDUCE_SDS_CONF'])))
+        # str1=int(point_solutions[0].strike)-int(inv_param['STRIKE_STEP'])
+        # str2=int(point_solutions[0].strike)+int(inv_param['STRIKE_STEP'])
+        # strs=int(float(inv_param['STRIKE_STEP'])/(irun*float(inv_param['REDUCE_SDS_CONF'])))
+        # dip1=int(point_solutions[0].dip)-int(inv_param['DIP_STEP'])
+        # dip2=int(point_solutions[0].dip)+int(inv_param['DIP_STEP'])
+        # dips=int(float(inv_param['DIP_STEP'])/(irun*float(inv_param['REDUCE_SDS_CONF'])))
+        # rak1=int(point_solutions[0].rake)-int(inv_param['RAKE_STEP'])
+        # rak2=int(point_solutions[0].rake)+int(inv_param['RAKE_STEP'])
+        # raks=int(float(inv_param['RAKE_STEP'])/(irun*float(inv_param['REDUCE_SDS_CONF'])))
         dep1=int(round(float(point_solutions[0].depth))-round(float(inv_param['DEPTH_STEP'])/irun))
         dep2=int(round(float(point_solutions[0].depth))+round(float(inv_param['DEPTH_STEP'])/irun))
         deps=int(round(float(inv_param['DEPTH_STEP'])/(irun*float(inv_param['REDUCE_DEP_CONF']))))
@@ -1696,7 +1696,7 @@ def updateGridWalkDCsource(inv_step,point_solutions,start_point_solutions,inv_pa
                     for rake in range(rak1,rak2+1,raks):
                         start_point_solutions.append(DCsource(inv_step,misfit,rnor,rest,time,depth,strike,dip,rake,\
                                                               smom,stmsh,strise))
-#     start_point_solutions.sort(key=operator.attrgetter('depth'))
+        # start_point_solutions.sort(key=operator.attrgetter('depth'))
     elif (inv_step == '2'):
         smom=point_solutions[0].smom
         misfit=stmsh=99999
@@ -1902,7 +1902,7 @@ def addBestMTsolutions(bestdc,inv_step,inv_param,mt_solutions,best_mt_solutions)
     dc=mt_solutions[0].dc
     clvd=mt_solutions[0].dc
     if (inv_step == '1'):
-    # negative and positiv solutions are added
+        # negative and positiv solutions are added
         best_mt_solutions.append(MTsource(inv_step,misfit,rnor,rest,time,depth,m11,m12,m13,m22,m23,m33,\
                                           iso,dc,clvd,misf_shift,strise))
         m11n,m12n,m13n=str(-float(m11)),str(-float(m12)),str(-float(m13))
@@ -1912,7 +1912,7 @@ def addBestMTsolutions(bestdc,inv_step,inv_param,mt_solutions,best_mt_solutions)
         misf=str(float(misfit))
 
     elif (inv_step == '2'):
-    # only best solution is added
+        # only best solution is added
         best_mt_solutions.append(MTsource(inv_step,misfit,rnor,rest,time,depth,m11,m12,m13,m22,m23,m33,\
                                           iso,dc,clvd,misf_shift,strise))
 
@@ -1931,10 +1931,10 @@ def relMisfitCurves(inv_step,inv_param,point_solutions,best_point_solutions,n_po
     else:
         traces0time=str(getParseTime(inv_param))
     f.write('set_source_location '+slat+' '+slon+' '+traces0time+'\n')
-#   f.write("set_source_location "+slat+" "+slon+" 0\n")
+    # f.write("set_source_location "+slat+" "+slon+" 0\n")
     f.write("set_ref_seismograms "+fdata+" "+inv_param['DATA_FORMAT']+"\n")
     f.write("set_local_interpolation "+inv_param['GF_INTERPOLATION']+"\n")
-#   f.write("set_source_location "+slat+" "+slon+" 0\n")
+    # f.write("set_source_location "+slat+" "+slon+" 0\n")
     line_mm="set_misfit_method "+inv_param['MISFIT_MET_STEP'+inv_step]+"\n"
     line_mf="set_misfit_filter "+inv_param['BP_F1_STEP'+inv_step]+" 0 "+inv_param['BP_F2_STEP'+inv_step]+" 1 "
     line_mf=line_mf+inv_param['BP_F3_STEP'+inv_step]+" 1 "+inv_param['BP_F4_STEP'+inv_step]+" 0\n"
@@ -1945,7 +1945,7 @@ def relMisfitCurves(inv_step,inv_param,point_solutions,best_point_solutions,n_po
     dip0=best_point_solutions[0].dip
     rake0=best_point_solutions[0].rake
     smom0=best_point_solutions[0].smom
-#   strise=best_point_solutions[0].risetime
+    # strise=best_point_solutions[0].risetime
     strise=inv_param['RISE_TIME']
     localdepth=int(float(depth0)/1000)
     if apply_taper:
@@ -2087,19 +2087,19 @@ def analyseResultsDCsource(inv_step,inv_param,point_solutions,n_point_solutions,
             n_point_solutions = int(i/5)
         elif inv_param['INV_MODE_STEP'+inv_step]=='invert_dmsdst':
             n_point_solutions = int(i/5)
-#         n_point_solutions = int(i/7)
+            # n_point_solutions = int(i/7)
         elif inv_param['INV_MODE_STEP'+inv_step]=='invert_dmsdst2x':
-#         n_point_solutions = int(i/9)
+            # n_point_solutions = int(i/9)
             n_point_solutions = int(i/7)
         elif inv_param['INV_MODE_STEP'+inv_step]=='invert_msds':
             n_point_solutions = int(i/5)
         elif inv_param['INV_MODE_STEP'+inv_step]=='invert_dm':
             n_point_solutions = int(i/3)
-#         n_point_solutions = int(i/5)
+            # n_point_solutions = int(i/5)
         elif inv_param['INV_MODE_STEP'+inv_step]=='invert_dmt':
             n_point_solutions = int(i/3)
-#         n_point_solutions = int(i/5)
-#         n_point_solutions = int(i/7)
+            # n_point_solutions = int(i/5)
+            # n_point_solutions = int(i/7)
         elif inv_param['INV_MODE_STEP'+inv_step]=='invert_dsds':
             n_point_solutions = int(i/5)
         elif inv_param['INV_MODE_STEP'+inv_step]=='invert_sds':
@@ -2145,20 +2145,20 @@ def analyseResultsDCsource(inv_step,inv_param,point_solutions,n_point_solutions,
                 sdepth,smom,strike,dip,rake=line4.split()
                 depth=str(int(round(float(sdepth))))
                 misfit=float(line5)
-#            line4,line6,line7=text[i*7+3],text[i*7+5],text[i*7+6]
-#            sdepth,smom,strike,dip,rake=line4.split()
-#            depth=str(int(round(float(sdepth))))
-#            risetime=float(line6)
-#            strise=str(risetime)
-#            misfit=float(line7)
+                # line4,line6,line7=text[i*7+3],text[i*7+5],text[i*7+6]
+                # sdepth,smom,strike,dip,rake=line4.split()
+                # depth=str(int(round(float(sdepth))))
+                # risetime=float(line6)
+                # strise=str(risetime)
+                # misfit=float(line7)
             elif inv_param['INV_MODE_STEP'+inv_step]=='invert_dmsdst2x':
-#            line4,line6,line8,line9=text[i*9+3],text[i*9+5],text[i*9+7],text[i*9+8]
-#            sdepth,smom,strike,dip,rake=line4.split()
-#            depth=str(int(round(float(sdepth))))
-#            strike,dip,rake=line6.split()
-#            risetime=float(line8)
-#            strise=str(risetime)
-#            misfit=float(line9)
+                # line4,line6,line8,line9=text[i*9+3],text[i*9+5],text[i*9+7],text[i*9+8]
+                # sdepth,smom,strike,dip,rake=line4.split()
+                # depth=str(int(round(float(sdepth))))
+                # strike,dip,rake=line6.split()
+                # risetime=float(line8)
+                # strise=str(risetime)
+                # misfit=float(line9)
                 line4,line6,line7=text[i*7+3],text[i*7+5],text[i*7+6]
                 sdepth,smom,strike,dip,rake=line4.split()
                 depth=str(int(round(float(sdepth))))
@@ -2173,25 +2173,25 @@ def analyseResultsDCsource(inv_step,inv_param,point_solutions,n_point_solutions,
                 sdepth,smom=line2.split()
                 depth=str(int(round(float(sdepth))))
                 misfit=float(line3)
-##            line4,line5=text[i*5+3],text[i*5+4]
-##            sdepth,smom=line4.split()
-##            depth=str(int(round(float(sdepth))))
-##            misfit=float(line5)
+                # line4,line5=text[i*5+3],text[i*5+4]
+                # sdepth,smom=line4.split()
+                # depth=str(int(round(float(sdepth))))
+                # misfit=float(line5)
             elif inv_param['INV_MODE_STEP'+inv_step]=='invert_dmt':
                 line2,line3=text[i*3+1],text[i*3+2]
                 sdepth,smom=line2.split()
                 depth=str(int(round(float(sdepth))))
                 misfit=float(line3)
-##            line4,line5=text[i*5+3],text[i*5+4]
-##            sdepth,smom=line4.split()
-##          depth=str(int(round(float(sdepth))))
-##            misfit=float(line5)
-#           line4,line6,line7=text[i*7+3],text[i*7+5],text[i*7+6]
-#           sdepth,smom=line4.split()
-#           depth=str(int(round(float(sdepth))))
-#           risetime=float(line6)
-#           strise=str(risetime)
-#           misfit=float(line7)
+                # line4,line5=text[i*5+3],text[i*5+4]
+                # sdepth,smom=line4.split()
+                # depth=str(int(round(float(sdepth))))
+                # misfit=float(line5)
+                # line4,line6,line7=text[i*7+3],text[i*7+5],text[i*7+6]
+                # sdepth,smom=line4.split()
+                # depth=str(int(round(float(sdepth))))
+                # risetime=float(line6)
+                # strise=str(risetime)
+                # misfit=float(line7)
             elif inv_param['INV_MODE_STEP'+inv_step]=='invert_dsds':
                 line4,line5=text[i*5+3],text[i*5+4]
                 sdepth,strike,dip,rake=line4.split()
@@ -2210,7 +2210,7 @@ def analyseResultsDCsource(inv_step,inv_param,point_solutions,n_point_solutions,
                     line2,line3=text[i*3+1],text[i*3+2]
                     smom=str(float(line2))
                     misfit=float(line3)
-                else:                                  #'grid'
+                else:                     #'grid'
                     line1=text[i]
                     misfit=float(line1)
                     smom=str(start_point_solutions[i].smom)
@@ -2294,12 +2294,12 @@ def analyseResultsMTsource(inv_step,inv_param,mt_solutions,n_mt_solutions,fminou
         clvd="0"
         if (inv_step == '1'):
             misf_shift=99999
-#simone      m11,m12,m13,m22,m23,m33=text[i*3+1].split()
+            # simone      m11,m12,m13,m22,m23,m33=text[i*3+1].split()
             m11,m22,m33,m12,m13,m23=text[i*3+1].split()
             misfit=float(text[i*3+2])
         elif (inv_step == '2'):
-#         misfit=99999
-#         misf_shift=float(text[i])
+            # misfit=99999
+            # misf_shift=float(text[i])
             misf_shift=99999
             misfit=float(text[i])
             m11,m12,m13=start_mt_solutions[i].m11,start_mt_solutions[i].m12,start_mt_solutions[i].m13
@@ -2393,7 +2393,7 @@ def calculateDCSynthetics(inv_step,inv_param,point_solutions,traces,apply_taper,
     depth0,smom0=point_solutions[0].depth,point_solutions[0].smom
     strike0,dip0,rake0=point_solutions[0].strike,point_solutions[0].dip,point_solutions[0].rake
     srise= inv_param['RISE_TIME']
-#   srise= point_solutions[0].risetime
+    # srise= point_solutions[0].risetime
     line_mf="set_misfit_filter "+inv_param['BP_F1_STEP'+inv_step]+" 0 "+inv_param['BP_F2_STEP'+inv_step]+" 1 "
     line_mf=line_mf+inv_param['BP_F3_STEP'+inv_step]+" 1 "+inv_param['BP_F4_STEP'+inv_step]+" 0\n"
     fmininp=os.path.join(inv_param['INVERSION_DIR'],'minimizer.inp'+inv_step+'-best')
@@ -2415,10 +2415,10 @@ def calculateDCSynthetics(inv_step,inv_param,point_solutions,traces,apply_taper,
     else:
         traces0time=str(getParseTime(inv_param))
     f.write('set_source_location '+slat+' '+slon+' '+traces0time+'\n')
-#   f.write("set_source_location "+slat+" "+slon+" 0\n")
+    # f.write("set_source_location "+slat+" "+slon+" 0\n")
     f.write("set_ref_seismograms "+fdata+" "+inv_param['DATA_FORMAT']+"\n")
     f.write("set_local_interpolation "+inv_param['GF_INTERPOLATION']+"\n")
-#   f.write("set_source_location "+slat+" "+slon+" 0\n")
+    # f.write("set_source_location "+slat+" "+slon+" 0\n")
     f.write(line_mf)
     localdepth=int(float(depth0)/1000)
     if apply_taper:
@@ -2481,10 +2481,10 @@ def calculateMTSynthetics(inv_step,inv_param,mt_solutions,traces,apply_taper,fre
     else:
         traces0time=str(getParseTime(inv_param))
     f.write('set_source_location '+slat+' '+slon+' '+traces0time+'\n')
-#   f.write("set_source_location "+slat+" "+slon+" 0\n")
+    # f.write("set_source_location "+slat+" "+slon+" 0\n")
     f.write("set_ref_seismograms "+fdata+" "+inv_param['DATA_FORMAT']+"\n")
     f.write("set_local_interpolation "+inv_param['GF_INTERPOLATION']+"\n")
-#   f.write("set_source_location "+slat+" "+slon+" 0\n")
+    # f.write("set_source_location "+slat+" "+slon+" 0\n")
     f.write(line_mf)
     localdepth=int(float(depth0)/1000)
     if apply_taper:
@@ -2505,8 +2505,8 @@ def calculateMTSynthetics(inv_step,inv_param,mt_solutions,traces,apply_taper,fre
     line = "set_source_params moment_tensor "+str(stim0)+" "+str(snor0)+" "+str(sest0)+" "\
            +str(int(float(depth0)))+" "+str(m110)+" "+str(m220)+" "+str(m330)+" "\
            +str(m120)+" "+str(m130)+" "+str(m230)+" "+str(srise)+"\n"
-#simone    +str(int(float(depth0)))+" "+str(m110)+" "+str(m120)+" "+str(m130)+" "\
-#simone    +str(m220)+" "+str(m230)+" "+str(m330)+" "+str(srise)+"\n"
+           # simone    +str(int(float(depth0)))+" "+str(m110)+" "+str(m120)+" "+str(m130)+" "\
+           # simone    +str(m220)+" "+str(m230)+" "+str(m330)+" "+str(srise)+"\n"
     f.write(line)
     f.write("output_seismograms "+sseis+" table synthetics plain\n")
     f.write("output_seismograms "+dseis+" table references plain\n")
@@ -2554,17 +2554,17 @@ def calculateEikSynthetics(inv_step,inv_param,eikonals,traces,apply_taper,frecei
     else:
         traces0time=str(getParseTime(inv_param))
     f.write('set_source_location '+slat+' '+slon+' '+traces0time+'\n')
-#   f.write("set_source_location "+slat+" "+slon+" 0\n")
+    # f.write("set_source_location "+slat+" "+slon+" 0\n")
     f.write("set_ref_seismograms "+fdata+" "+inv_param['DATA_FORMAT']+"\n")
     f.write("set_local_interpolation "+inv_param['GF_INTERPOLATION']+"\n")
-#   f.write("set_source_location "+slat+" "+slon+" 0\n")
+    # f.write("set_source_location "+slat+" "+slon+" 0\n")
     f.write(line_mf)
     localdepth=int(float(sdep)/1000)
     fdep=float(sdep)
     mindepgfdb=inv_param['MIN_DEP_GFDB']
     maxdepgfdb=inv_param['MAX_DEP_GFDB']
     if (fdep>=mohodepth):
-#      line_depth_constraints="set_source_constraints 0 0 0 0 0 -1 0 0 95000 0 0 1\n"
+        # line_depth_constraints="set_source_constraints 0 0 0 0 0 -1 0 0 95000 0 0 1\n"
         mindepgfdb=inv_param['MIN_DEP_GFDB']
         maxdepgfdb=inv_param['MAX_DEP_GFDB']
         line_depth_constraints="set_source_constraints 0 0 "+mindepgfdb+" 0 0 -1 0 0 "+maxdepgfdb+" 0 0 1\n"
@@ -2657,10 +2657,10 @@ def prepMinimizerInputDCsource(inv_step,fmininp,fminout,inv_param,freceivers,\
         else:
             traces0time=str(getParseTime(inv_param))
         f.write('set_source_location '+inv_param['LATITUDE_NORTH']+' '+inv_param['LONGITUDE_EAST']+' '+traces0time+'\n')
-#      f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
+        # f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
         f.write("set_ref_seismograms "+fdata+" "+inv_param['DATA_FORMAT']+"\n")
         f.write("set_local_interpolation "+inv_param['GF_INTERPOLATION']+"\n")
-#      f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
+        # f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
         line_mm="set_misfit_method "+inv_param['MISFIT_MET_STEP'+inv_step]+"\n"
         line_mf="set_misfit_filter "+inv_param['BP_F1_STEP'+inv_step]+" 0 "+inv_param['BP_F2_STEP'+inv_step]+" 1 "\
                 +inv_param['BP_F3_STEP'+inv_step]+" 1 "+inv_param['BP_F4_STEP'+inv_step]+" 0\n"
@@ -2720,7 +2720,7 @@ def prepMinimizerInputDCsource(inv_step,fmininp,fminout,inv_param,freceivers,\
                     f.write("minimize_lm\n")
                     f.write("get_source_subparams\n")
                 elif inv_param['INV_MODE_STEP'+inv_step]=='invert_dmsdst':
-#               f.write(line_mask(stype,['moment','strike','dip','slip-rake']))
+                    # f.write(line_mask(stype,['moment','strike','dip','slip-rake']))
                     f.write(line_mask(stype,['moment','depth']))
                     f.write("minimize_lm\n")
                     f.write("get_source_subparams\n")
@@ -2734,15 +2734,15 @@ def prepMinimizerInputDCsource(inv_step,fmininp,fminout,inv_param,freceivers,\
                     f.write(line_mask(stype,['moment','depth','strike','dip','slip-rake']))
                     f.write("minimize_lm\n")
                     f.write("get_source_subparams\n")
-#               f.write(line_mf_risetime)
+                    # f.write(line_mf_risetime)
                     f.write(line_mask(stype,['strike','dip','slip-rake']))
                     f.write("minimize_lm\n")
                     f.write("get_source_subparams\n")
-#               f.write(line_mf_risetime)
-#               f.write(line_mask(stype,['rise-time']))
-#               f.write("minimize_lm\n")
-#               f.write("get_source_subparams\n")
-#               f.write(line_mf)
+                    # f.write(line_mf_risetime)
+                    # f.write(line_mask(stype,['rise-time']))
+                    # f.write("minimize_lm\n")
+                    # f.write("get_source_subparams\n")
+                    # f.write(line_mf)
                 elif inv_param['INV_MODE_STEP'+inv_step]=='invert_msds':
                     f.write(line_mask(stype,['moment']))
                     f.write("minimize_lm\n")
@@ -2820,10 +2820,10 @@ def prepMinimizerInputMTsource(inv_step,fmininp,fminout,inv_param,freceivers,\
     else:
         traces0time=str(getParseTime(inv_param))
     f.write('set_source_location '+inv_param['LATITUDE_NORTH']+' '+inv_param['LONGITUDE_EAST']+' '+traces0time+'\n')
-#   f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
+    # f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
     f.write("set_ref_seismograms "+fdata+" "+inv_param['DATA_FORMAT']+"\n")
     f.write("set_local_interpolation "+inv_param['GF_INTERPOLATION']+"\n")
-#   f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
+    # f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
     line_mm="set_misfit_method "+inv_param['MISFIT_MET_STEP'+inv_step]+"\n"
     line_mf="set_misfit_filter "+inv_param['BP_F1_STEP'+inv_step]+" 0 "+inv_param['BP_F2_STEP'+inv_step]+" 1 "\
             +inv_param['BP_F3_STEP'+inv_step]+" 1 "+inv_param['BP_F4_STEP'+inv_step]+" 0\n"
@@ -2885,10 +2885,10 @@ def prepMinimizerInputEikonalsource(inv_step,fmininp,fminout,inv_param,freceiver
     else:
         traces0time=str(getParseTime(inv_param))
     f.write('set_source_location '+inv_param['LATITUDE_NORTH']+' '+inv_param['LONGITUDE_EAST']+' '+traces0time+'\n')
-#   f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
+    # f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
     f.write("set_ref_seismograms "+fdata+" "+inv_param['DATA_FORMAT']+"\n")
     f.write("set_local_interpolation "+inv_param['GF_INTERPOLATION']+"\n")
-#   f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
+    # f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
     line_mm="set_misfit_method "+inv_param['MISFIT_MET_STEP'+inv_step]+"\n"
     line_mf="set_misfit_filter "+inv_param['BP_F1_STEP'+inv_step]+" 0 "+inv_param['BP_F2_STEP'+inv_step]+" 1 "\
             +inv_param['BP_F3_STEP'+inv_step]+" 1 "+inv_param['BP_F4_STEP'+inv_step]+" 0\n"
@@ -2909,7 +2909,7 @@ def prepMinimizerInputEikonalsource(inv_step,fmininp,fminout,inv_param,freceiver
             mindepgfdb=inv_param['MIN_DEP_GFDB']
             maxdepgfdb=inv_param['MAX_DEP_GFDB']
             if (fdep>=mohodepth):
-#           line_depth_constraints="set_source_constraints 0 0 0 0 0 -1 0 0 95000 0 0 1\n"
+                # line_depth_constraints="set_source_constraints 0 0 0 0 0 -1 0 0 95000 0 0 1\n"
                 line_depth_constraints="set_source_constraints 0 0 "+mindepgfdb+" 0 0 -1 0 0 "+maxdepgfdb+" 0 0 1\n"
                 f.write(line_depth_constraints)
             else:
@@ -2927,16 +2927,16 @@ def prepMinimizerInputEikonalsource(inv_step,fmininp,fminout,inv_param,freceiver
                         depth=float(sdep)
                         localdepth=int(float(sdep)/1000)
                         taper=getWindowsTaper(trace.comp,localdepth,trace.dist,inv_param,inv_step)
-#                  if (inv_param['SW_GOODSTATIONS'].upper()=='TRUE'):
-#                    weight=qualityweights[itrac]
-#                    loctaper=taper.split()
-#                    newtaper=""
-#                    for itap in range(int(len(loctaper)/2)):
-#                       loctaper[itap*2+1]=str(float(loctaper[itap*2+1])*weight)
-#                     for itap in range(len(loctaper)):
-#                       newtaper=newtaper+" "+loctaper[itap]
-#                    f.write("set_misfit_taper "+str(trace.num)+" "+newtaper+"\n")
-#                 else:
+                        #    if (inv_param['SW_GOODSTATIONS'].upper()=='TRUE'):
+                        #       weight=qualityweights[itrac]
+                        #       loctaper=taper.split()
+                        #       newtaper=""
+                        #       for itap in range(int(len(loctaper)/2)):
+                        #          loctaper[itap*2+1]=str(float(loctaper[itap*2+1])*weight)
+                        #        for itap in range(len(loctaper)):
+                        #          newtaper=newtaper+" "+loctaper[itap]
+                        #       f.write("set_misfit_taper "+str(trace.num)+" "+newtaper+"\n")
+                        #    else:
                         f.write("set_misfit_taper "+str(trace.num)+" "+taper+"\n")
                         itrac=itrac+1
                         prevdepth=sdep
@@ -2945,23 +2945,23 @@ def prepMinimizerInputEikonalsource(inv_step,fmininp,fminout,inv_param,freceiver
         f.write(line)
         if (inv_step == '3'):
             if inv_param['INV_MODE_STEP'+inv_step]=='invert_rnv':
-#            f.write("autoshift_ref_seismogram 0 "+ccshift1+" "+ccshift2+" \n")
+                # f.write("autoshift_ref_seismogram 0 "+ccshift1+" "+ccshift2+" \n")
                 f.write(line_mask('eikonal',['radius','nuklx','nukly','relruptvel']))
                 f.write("minimize_lm\n")
                 f.write("get_source_subparams\n")
             elif inv_param['INV_MODE_STEP'+inv_step]=='invert_r':
-#            f.write("autoshift_ref_seismogram 0 "+ccshift1+" "+ccshift2+" \n")
+                # f.write("autoshift_ref_seismogram 0 "+ccshift1+" "+ccshift2+" \n")
                 f.write(line_mask('eikonal',['radius']))
                 f.write("minimize_lm\n")
                 f.write("get_source_subparams\n")
             elif inv_param['INV_MODE_STEP'+inv_step]=='invert_rt':
-#            f.write("autoshift_ref_seismogram 0 "+ccshift1+" "+ccshift2+" \n")
+                # f.write("autoshift_ref_seismogram 0 "+ccshift1+" "+ccshift2+" \n")
                 f.write(line_mask('eikonal',['radius','rise-time']))
                 f.write("minimize_lm\n")
                 f.write("get_source_subparams\n")
             elif inv_param['INV_MODE_STEP'+inv_step]=='ccgrid':
                 print "grid ",i,sstr,srad,snukx,snuky,srrv
-#010610     f.write("autoshift_ref_seismogram 0 "+ccshift1+" "+ccshift2+" \n")
+                # 010610 f.write("autoshift_ref_seismogram 0 "+ccshift1+" "+ccshift2+" \n")
                 f.write("get_misfits \n")
             else:                                    #'grid'
                 print "grid ",i,sstr,srad,snukx,snuky,srrv
@@ -2994,10 +2994,10 @@ def compareBestDCSourceInTime(inv_step,point_solutions,inv_param,freceivers,fdat
         else:
             traces0time=str(getParseTime(inv_param))
         f.write('set_source_location '+inv_param['LATITUDE_NORTH']+' '+inv_param['LONGITUDE_EAST']+' '+traces0time+'\n')
-#      f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
+        # f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
         f.write("set_ref_seismograms "+fdata+" "+inv_param['DATA_FORMAT']+"\n")
         f.write("set_local_interpolation "+inv_param['GF_INTERPOLATION']+"\n")
-#      f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
+        # f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
         line_mm="set_misfit_method "+inv_param['MISFIT_MET_STEP'+inv_step]+"\n"
         line_mf="set_misfit_filter "+inv_param['BP_F1_STEP'+inv_step]+" 0 "+inv_param['BP_F2_STEP'+inv_step]+" 1 "
         line_mf=line_mf+inv_param['BP_F3_STEP'+inv_step]+" 1 "+inv_param['BP_F4_STEP'+inv_step]+" 0\n"
@@ -3082,7 +3082,7 @@ def plotDuration(inv_step,inv_param):
     latnmin,latnmax=str(float(inv_param['LATITUDE_NORTH'])-degs),str(float(inv_param['LATITUDE_NORTH'])+degs)
     rrange=lonemin+"/"+lonemax+"/"+latnmin+"/"+latnmax
     fgmt.write("psbasemap -X3 -Y5 -R"+rrange+" -JM10 -K -V -P -BSneWa5f5:'Lon E [deg]':/a5f5:' Lat N [deg]': >"+fappdurps+"\n")
-#   fgmt.write("psbasemap -X1.5 -Y14 -R -JM10 -K -O -V -P -BSneWa5f5:' ':/a5f5:' ': >>"+fappdurps+"\n")
+    # fgmt.write("psbasemap -X1.5 -Y14 -R -JM10 -K -O -V -P -BSneWa5f5:' ':/a5f5:' ': >>"+fappdurps+"\n")
     fgmt.write("pscoast -X0 -Y0 -JM -R -Dl -A5000 -N1/1/0 -K -O -V -G125/125/0 -S0/0/125 -W3/205 -BSWEN >>"+fappdurps+"\n")
     fgmt.write("psxy <<loc -X0 -Y0 -JM -R -K -O -W1/0 -Sa0.5 -G255/0/0 -V -P >>"+fappdurps+"\n")
     fgmt.write(inv_param['LONGITUDE_EAST']+" "+inv_param['LATITUDE_NORTH']+"\n")
@@ -3110,7 +3110,7 @@ def calcDuration(inv_step,inv_param,bests,apply_taper,fdata,freceivers):
     coeff_appdur=0.1
     if mw<3.0:
         coeff_appdur=0.01
-#   if mw>7.0:
+    # if mw>7.0:
     if mw>8.0:
         coeff_appdur=1.0
     if (inv_param['SW_APPDURATION'].upper()=="TRUE"):
@@ -3131,10 +3131,10 @@ def calcDuration(inv_step,inv_param,bests,apply_taper,fdata,freceivers):
     else:
         traces0time=str(getParseTime(inv_param))
     f.write('set_source_location '+inv_param['LATITUDE_NORTH']+' '+inv_param['LONGITUDE_EAST']+' '+traces0time+'\n')
-#   f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
+    # f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
     f.write("set_ref_seismograms "+fdata+" "+inv_param['DATA_FORMAT']+"\n")
     f.write("set_local_interpolation "+inv_param['GF_INTERPOLATION']+"\n")
-#   f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
+    # f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
     line_mm="set_misfit_method "+inv_param['MISFIT_MET_STEP'+inv_step]+"\n"
     line_mf_risetime="set_misfit_filter "+inv_param['BP_F1_STEP3']+" 0 "+inv_param['BP_F2_STEP3']+" 1 "\
             +inv_param['BP_F3_STEP3']+" 1 "+inv_param['BP_F4_STEP3']+" 0\n"
@@ -3146,13 +3146,13 @@ def calcDuration(inv_step,inv_param,bests,apply_taper,fdata,freceivers):
     stim,snor,sest=str(bests[0].time),str(bests[0].rnor),str(bests[0].rest)
     sstr,sdip,srak=str(bests[0].strike),str(bests[0].dip),str(bests[0].rake)
     strise=str(bests[0].risetime)
-# s.c. added few lines for better retrieval of duration, using proper starting value
+    # s.c. added few lines for better retrieval of duration, using proper starting value
     bestmw=float(m0tomw(float(inv_param['SCALING_FACTOR'])*float(bests[0].smom)))
     if (bestmw>6):
         strise="5"
     if (bestmw>6.5):
         strise="10"
-# til here (temporary fixed to 5, see below)
+    # til here (temporary fixed to 5, see below)
     if apply_taper:
         for trace in traces:
             depth=float(sdep)
@@ -3277,8 +3277,8 @@ def calcDuration(inv_step,inv_param,bests,apply_taper,fdata,freceivers):
             x2.append(-math.cos((math.pi/180)*(float(ll[3])-float(bests[1].strike))))
             x3.append(-math.cos((math.pi/180)*(float(ll[3])-(float(bests[0].strike)+90))))
             x4.append(-math.cos((math.pi/180)*(float(ll[3])-(float(bests[1].strike)+90))))
-#         x5.append(2*math.cos((math.pi/180)*(float(ll[3])-float(bests[0].strike))))
-#         x6.append(2*math.cos((math.pi/180)*(float(ll[3])-float(bests[1].strike))))
+            # x5.append(2*math.cos((math.pi/180)*(float(ll[3])-float(bests[0].strike))))
+            # x6.append(2*math.cos((math.pi/180)*(float(ll[3])-float(bests[1].strike))))
             x5.append(abs(math.cos((math.pi/180)*(float(ll[3])-float(bests[0].strike)))))
             x6.append(abs(math.cos((math.pi/180)*(float(ll[3])-float(bests[1].strike)))))
             x7.append(-math.cos((math.pi/180)*(float(ll[3])-(float(bests[0].strike)+45))))
@@ -3357,8 +3357,8 @@ def calcDuration(inv_step,inv_param,bests,apply_taper,fdata,freceivers):
             misfx2=misfx2+(appdur-(m2*(-math.cos(anglerad2))+q2))**2
             misfx3=misfx3+(appdur-(m3*(-math.cos(anglerad3))+q3))**2
             misfx4=misfx4+(appdur-(m4*(-math.cos(anglerad4))+q4))**2
-#         misfx5=misfx5+(appdur-(m5*(math.cos(2*anglerad5))+q5))**2
-#         misfx6=misfx6+(appdur-(m6*(math.cos(2*anglerad6))+q6))**2
+            # misfx5=misfx5+(appdur-(m5*(math.cos(2*anglerad5))+q5))**2
+            # misfx6=misfx6+(appdur-(m6*(math.cos(2*anglerad6))+q6))**2
             misfx5=misfx5+(appdur-(m5*(abs(math.cos(anglerad5)))+q5))**2
             misfx6=misfx6+(appdur-(m6*(abs(math.cos(anglerad6)))+q6))**2
             misfx7=misfx7+(appdur-(m7*(-math.cos(anglerad7))+q7))**2
@@ -3371,12 +3371,12 @@ def calcDuration(inv_step,inv_param,bests,apply_taper,fdata,freceivers):
             print "CHECK-STRIKE2",appdur,m2,q2,(m2*(-math.cos(anglerad2))+q2),anglegra,misfx2
             print "CHECK-DIP1   ",appdur,m3,q3,(m3*(-math.cos(anglerad3))+q3),anglegra,misfx3
             print "CHECK-DIP2   ",appdur,m4,q4,(m4*(-math.cos(anglerad4))+q4),anglegra,misfx4
-#        print "CHECK-BILSTR1   ",appdur,m5,q5,(m5*(math.cos(2*anglerad5))+q5),anglegra,misfx5
-#        print "CHECK-BILSTR2   ",appdur,m6,q6,(m6*(math.cos(2*anglerad6))+q6),anglegra,misfx6
+            # print "CHECK-BILSTR1   ",appdur,m5,q5,(m5*(math.cos(2*anglerad5))+q5),anglegra,misfx5
+            # print "CHECK-BILSTR2   ",appdur,m6,q6,(m6*(math.cos(2*anglerad6))+q6),anglegra,misfx6
             print "CHECK-BILSTR1   ",appdur,m5,q5,(m5*abs(math.cos(anglerad5))+q5),anglegra,misfx5
             print "CHECK-BILSTR2   ",appdur,m6,q6,(m6*abs(math.cos(anglerad6))+q6),anglegra,misfx6
             irec=irec+1
-#      misfx=min(misfx1,misfx2,misfx3,misfx4,misfx5,misfx6,misfx7,misfx8,misfx9,misfx10)
+            # misfx=min(misfx1,misfx2,misfx3,misfx4,misfx5,misfx6,misfx7,misfx8,misfx9,misfx10)
         if (bests[0].dip<30) and (bests[1].dip<30):
             misfx=min(misfx1,misfx2,misfx3,misfx4,misfx5,misfx6,misfx7,misfx8,misfx9,misfx10)
         elif (bests[0].dip<30) and (bests[1].dip>=30):
@@ -3435,8 +3435,8 @@ def calcDuration(inv_step,inv_param,bests,apply_taper,fdata,freceivers):
             mm=m10
             qq=q10
             print "MISFIT 10 CHOSEN",ftest
-#      if ftest<=0.05:
-#         mm,qq=0.,average_apparentrisetime
+            # if ftest<=0.05:
+            #    mm,qq=0.,average_apparentrisetime
         f3.write("AVERAGE "+str(average_apparentrisetime)+"\n")
         f3.write("ST.DEV. "+str(stdev_apparentrisetime)+"\n")
         f3.write("CONFINT "+str(min_apparentrisetime)+" "+str(max_apparentrisetime)+"\n")
@@ -3478,11 +3478,11 @@ def calcDuration(inv_step,inv_param,bests,apply_taper,fdata,freceivers):
                 ycurve1=m4*(-math.cos(anglerad))+q4
             elif misfx==misfx5:
                 anglerad=float(anglegra-float(bests[0].strike))*math.pi/180.
-#           ycurve1=m5*(math.cos(2*anglerad))+q5
+                # ycurve1=m5*(math.cos(2*anglerad))+q5
                 ycurve1=m5*abs(math.cos(anglerad))+q5
             elif misfx==misfx6:
                 anglerad=float(anglegra-float(bests[1].strike))*math.pi/180.
-#           ycurve1=m6*(math.cos(2*anglerad))+q6
+                # ycurve1=m6*(math.cos(2*anglerad))+q6
                 ycurve1=m6*abs(math.cos(anglerad))+q6
             elif misfx==misfx7:
                 anglerad=float(anglegra-(float(bests[0].strike)+45))*math.pi/180.
@@ -3529,10 +3529,10 @@ def compareBestMTSourceInTime(inv_step,mt_solutions,inv_param,freceivers,fdata):
         else:
             traces0time=str(getParseTime(inv_param))
         f.write('set_source_location '+inv_param['LATITUDE_NORTH']+' '+inv_param['LONGITUDE_EAST']+' '+traces0time+'\n')
-#      f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
+        # f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
         f.write("set_ref_seismograms "+fdata+" "+inv_param['DATA_FORMAT']+"\n")
         f.write("set_local_interpolation "+inv_param['GF_INTERPOLATION']+"\n")
-#      f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
+        # f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
         line_mm="set_misfit_method "+inv_param['MISFIT_MET_STEP'+inv_step]+"\n"
         line_mf="set_misfit_filter "+inv_param['BP_F1_STEP'+inv_step]+" 0 "+inv_param['BP_F2_STEP'+inv_step]+" 1 "
         line_mf=line_mf+inv_param['BP_F3_STEP'+inv_step]+" 1 "+inv_param['BP_F4_STEP'+inv_step]+" 0\n"
@@ -3562,7 +3562,7 @@ def compareBestMTSourceInTime(inv_step,mt_solutions,inv_param,freceivers,fdata):
                     prevdepth=sdep
         line = "set_source_params moment_tensor "+stim+" "+snor+" "+sest+" "+sdep+" "\
                +sm11+" "+sm22+" "+sm33+" "+sm12+" "+sm13+" "+sm23+" "+strise+"\n"
-#simone             +sm11+" "+sm12+" "+sm13+" "+sm22+" "+sm23+" "+sm33+" "+strise+"\n"
+               # simone  +sm11+" "+sm12+" "+sm13+" "+sm22+" "+sm23+" "+sm33+" "+strise+"\n"
         f.write(line)
         f.write("autoshift_ref_seismogram 0 "+ccshift1+" "+ccshift2+" \n")
         f.write("get_global_misfit\n")
@@ -3640,7 +3640,7 @@ def runBootstrapStep1(inv_step,inv_param,point_solutions,n_point_solutions,minou
     refstrike,refdip,refrake=float(sstrike),float(sdip),float(srake)
     slat,slon=inv_param['LATITUDE_NORTH'],inv_param['LONGITUDE_EAST']
 
-#  Loop over depths
+    # Loop over depths
     testeddepths=[]
     bootptsolutions1=[]
     lines_localmisfits1=[]
@@ -3650,7 +3650,7 @@ def runBootstrapStep1(inv_step,inv_param,point_solutions,n_point_solutions,minou
     localsrake=str(refrake)
     localssmom=str(refsmom)
     for idep in range(7):
-#      fdepth=refdepth+((idep-5)*10000)
+        # fdepth=refdepth+((idep-5)*10000)
         fdepth=refdepth+((idep-3)*1000)
         fdepthkm=round(fdepth/1000)
         if (fdepthkm>float(inv_param['DEPTH_UPPERLIM'])) and (fdepthkm<float(inv_param['DEPTH_BOTTOMLIM'])):
@@ -3672,10 +3672,10 @@ def runBootstrapStep1(inv_step,inv_param,point_solutions,n_point_solutions,minou
     else:
         traces0time=str(getParseTime(inv_param))
     f.write('set_source_location '+slat+' '+slon+' '+traces0time+'\n')
-#   f.write("set_source_location "+slat+" "+slon+" 0\n")
+    # f.write("set_source_location "+slat+" "+slon+" 0\n")
     f.write("set_ref_seismograms "+fdata+" "+inv_param['DATA_FORMAT']+"\n")
     f.write("set_local_interpolation "+inv_param['GF_INTERPOLATION']+"\n")
-#   f.write("set_source_location "+slat+" "+slon+" 0\n")
+    # f.write("set_source_location "+slat+" "+slon+" 0\n")
     line_mm="set_misfit_method "+inv_param['MISFIT_MET_STEP'+inv_step]+"\n"
     line_mf="set_misfit_filter "+inv_param['BP_F1_STEP'+inv_step]+" 0 "+inv_param['BP_F2_STEP'+inv_step]+" 1 "
     line_mf=line_mf+inv_param['BP_F3_STEP'+inv_step]+" 1 "+inv_param['BP_F4_STEP'+inv_step]+" 0\n"
@@ -3723,17 +3723,17 @@ def runBootstrapStep1(inv_step,inv_param,point_solutions,n_point_solutions,minou
             randomindex=random.randint(0,numberoftraces-1)
             randomindexes.append(randomindex)
         localptsolutions1=[]
-#      if iboot==0:
-#        print "NSOL",n_new_point_solutions
+        # if iboot==0:
+        #     print "NSOL",n_new_point_solutions
         for isol in range(n_new_point_solutions):
             localptsolution=bootptsolutions1[isol]
             locallinemisfits=lines_localmisfits1[isol]
             localmisfit = calcBootstrapMisfit(locallinemisfits,randomindexes)
             localptsolution.misfit = localmisfit
             localptsolutions1.append(localptsolution)
-#        if iboot<3:
-#           print iboot,"SOL",isol,localmisfit
-#        isol=isol+1
+            # if iboot<3:
+            #    print iboot,"SOL",isol,localmisfit
+            #   isol=isol+1
         localptsolutions1.sort(key=operator.attrgetter('misfit'))
         localbestptsolutions1.append(localptsolutions1[0])
 
@@ -3748,7 +3748,7 @@ def runBootstrapStep1(inv_step,inv_param,point_solutions,n_point_solutions,minou
         fboot.write(str(localbestptsolutions1[ib].depth)+"\n")
         if localbestptsolutions1[ib].depth not in probdepths:
             probdepths.append(localbestptsolutions1[ib].depth)
-#   for checkdepth in probdepths:
+    # for checkdepth in probdepths:
     for checkdepth in testeddepths:
         iprob=0
         for ib in range(len(localbestptsolutions1)):
@@ -3761,10 +3761,10 @@ def runBootstrapStep1(inv_step,inv_param,point_solutions,n_point_solutions,minou
     fprob.flush()
     fprob.close()
     stdev1_depth,stdev2_depth=confidenceInterval(depths,inv_param)
-#   average_depth,stdev_depth = mean(depths),std(depths)
-#   print "DEPTH       ",average_depth,stdev_depth
+    # average_depth,stdev_depth = mean(depths),std(depths)
+    # print "DEPTH       ",average_depth,stdev_depth
 
-#  Loop over scalar moments
+    # Loop over scalar moments
     testedsmoms=[]
     bootptsolutions1=[]
     lines_localmisfits1=[]
@@ -3792,10 +3792,10 @@ def runBootstrapStep1(inv_step,inv_param,point_solutions,n_point_solutions,minou
     else:
         traces0time=str(getParseTime(inv_param))
     f.write('set_source_location '+slat+' '+slon+' '+traces0time+'\n')
-#   f.write("set_source_location "+slat+" "+slon+" 0\n")
+    # f.write("set_source_location "+slat+" "+slon+" 0\n")
     f.write("set_ref_seismograms "+fdata+" "+inv_param['DATA_FORMAT']+"\n")
     f.write("set_local_interpolation "+inv_param['GF_INTERPOLATION']+"\n")
-#   f.write("set_source_location "+slat+" "+slon+" 0\n")
+    # f.write("set_source_location "+slat+" "+slon+" 0\n")
     line_mm="set_misfit_method "+inv_param['MISFIT_MET_STEP'+inv_step]+"\n"
     line_mf="set_misfit_filter "+inv_param['BP_F1_STEP'+inv_step]+" 0 "+inv_param['BP_F2_STEP'+inv_step]+" 1 "
     line_mf=line_mf+inv_param['BP_F3_STEP'+inv_step]+" 1 "+inv_param['BP_F4_STEP'+inv_step]+" 0\n"
@@ -3848,7 +3848,7 @@ def runBootstrapStep1(inv_step,inv_param,point_solutions,n_point_solutions,minou
             localmisfit = calcBootstrapMisfit(locallinemisfits,randomindexes)
             localptsolution.misfit = localmisfit
             localptsolutions1.append(localptsolution)
-#        isol=isol+1
+        # isol=isol+1
         localptsolutions1.sort(key=operator.attrgetter('misfit'))
         localbestptsolutions1.append(localptsolutions1[0])
     smoms=[]
@@ -3862,24 +3862,24 @@ def runBootstrapStep1(inv_step,inv_param,point_solutions,n_point_solutions,minou
         fboot.write(str(localbestptsolutions1[ib].smom)+"\n")
         if localbestptsolutions1[ib].smom not in probsmoms:
             probsmoms.append(localbestptsolutions1[ib].smom)
-#   for checksmom in probsmoms:
+    # for checksmom in probsmoms:
     for checksmom in testedsmoms:
         iprob=0
         for ib in range(len(localbestptsolutions1)):
             if checksmom==float(localbestptsolutions1[ib].smom):
                 iprob=iprob+1
         prob=100*(float(iprob)/float(len(localbestptsolutions1)))
-#      fprob.write(str(checksmom)+" "+strDecim(prob,2)+"\n")
+        # fprob.write(str(checksmom)+" "+strDecim(prob,2)+"\n")
         fprob.write(str(checksmom)+" "+str(prob)+"\n")
     fboot.flush()
     fboot.close()
     fprob.flush()
     fprob.close()
     stdev1_smom,stdev2_smom=confidenceInterval(smoms,inv_param)
-#   average_smom,stdev_smom = mean(smoms),std(smoms)
-#   print "SCALAR MOM  ",average_smom,stdev_smom
+    # average_smom,stdev_smom = mean(smoms),std(smoms)
+    # print "SCALAR MOM  ",average_smom,stdev_smom
 
-#  Loop over strike, dip, rake
+    # Loop over strike, dip, rake
     testedsdss=[]
     bootptsolutions2=[]
     lines_localmisfits2=[]
@@ -3909,10 +3909,10 @@ def runBootstrapStep1(inv_step,inv_param,point_solutions,n_point_solutions,minou
     else:
         traces0time=str(getParseTime(inv_param))
     f.write('set_source_location '+slat+' '+slon+' '+traces0time+'\n')
-#   f.write("set_source_location "+slat+" "+slon+" 0\n")
+    # f.write("set_source_location "+slat+" "+slon+" 0\n")
     f.write("set_ref_seismograms "+fdata+" "+inv_param['DATA_FORMAT']+"\n")
     f.write("set_local_interpolation "+inv_param['GF_INTERPOLATION']+"\n")
-#   f.write("set_source_location "+slat+" "+slon+" 0\n")
+    # f.write("set_source_location "+slat+" "+slon+" 0\n")
     line_mm="set_misfit_method "+inv_param['MISFIT_MET_STEP'+inv_step]+"\n"
     line_mf="set_misfit_filter "+inv_param['BP_F1_STEP'+inv_step]+" 0 "+inv_param['BP_F2_STEP'+inv_step]+" 1 "
     line_mf=line_mf+inv_param['BP_F3_STEP'+inv_step]+" 1 "+inv_param['BP_F4_STEP'+inv_step]+" 0\n"
@@ -3959,8 +3959,8 @@ def runBootstrapStep1(inv_step,inv_param,point_solutions,n_point_solutions,minou
         for jboot in range(numberoftraces):
             randomindex=random.randint(0,numberoftraces-1)
             randomindexes.append(randomindex)
-#      print "IBOOT",iboot
-#      print "indexes",randomindexes
+        # print "IBOOT",iboot
+        # print "indexes",randomindexes
         localptsolutions2=[]
         for isol in range(n_new_point_solutions):
             localptsolution=bootptsolutions2[isol]
@@ -3968,15 +3968,15 @@ def runBootstrapStep1(inv_step,inv_param,point_solutions,n_point_solutions,minou
             localmisfit = calcBootstrapMisfit(locallinemisfits,randomindexes)
             localptsolution.misfit = localmisfit
             localptsolutions2.append(localptsolution)
-#        isol=isol+1
+            # isol=isol+1
             if iboot==0:
                 print iboot,"SOL",isol,localptsolution.strike,localptsolution.dip,localptsolution.rake,localmisfit
         localptsolutions2.sort(key=operator.attrgetter('misfit'))
-#      print "BESTSOL",localptsolutions2[0].misfit,localptsolutions2[0].strike,\
-#                      localptsolutions2[0].dip,localptsolutions2[0].rake
+        # print "BESTSOL",localptsolutions2[0].misfit,localptsolutions2[0].strike,\
+        # localptsolutions2[0].dip,localptsolutions2[0].rake
         localbestptsolutions2.append(localptsolutions2[0])
-#      if iboot==0:
-#        print "CHOSENSOL",localptsolutions2[0].strike,localptsolutions2[0].dip,localptsolutions2[0].rake,localptsolutions2[0].misfit
+        # if iboot==0:
+        # print "CHOSENSOL",localptsolutions2[0].strike,localptsolutions2[0].dip,localptsolutions2[0].rake,localptsolutions2[0].misfit
 
     strikes=[]
     dips=[]
@@ -4014,7 +4014,7 @@ def runBootstrapStep1(inv_step,inv_param,point_solutions,n_point_solutions,minou
     stdev1_dip,stdev2_dip=confidenceInterval(dips,inv_param)
     stdev1_rake,stdev2_rake=confidenceInterval(rakes,inv_param)
 
-#Print output to bootstrap file
+    #Print output to bootstrap file
     fbootstrap=os.path.join(inv_param['INVERSION_DIR'],"bootstrap.dat")
     if os.path.exists(fbootstrap):
         f=open(fbootstrap,'a')
@@ -4053,10 +4053,10 @@ def inversionDCsource(inv_step,inv_param,point_solutions,best_point_solutions,tr
         n_local_loops=int(inv_param['LOOPS_LOC_CONF'])
     else:
         sys.exit("ERROR: something went wrong with the starting configurations, "+inv_step)
-#  Define first grid walk
+    # Define first grid walk
     start_point_solutions=[]
     defineGridWalkDCsource(inv_step,start_point_solutions,point_solutions,inv_param)
-#  Prepare point source inversion, looping over starting configurations
+    # Prepare point source inversion, looping over starting configurations
     print 'sss ',len(start_point_solutions)
     for iloop in range(n_local_loops):
         irun=iloop+1
@@ -4066,12 +4066,12 @@ def inversionDCsource(inv_step,inv_param,point_solutions,best_point_solutions,tr
                                       apply_taper,irun,start_point_solutions)
         n_point_solutions = len(start_point_solutions)
         print 'check',irun,n_point_solutions
-#  Calling minimizer for point source inversion
+        # Calling minimizer for point source inversion
         if inv_param['NUM_PROCESSORS']=='1':
             callMinimizer(mininp,minout)
         else:
             callParallelizedMinimizer(mininp,minout,num_processors)
-#  Analysing point source inversion results
+        # Analysing point source inversion results
         lines_singlemisfits=[]
         analyseResultsDCsource(inv_step,inv_param,point_solutions,n_point_solutions,minout,\
                                start_point_solutions,lines_singlemisfits)
@@ -4081,15 +4081,15 @@ def inversionDCsource(inv_step,inv_param,point_solutions,best_point_solutions,tr
         else:
             runBootstrapStep2(inv_step,inv_param,point_solutions,n_point_solutions,minout,\
                              start_point_solutions,freceivers,fdata,apply_taper,lines_singlemisfits)
-#         runBootstrapStep2(inv_step,point_solutions,n_point_solutions,lines_singlemisfits)
+            # runBootstrapStep2(inv_step,point_solutions,n_point_solutions,lines_singlemisfits)
         point_solutions.sort(key=operator.attrgetter('misfit'))
         if (irun < n_local_loops):
             start_point_solutions=[]
         updateGridWalkDCsource(inv_step,point_solutions,start_point_solutions,inv_param,irun)
-#  Possible fault planes & Misfit curves for strike,dip,rake
+    # Possible fault planes & Misfit curves for strike,dip,rake
     point_solutions.sort(key=operator.attrgetter('misfit'))
     calcAuxFaultPlane(inv_step,inv_param,point_solutions,best_point_solutions)
-#   if 't' in inv_param['INV_MODE_STEP'+inv_step]:
+    # if 't' in inv_param['INV_MODE_STEP'+inv_step]:
     if (inv_step=="1"):
         if (inv_param['SW_APPDURATION'].upper()=="TRUE"):
             calcDuration(inv_step,inv_param,best_point_solutions,apply_taper,fdata,freceivers)
@@ -4105,17 +4105,17 @@ def inversionDCsource(inv_step,inv_param,point_solutions,best_point_solutions,tr
         best_point_solutions.sort(key=operator.attrgetter('strike'))
         relMisfitCurves(inv_step,inv_param,point_solutions,best_point_solutions,n_point_solutions,apply_taper,fdata,freceivers)
         point_solutions.sort(key=operator.attrgetter('misfit'))
-#  Output point solutions to extra file
+    # Output point solutions to extra file
     n_point_solutions=len(point_solutions)
     writeDCSolutions(inv_step,point_solutions,n_point_solutions,inv_param['INVERSION_DIR'],'step'+inv_step+'-ptsolutions.dat')
-#  Calculates synthetics for best strike-dip-slip solution
+    # Calculates synthetics for best strike-dip-slip solution
     calculateDCSynthetics(inv_step,inv_param,point_solutions,traces,apply_taper,freceivers,fdata)
-#  Plot point source solution 1
+    # Plot point source solution 1
     point_solutions.sort(key=operator.attrgetter('misfit'))
 
 
 def inversionMTsource(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,traces,apply_taper):
-#   freceivers=os.path.join(inv_param['INVERSION_DIR'],'stations.table')
+    # freceivers=os.path.join(inv_param['INVERSION_DIR'],'stations.table')
     fdata=os.path.join(inv_param['INVERSION_DIR'],inv_param['DATA_FILE'])
     if (inv_step == '1'):
         print 'Inversion step 1b'
@@ -4129,32 +4129,32 @@ def inversionMTsource(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,t
         compareBestMTSourceInTime(inv_step,mt_solutions,inv_param,freceivers,fdata)
     else:
         sys.exit("ERROR: something went wrong with the starting configurations, "+inv_step)
-#  Define first grid walk
+    # Define first grid walk
     start_mt_solutions=[]
     defineGridWalkMTsource(inv_step,bestdc,start_mt_solutions,mt_solutions,inv_param)
-#  Prepare point source inversion, looping over starting configurations
+    # Prepare point source inversion, looping over starting configurations
     mininp=os.path.join(inv_param['INVERSION_DIR'],'minimizer.inp'+inv_step+'-runmt')
     minout=os.path.join(inv_param['INVERSION_DIR'],'minimizer.out'+inv_step+'-runmt')
     irun=1
     prepMinimizerInputMTsource(inv_step,mininp,minout,inv_param,freceivers,fdata,\
                                         apply_taper,irun,start_mt_solutions)
     n_mt_solutions = len(start_mt_solutions)
-#  Calling minimizer for point source inversion
+    # Calling minimizer for point source inversion
     callMinimizer(mininp,minout)
-#  Analysing point source inversion results
+    # Analysing point source inversion results
     analyseResultsMTsource(inv_step,inv_param,mt_solutions,n_mt_solutions,minout,start_mt_solutions)
-#  Plot point source solution 1
+    # Plot point source solution 1
     mt_solutions.sort(key=operator.attrgetter('misfit'))
     print "check number of mt solutions:",len(mt_solutions)
-#  Adding best solutions
+    # Adding best solutions
     addBestMTsolutions(bestdc,inv_step,inv_param,mt_solutions,best_mt_solutions)
     print "HEY! best MT solutions are",len(best_mt_solutions)
     for bmts in best_mt_solutions:
         print bmts.m11
-#  Output point solutions to extra file
+    # Output point solutions to extra file
     n_mt_solutions=len(mt_solutions)
     writeMTSolutions(inv_step,mt_solutions,n_mt_solutions,inv_param['INVERSION_DIR'],'step'+inv_step+'-mtsolutions.dat')
-#  Calculates synthetics for best MT solution
+    # Calculates synthetics for best MT solution
     calculateMTSynthetics(inv_step,inv_param,mt_solutions,traces,apply_taper,freceivers,fdata)
 
 
@@ -4166,7 +4166,7 @@ def findUnfittingStations(inv_step,inv_param,eikonals,traces,apply_taper,best_po
     comp_inv_step=inv_param['ST_GOODSTATIONS']
     fmininp=os.path.join(inv_param['INVERSION_DIR'],'minimizer.inp'+inv_step+'-evalstat')
     fminout=os.path.join(inv_param['INVERSION_DIR'],'minimizer.out'+inv_step+'-evalstat')
-#  Prepare minimizer input
+    # Prepare minimizer input
     freceivers=os.path.join(inv_param['INVERSION_DIR'],'stations.table.kin')
     fdata=os.path.join(inv_param['INVERSION_DIR'],inv_param['DATA_FILE'])
     f = open (fmininp,'w')
@@ -4178,10 +4178,10 @@ def findUnfittingStations(inv_step,inv_param,eikonals,traces,apply_taper,best_po
     else:
         traces0time=str(getParseTime(inv_param))
     f.write('set_source_location '+inv_param['LATITUDE_NORTH']+' '+inv_param['LONGITUDE_EAST']+' '+traces0time+'\n')
-#   f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
+    # f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
     f.write("set_ref_seismograms "+fdata+" "+inv_param['DATA_FORMAT']+"\n")
     f.write("set_local_interpolation "+inv_param['GF_INTERPOLATION']+"\n")
-#   f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
+    # f.write("set_source_location "+inv_param['LATITUDE_NORTH']+" "+inv_param['LONGITUDE_EAST']+" 0\n")
     line_mm="set_misfit_method "+inv_param['MISFIT_MET_STEP'+comp_inv_step]+"\n"
     line_mf="set_misfit_filter "+inv_param['BP_F1_STEP'+comp_inv_step]+" 0 "\
             +inv_param['BP_F2_STEP'+comp_inv_step]+" 1 "\
@@ -4199,7 +4199,7 @@ def findUnfittingStations(inv_step,inv_param,eikonals,traces,apply_taper,best_po
     mindepgfdb=inv_param['MIN_DEP_GFDB']
     maxdepgfdb=inv_param['MAX_DEP_GFDB']
     if (fdep>=mohodepth):
-#      line_depth_constraints="set_source_constraints 0 0 0 0 0 -1 0 0 95000 0 0 1\n"
+        # line_depth_constraints="set_source_constraints 0 0 0 0 0 -1 0 0 95000 0 0 1\n"
         line_depth_constraints="set_source_constraints 0 0 "+mindepgfdb+" 0 0 -1 0 0 "+maxdepgfdb+" 0 0 1\n"
         f.write(line_depth_constraints)
     for trace in traces:
@@ -4215,10 +4215,10 @@ def findUnfittingStations(inv_step,inv_param,eikonals,traces,apply_taper,best_po
     f.write("get_misfits \n")
     f.flush()
     f.close()
-#  Call minimizer
+    # Call minimizer
     print "call minimizer here"
     callMinimizer(fmininp,fminout)
-#  Analyze minimizer results
+    # Analyze minimizer results
     print 'Analysing stations fit, before '+inv_step+'...'
     i=0
     f = open (fminout,'r')
@@ -4240,11 +4240,11 @@ def findUnfittingStations(inv_step,inv_param,eikonals,traces,apply_taper,best_po
                     text.append(defline)
                 i=i+1
     f.close()
-#   correlations=text[0].split()
+    # correlations=text[0].split()
     textmisfits=text[1].split()
     singlemisfits=[]
     for imis in range(int(len(textmisfits)/2)):
-#      singlemisfits.append(float(textmisfits[imis*2]))
+        # singlemisfits.append(float(textmisfits[imis*2]))
         singlemisfits.append(float(textmisfits[imis*2])/float(textmisfits[imis*2+1]))
     averagemisfit=mean(singlemisfits)
     standarddev=std(singlemisfits)
@@ -4252,7 +4252,7 @@ def findUnfittingStations(inv_step,inv_param,eikonals,traces,apply_taper,best_po
     print "singlemisfits",singlemisfits
     print "average",averagemisfit
     print "bad above",maxadmittedmisfit
-#  Build new station file (only traces which here fit when lowpassed will be later used for kinematic inversion)
+    # Build new station file (only traces which here fit when lowpassed will be later used for kinematic inversion)
     finp=os.path.join(inv_param['INVERSION_DIR'],'stations.table.kin')
     fout=os.path.join(inv_param['INVERSION_DIR'],'stations.table.kin.good')
     f1 = open (finp,'r')
@@ -4274,7 +4274,7 @@ def findUnfittingStations(inv_step,inv_param,eikonals,traces,apply_taper,best_po
 
 
 def calcBootstrapMisfit(locallinemisfits,randomindexes):
-# now L2 norm as external norm
+    # now L2 norm as external norm
     misfandnormcoefs=locallinemisfits.split()
     misfits=[]
     normcoefs=[]
@@ -4365,9 +4365,9 @@ def runBootstrapStep2(inv_step,inv_param,point_solutions,n_point_solutions,minou
     stdev1_rest,stdev2_rest=confidenceInterval(rests,inv_param)
     stdev1_rnor,stdev2_rnor=confidenceInterval(rnors,inv_param)
     stdev1_time,stdev2_time=confidenceInterval(times,inv_param)
-#      average_rest,stdev_rest = mean(rests),std(rests)
-#      average_rnor,stdev_rnor = mean(rnors),std(rnors)
-#      average_time,stdev_time = mean(times),std(times)
+    # average_rest,stdev_rest = mean(rests),std(rests)
+    # average_rnor,stdev_rnor = mean(rnors),std(rnors)
+    # average_time,stdev_time = mean(times),std(times)
     fbootstrap=os.path.join(inv_param['INVERSION_DIR'],"bootstrap.dat")
     if os.path.exists(fbootstrap):
         f=open(fbootstrap,'a')
@@ -4556,16 +4556,16 @@ def inversionEIKsource(inv_step,inv_param,start_eikonals,eikonals,best_eikonals,
     fdata=os.path.join(inv_param['INVERSION_DIR'],inv_param['DATA_FILE'])
     if (inv_step == '3'):
         print 'Inversion step 3'
-#      n_local_loops=int(inv_param['LOOPS_EIK_CONF'])
+        # n_local_loops=int(inv_param['LOOPS_EIK_CONF'])
         n_local_loops=1
     else:
         sys.exit("ERROR: something went wrong with the starting configurations, "+inv_step)
-#  Check Moho depth
+    # Check Moho depth
     mohodepth=getCrustalDepth(inv_param)
-#  Choose only well fitting stations
+    # Choose only well fitting stations
     if (inv_param['SW_GOODSTATIONS'].upper()=='TRUE'):
         findUnfittingStations(inv_step,inv_param,eikonals,traces,apply_taper,best_point,mohodepth)
-#  Define first grid walk
+    # Define first grid walk
     print 'BEFORE APPENDING ',len(start_eikonals)
     defineGridWalkEikonalsource(inv_step,start_eikonals,eikonals,inv_param)
     print 'STARTING EIKONALS ',len(start_eikonals)
@@ -4573,7 +4573,7 @@ def inversionEIKsource(inv_step,inv_param,start_eikonals,eikonals,best_eikonals,
         print eikonal.strike,eikonal.dip,eikonal.rake,\
               eikonal.nuklx,eikonal.nukly,eikonal.radius,eikonal.relruptvel
 
-#  Prepare eikonal source inversion, looping over starting configurations
+    # Prepare eikonal source inversion, looping over starting configurations
     print 'number of eikonal starting sources ',len(start_eikonals)
     for iloop in range(n_local_loops):
         irun=iloop+1
@@ -4583,9 +4583,9 @@ def inversionEIKsource(inv_step,inv_param,start_eikonals,eikonals,best_eikonals,
                                         apply_taper,irun,start_eikonals,mohodepth)
         n_eikonals = len(start_eikonals)
         print 'check',irun,n_eikonals
-#  Calling minimizer for point source inversion
+        # Calling minimizer for point source inversion
         callMinimizer(mininp,minout)
-#  Analysing eikonal source inversion results
+        # Analysing eikonal source inversion results
         lines_singlemisfits=[]
         analyseResultsEikonalsource(inv_step,inv_param,eikonals,n_eikonals,minout,start_eikonals,lines_singlemisfits)
         runEIKBootstrap(inv_step,eikonals,n_eikonals,start_eikonals,lines_singlemisfits)
@@ -4594,20 +4594,20 @@ def inversionEIKsource(inv_step,inv_param,start_eikonals,eikonals,best_eikonals,
         if (irun < n_local_loops):
             start_eikonals=[]
             updateGridWalkEikonalsource(inv_step,eikonals,start_eikonals,inv_param,irun)
-#  Possible fault planes & Misfit curves for strike,dip,rake
+            # Possible fault planes & Misfit curves for strike,dip,rake
     eikonals.sort(key=operator.attrgetter('misfit'))
     best_eikonals.append(eikonals[0])
-##   if (inv_step == '1'):
-##      point_solutions.sort(key=operator.attrgetter('misfit'))
-##      best_point_solutions.sort(key=operator.attrgetter('strike'))
-##      relMisfitCurves(inv_step,inv_param,point_solutions,best_point_solutions,n_point_solutions,apply_taper,fdata,freceivers)
-##      point_solutions.sort(key=operator.attrgetter('misfit'))
-#  Output point solutions to extra file
+    ##   if (inv_step == '1'):
+    ##      point_solutions.sort(key=operator.attrgetter('misfit'))
+    ##      best_point_solutions.sort(key=operator.attrgetter('strike'))
+    ##      relMisfitCurves(inv_step,inv_param,point_solutions,best_point_solutions,n_point_solutions,apply_taper,fdata,freceivers)
+    ##      point_solutions.sort(key=operator.attrgetter('misfit'))
+    # Output point solutions to extra file
     n_eikonals=len(eikonals)
     writeEikSolutions(inv_step,eikonals,n_eikonals,inv_param['INVERSION_DIR'],'step'+inv_step+'-eiksolutions.dat')
-#  Calculates synthetics for best strike-dip-slip solution
+    # Calculates synthetics for best strike-dip-slip solution
     calculateEikSynthetics(inv_step,inv_param,eikonals,traces,apply_taper,freceivers,fdata,mohodepth)
-#  Plot point source solution 1
+    # Plot point source solution 1
     eikonals.sort(key=operator.attrgetter('misfit'))
 
 
@@ -4639,8 +4639,8 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
     fplot=os.path.join(dinv,'step'+inv_step+'.mtsolution.ps')
 
     fallsyndat=os.path.join(dinv,'step'+inv_step+'.amsp-all.table')
-    #  read MT:
-#read from step1-mtsolutions.dat
+    # read MT:
+    # read from step1-mtsolutions.dat
     if (inv_step == '1'):
         finmt=open(fmt, "r")
         line=finmt.readline()
@@ -4654,7 +4654,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         M23 = float(float(data[7])/float(bestm0))
         print "M11",M11 ,M22, M33
         mis_mt= '%3.3f' % float(data[0])
-#Decomposition
+        # Decomposition
         print ' standard decomposition: MT = Miso + Mdc + Mclvd '
         Moments = [M11, M22, M33, M12, M13, M23]
         mt=MomentTensor(M=Moments)
@@ -4670,7 +4670,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         print ' DC = ',hiddc
         dc_percentage=mt.get_DC_percentage()
         print ' Percentage of DC component is: ',dc_percentage
-# Create decomposition file in Result directory:
+        # Create decomposition file in Result directory:
         writeDecomposition(hiddc,dc_percentage,clvd,clvd_percentage,iso,iso_percentage,inv_param['INVERSION_DIR'],'decomposition')
         finmt=open(fmt, "r")
         line=finmt.readline()
@@ -4695,7 +4695,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         dcm6 = '%6f' % float(float(data[5]))
         dcpr = '%-8.1f' % float(data[6])
         dcm11,dcm22,dcm33,dcm12,dcm13,dcm23,dcpr=str(dcm1), str(dcm2), str(dcm3),str(dcm4), str(dcm5), str(dcm6),str(dcpr)
-#   print 'data1dc:',data
+        # print 'data1dc:',data
         line = fin.readline()
         data = line.split()
         cl1 = '%6f' % float(float(data[0]))
@@ -4706,7 +4706,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         cl6 = '%6f' % float(float(data[5]))
         clpr = '%-8.1f' % float(data[6])
         clvdm11,clvdm22,clvdm33,clvdm12,clvdm13,clvdm23,clvdpr = str(cl1),str(cl2),str(cl3),str(cl4),str(cl5),str(cl6),str(clpr)
-#   print 'data2clvd:',data
+        # print 'data2clvd:',data
         line = fin.readline()
         data = line.split()
         iso1 = '%6f' % float(float(data[0]))
@@ -4717,7 +4717,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         iso6 = '%6f' % float(float(data[5]))
         ipr = '%-8.1f' % float(data[6])
         isom11,isom22,isom33,isom12,isom13,isom23,isopr=str(iso1), str(iso2), str(iso3),str(iso4), str(iso5), str(iso6),str(ipr)
-# Create BB lines
+        # Create BB lines
         dict1={}
         m=MomentTensor(M=Moments)
         b=BeachBall(m,dict1)
@@ -4755,7 +4755,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         b=BeachBall(cld,dict1)
         BB=b.get_psxy(kwargs={'GMT_type': 'lines'})
         writeBB(BB,inv_param['INVERSION_DIR'],'TableCLVD_lines')
-#   print 'data2clvd:',data
+        # print 'data2clvd:',data
         line = fin.readline()
         data = line.split()
         iso1 = float(float(data[0]))
@@ -4776,9 +4776,9 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
             if not 'nan' in line:
                 print line
 
-#End BB
-#
-#Maximal value (file amsp-all.table)
+        # End BB
+        #
+        # Maximal value (file amsp-all.table)
         amaxf = 0
         istat=0
         cmd=""
@@ -4796,7 +4796,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         M23 = float(float(data[7])/float(bestm0))
         print "M11",M11 ,M22, M33
         mis_mt= '%3.3f' % float(data[0])
-# Decomposition
+        # Decomposition
         print ' standard decomposition: MT = Miso + Mdc + Mclvd '
         Moments = [M11, M22, M33, M12, M13, M23]
         mt=MomentTensor(M=Moments)
@@ -4813,10 +4813,10 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         dc_percentage=mt.get_DC_percentage()
         print ' Percentage of DC component is: ',dc_percentage
         writeDecomposition(hiddc,dc_percentage,clvd,clvd_percentage,iso,iso_percentage,inv_param['INVERSION_DIR'],'decomposition2b')
-    #  read DC/CLVD/ISO :
-#read from decomposition file. First line DC (M11 M22 M33 M12 M13 M23 DC%)
-#Second line CLVD (M11 M22 M33 M21 M31 M32 CLVD%)
-#Third line ISO (M11 M22 M33 M21 M31 M32 ISO%)
+        # read DC/CLVD/ISO :
+        # read from decomposition file. First line DC (M11 M22 M33 M12 M13 M23 DC%)
+        # Second line CLVD (M11 M22 M33 M21 M31 M32 CLVD%)
+        # Third line ISO (M11 M22 M33 M21 M31 M32 ISO%)
         finmt=open(rightMT, "r")
         line=finmt.readline()
         data = line.split()
@@ -4840,7 +4840,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         dcm6 = '%6f' % float(float(data[5]))
         dcpr = '%-8.1f' % float(data[6])
         dcm11,dcm22,dcm33,dcm12,dcm13,dcm23,dcpr=str(dcm1), str(dcm2), str(dcm3),str(dcm4), str(dcm5), str(dcm6),str(dcpr)
-#   print 'data1dc:',data
+        # print 'data1dc:',data
         line = fin.readline()
         data = line.split()
         cl1 = '%6f' % float(float(data[0]))
@@ -4851,7 +4851,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         cl6 = '%6f' % float(float(data[5]))
         clpr = '%-8.1f' % float(data[6])
         clvdm11,clvdm22,clvdm33,clvdm12,clvdm13,clvdm23,clvdpr = str(cl1),str(cl2),str(cl3),str(cl4),str(cl5),str(cl6),str(clpr)
-#   print 'data2clvd:',data
+        # print 'data2clvd:',data
         line = fin.readline()
         data = line.split()
         iso1 = '%6f' % float(float(data[0]))
@@ -4862,13 +4862,13 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         iso6 = '%6f' % float(float(data[5]))
         ipr = '%-8.1f' % float(data[6])
         isom11,isom22,isom33,isom12,isom13,isom23,isopr=str(iso1), str(iso2), str(iso3),str(iso4), str(iso5), str(iso6),str(ipr)
-# Create BeachBall fill
+        # Create BeachBall fill
         dict1={}
         m=MomentTensor(M=Moments)
         b=BeachBall(m,dict1)
         BB=b.get_psxy(kwargs={})
         writeBB(BB,inv_param['INVERSION_DIR'],'TableMT_fill')
-#bb DC part
+        # bb DC part
         fin = open(fdecoinfo2b, "r")
         line = fin.readline()
         data = line.split()
@@ -4885,7 +4885,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         b=BeachBall(d,dict1)
         BB=b.get_psxy(kwargs={})
         writeBB(BB,inv_param['INVERSION_DIR'],'TableDC_fill')
-#bb CLVD part
+        # bb CLVD part
         line = fin.readline()
         data = line.split()
         cl1 = float(float(data[0]))
@@ -4900,7 +4900,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         b=BeachBall(cld,dict1)
         BB=b.get_psxy(kwargs={})
         writeBB(BB,inv_param['INVERSION_DIR'],'TableCLVD_fill')
-#bb  ISO part
+        # bb  ISO part
         line = fin.readline()
         data = line.split()
         iso1 = float(float(data[0]))
@@ -4920,13 +4920,13 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
             line = line.strip()
             if not 'nan' in line:
                 print line
-#End BB fill
-#
-#Maximal value (file amsp-all.table)
+        # End BB fill
+        #
+        # Maximal value (file amsp-all.table)
         amaxf = 0
         istat=0
         cmd=""
-#Create file earthquakeinfo.dat
+    # Create file earthquakeinfo.dat
     ntr=0
     nst=0
     localstations=[]
@@ -5000,8 +5000,8 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
     f.write("#!/bin/bash\n")
     line="pstext <"+feqinfo+" -X2 -Y20 -JX10/8 -R0/14/0/28 -K -P >"+fplot+"\n"
     f.write(line)
-#
-#  Fit header 3 Fit MT matrix
+    #
+    # Fit header 3 Fit MT matrix
     line="psxy <<he -X2.2 -Y2.6 -JX6.1/3 -R0/6.1/0/3 -Bwsen -G0/0/220 -W0/0/220 -K -O -V -P >> "+fplot+"\n"
     f.write(line)
     f.write("he\n")
@@ -5018,7 +5018,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
     f.write("fits\n")
 
 
-#  Plot matrix
+    # Plot matrix
     if (inv_step == '1'):
         f.write("pstext <<fits -X-2.2 -Y-22 -JX17/20 -R0/20/0/20 -K -O >>"+fplot+"\n")
         f.write("0 19. 12 0 0 5 Decomposition: \n")
@@ -5028,7 +5028,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         f.write("6 18.3 10 0 0 5 Deviatoric part:  \n")
         f.write("6 17.8 11 0 0 5 ISO =  "+isopr+" % \n")
         f.write("fits\n")
-        #  Fit header
+        # Fit header
         maxstatplot = int(inv_param['MAX_STAT_2_PLOT'])
         f.write("pstext <<fits -X0 -Y14.5 -JX17/2 -R0/17/0/3 -K -O >>"+fplot+"\n")
         nstatplot=len(traces)
@@ -5039,7 +5039,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
             fitdata_type="Amplitude Spectra"
         else:
             fitdata_type="Seismograms"
-#      if (nst > maxstatplot):
+        # if (nst > maxstatplot):
         if (nstatplot > maxstatplot):
             nstatplot=maxstatplot
             f.write("0 2 12 0 0 5 Fit of "+fitdata_type+" (Closest "+str(maxstatplot)+" stations)\n")
@@ -5052,7 +5052,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
             f.write(str(4.5+(i*jumpx))+" 1 10 0 0 5 "+comp_names[letter]+"\n")
             i=i+1
         f.write("fits\n")
-#  Fit spectra or seismograms
+        # Fit spectra or seismograms
         checkInvParam('DATA_PLOT_STEP1',inv_param['DATA_PLOT_STEP'+inv_step],('amsp','seis'))
         checkInvParam('FILT_PLOT_STEP1',inv_param['FILT_PLOT_STEP'+inv_step],('plain','tapered','filtered'))
         checkInvParam('AMPL_PLOT_STEP1',inv_param['AMPL_PLOT_STEP'+inv_step],('amax','norm'))
@@ -5071,7 +5071,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
                 x1=str(float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
                 x2=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
             x10,x20=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
-#         x1,x2=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+            # x1,x2=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
             y1,y2=str(-amaxf),str(amaxf)
             scale = asp_r = "/".join((x1,x2,y1,y2))
             if inv_param['FILT_PLOT_STEP'+inv_step]=="plain":
@@ -5198,7 +5198,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         f.write("0 10.5 12 0 0 5 CLVD =   \n")
         f.write("0 5.5 12 0 0 5 ISO =  \n")
         f.write("fits\n")
-#  Fit ISO matrix
+        # Fit ISO matrix
         line="psxy <<he -X2 -Y4 -JX6.1/3 -R0/6.1/0/3 -Bwsen -G0/0/220 -W0/0/220 -K -O -V -P >> "+fplot+"\n"
         f.write(line)
         f.write("he\n")
@@ -5213,7 +5213,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         f.write("2.2 0.7 10 0 0 5 "+isom23+"\n")
         f.write("4.1 0.7 10 0 0 5 "+isom33+"\n")
         f.write("fits\n")
-#   Fit CLVD matrix
+        # Fit CLVD matrix
         line="psxy <<he -X0 -Y5 -JX6.1/3 -R0/6.1/0/3 -Bwsen -G0/0/220 -W0/0/220 -K -O -V -P >> "+fplot+"\n"
         f.write(line)
         f.write("he\n")
@@ -5228,7 +5228,7 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         f.write("2.2 0.7 10 0 0 5 "+clvdm23+"\n")
         f.write("4.1 0.7 10 0 0 5 "+clvdm33+"\n")
         f.write("fits\n")
-#   Fit DC matrix
+        # Fit DC matrix
         line="psxy <<he -X0 -Y5 -JX6.1/3 -R0/6.1/0/3 -Bwsen -G0/0/220 -W0/0/220 -K -O -V -P >> "+fplot+"\n"
         f.write(line)
         f.write("he\n")
@@ -5243,13 +5243,13 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
         f.write("2.2 0.7 10 0 0 5 "+dcm23+"\n")
         f.write("4.1 0.7 10 0 0 5 "+dcm33+"\n")
         f.write("fits\n")
-#   Plot percentage
+        # Plot percentage
         f.write("pstext <<fits -X12 -Y-13 -JX5/21 -R0/5/0/21 -K -O >>"+fplot+"\n")
         f.write("0.5 14.5 12 0 0 5 "+dcpr+" %\n")
         f.write("0.5 9.5 12 0 0 5 "+clvdpr+" % \n")
         f.write("0.5 4.5 12 0 0 5 "+isopr+" % \n")
         f.write("fits\n")
-#  Plot BeachBalls
+        # Plot BeachBalls
     if (inv_step == '1'):
         f.write("psxy < "+TableMT_lines+" -X0 -Y19.5 -JX3/3 -R-1/1/-1/1 -W2/0 -P -K -O -M >> "+fplot+"\n")
         f.write("pstext <<endplot -O -X0 -Y0 -JX -R -P >>"+fplot+"\n")
@@ -5294,11 +5294,11 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
         fznmis=os.path.join(dinv,'step'+inv_step+'.zn_mis.dat')
         fezmis=os.path.join(dinv,'step'+inv_step+'.ez_mis.dat')
     fallsyndat=os.path.join(dinv,'step'+inv_step+'.amsp-all.table')
-#  Maximal value (file amsp-all.table)
+    # Maximal value (file amsp-all.table)
     amaxf = 0
     istat=0
     cmd=""
-#  Magnitude
+    # Magnitude
     mw = m0tomw(float(inv_param['SCALING_FACTOR'])*float(best[0].smom))
 
     ntr=0
@@ -5330,13 +5330,13 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
         if (dat>=amaxf):
             amaxf=dat
     f.close()
-#  File meca.dat
+    # File meca.dat
     f=open(fmeca,'w')
     line="0 0 "+str(round(float(best[0].strike)))+" "+str(round(float(best[0].dip)))+" "+str(round(float(best[0].rake)))+" 1 0 0 N"
     f.write(line)
     f.flush()
     f.close()
-#  File meca.all & meca.sel
+    # File meca.all & meca.sel
     fall=open(fallmeca,'w')
     fsel=open(fselmeca,'w')
     depths=[]
@@ -5361,7 +5361,7 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
     fsel.close()
     fall.flush()
     fall.close()
-#  File earthquakeinfo.dat
+    # File earthquakeinfo.dat
     f=open(feqinfo,'w')
     f.write("0 18 12 0 0 5 Event\n")
     f.write("3 18 10 0 0 5 "+inv_param['DATA_FILE']+"\n")
@@ -5386,7 +5386,7 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
     ssmom=str(float(inv_param['SCALING_FACTOR'])*float(best[0].smom))
     if ('E' in ssmom.upper()):
         strsmom=string.split(ssmom.upper(),'E')
-#     strsmom1,strsmom2=str(round(float(strsmom[0][0:4]))),strsmom[1]
+        # strsmom1,strsmom2=str(round(float(strsmom[0][0:4]))),strsmom[1]
         strsmom1,strsmom2=str(float(strsmom[0][0:4])),strsmom[1]
         f.write("3 12 10 0 0 5 "+strsmom1+"E"+strsmom2+"Nm\n")
     else:
@@ -5423,14 +5423,14 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
     f.write("3 2 10 0 0 5 "+str(ntr)+" ("+str(nst)+" stations)\n")
     f.flush()
     f.close()
-#  File ptsolution.gmt
-#  General info
+    # File ptsolution.gmt
+    # General info
     f=open(fgmtplot,'w')
     f.write("#!/bin/bash\n")
     line="pstext <"+feqinfo+" -X2 -Y21 -JX10/6 -R0/14/0/21 -K -P >"+fplot+"\n"
     f.write(line)
     if (inv_step == '1'):
-#     Misfit vs Depth
+        # Misfit vs Depth
         fdep=open(fdepmis,'w')
         rmisfmax=0
         for sol in all:
@@ -5462,7 +5462,7 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
         line="psmeca "+fselmeca+" -X0 -Y0 -JX -R -K -O -Sa2 -o"
         line=line+" -T0 -W2/255/0/0 -G255 -P >>"+fplot+"\n"
         f.write(line)
-#     Misfit vs strike-dip-slip (copying to files)
+        # Misfit vs strike-dip-slip (copying to files)
         rmisfmax=0
         fstr=open(fstrmis,'w')
         fdip=open(fdipmis,'w')
@@ -5499,7 +5499,7 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
             mmmin='-0.001'
             mmmax='0.011'
             mmm='0.001'
-#     Misfit vs Strike
+        # Misfit vs Strike
         plstr1=str(best[0].strike-float(inv_param['MISFIT_SDS_RANGE'])-float(inv_param['MISFIT_SDS_TICK']))
         plstr2=str(best[0].strike+float(inv_param['MISFIT_SDS_RANGE'])+float(inv_param['MISFIT_SDS_TICK']))
         mcrg=str(inv_param['MISFIT_SDS_RANGE'])
@@ -5512,7 +5512,7 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
         f.write(line)
         f.write(str(best[0].strike)+" 0\n")
         f.write("beststrike\n")
-#     Misfit vs Dip
+        # Misfit vs Dip
         pldip1=str(best[0].dip-float(inv_param['MISFIT_SDS_RANGE'])-float(inv_param['MISFIT_SDS_TICK']))
         pldip2=str(best[0].dip+float(inv_param['MISFIT_SDS_RANGE'])+float(inv_param['MISFIT_SDS_TICK']))
         line="psxy < "+fdipmis+" -X4 -Y0 -JX -R"+pldip1+"/"+pldip2
@@ -5523,7 +5523,7 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
         f.write(line)
         f.write(str(best[0].dip)+" 0\n")
         f.write("bestdip\n")
-#     Misfit vs Rake
+        # Misfit vs Rake
         plrak1=str(best[0].rake-float(inv_param['MISFIT_SDS_RANGE'])-float(inv_param['MISFIT_SDS_TICK']))
         plrak2=str(best[0].rake+float(inv_param['MISFIT_SDS_RANGE'])+float(inv_param['MISFIT_SDS_TICK']))
         line="psxy < "+frakmis+" -X4 -Y0 -JX -R"+plrak1+"/"+plrak2
@@ -5539,7 +5539,7 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
         line="psmeca "+fmeca+" -X0 -Y-3.5 -JX3/3 -R-1/1/-1/1 -P -V -W3/255/0/0 "
         line=line+"-G255/0/0 -Sa14 -o -K -O >>"+fplot+"\n"
         f.write(line)
-#     Misfit vs Location
+        # Misfit vs Location
         rmisfmax=0
         rmi=0.2
         fen=open(fenmis,'w')
@@ -5550,8 +5550,8 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
         northmax=float(inv_param['ORIG_NORTH_SHIFT'])+float(inv_param['REL_NORTH_2'])
         plen=str(1.2*int(0.001*max(1000,abs(float(best[0].rest)),abs(float(best[0].rnor)),\
              abs(eastmin),abs(eastmax),abs(northmin),abs(northmax))))
-#      plen=str(1.2*int(0.001*max(abs(float(best[0].rest)),abs(float(best[0].rnor)),\
-#           abs(eastmin),abs(eastmax),abs(northmin),abs(northmax))))
+        # plen=str(1.2*int(0.001*max(abs(float(best[0].rest)),abs(float(best[0].rnor)),\
+        # abs(eastmin),abs(eastmax),abs(northmin),abs(northmax))))
         locrgl=loctkl=str(float(plen)/3)
         ptimemin=float(inv_param['ORIG_TIME'])+float(inv_param['REL_TIME_1'])
         ptimemax=float(inv_param['ORIG_TIME'])+float(inv_param['REL_TIME_2'])
@@ -5597,7 +5597,7 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
         shiftx,shifty="-16","-5"
     else:
         shiftx,shifty="0","-7"
-#  Fit header
+    # Fit header
     maxstatplot = int(inv_param['MAX_STAT_2_PLOT'])
     f.write("pstext <<fits -X"+shiftx+" -Y"+shifty+" -JX17/2 -R0/17/0/3 -K -O >>"+fplot+"\n")
     nstatplot=len(traces)
@@ -5608,7 +5608,7 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
         fitdata_type="Amplitude Spectra"
     else:
         fitdata_type="Seismograms"
-#   if (nst > maxstatplot):
+    # if (nst > maxstatplot):
     if (nstatplot > maxstatplot):
         nstatplot=maxstatplot
         f.write("0 2 12 0 0 5 Fit of "+fitdata_type+" (Closest "+str(maxstatplot)+" stations)\n")
@@ -5621,7 +5621,7 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
         f.write(str(4.5+(i*jumpx))+" 1 10 0 0 5 "+comp_names[letter]+"\n")
         i=i+1
     f.write("fits\n")
-#  Fit spectra or seismograms
+    # Fit spectra or seismograms
     checkInvParam('DATA_PLOT_STEP1',inv_param['DATA_PLOT_STEP'+inv_step],('amsp','seis'))
     checkInvParam('FILT_PLOT_STEP1',inv_param['FILT_PLOT_STEP'+inv_step],('plain','tapered','filtered'))
     checkInvParam('AMPL_PLOT_STEP1',inv_param['AMPL_PLOT_STEP'+inv_step],('amax','norm'))
@@ -5689,10 +5689,10 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
         line=line+" "+strDecim(traces[i].dist,1)+" "+strDecim(traces[i].azi,1)
         if ['AMPL_PLOT_STEP'+inv_step]=='amax':
             line=line+" "+strDecim((amax)*1000000,3)+"\n"
-#         line=line+" "+strDecim((amax/100000),3)+"\n"
+            # line=line+" "+strDecim((amax/100000),3)+"\n"
         else:
             line=line+" "+strDecim(((amaxstat[i])*1000000),3)+"\n"
-#         line=line+" "+strDecim(((amaxstat[i])/100000),3)+"\n"
+            # line=line+" "+strDecim(((amaxstat[i])/100000),3)+"\n"
         f.write(line)
     f.write("disaz\n")
     if (inv_step == '1'):
@@ -5792,11 +5792,11 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
         fnukmis=os.path.join(dinv,'step'+inv_step+'.nuk_mis.dat')
         frismis=os.path.join(dinv,'step'+inv_step+'.ris_mis.dat')
     fallsyndat=os.path.join(dinv,'step'+inv_step+'.amsp-all.table')
-#  Maximal value (file amsp-all.table)
+    # Maximal value (file amsp-all.table)
     amaxf = 0
     istat=0
     cmd=""
-#  Magnitude
+    # Magnitude
     mw = m0tomw(float(inv_param['SCALING_FACTOR'])*float(best[0].smom))
 
     ntr=0
@@ -5828,13 +5828,13 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
         if (dat>=amaxf):
             amaxf=dat
     f.close()
-#  File meca.dat
+    # File meca.dat
     f=open(fmeca,'w')
     line="0 0 "+str(round(best[0].strike))+" "+str(round(best[0].dip))+" "+str(round(best[0].rake))+" 1 0 0 N"
     f.write(line)
     f.flush()
     f.close()
-#  File meca.all & meca.sel
+    # File meca.all & meca.sel
     fall=open(fallmeca,'w')
     fsel=open(fselmeca,'w')
     depths=[]
@@ -5859,7 +5859,7 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
     fsel.close()
     fall.flush()
     fall.close()
-#  get Eikonal Source Model
+    # get Eikonal Source Model
     outline=[]
     tdsm=[]
     origin=[]
@@ -5939,7 +5939,7 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
     if (average_slip_m <> old_average_slip_m):
         print "WARNING: old average slip in meters: ",old_average_slip_m
         print "         new average slip in meters: ",average_slip_m
-#  Build rupture plot
+    # Build rupture plot
     f=open(fcolor,'w')
     if duration <=0.05:
         tstep=0.01
@@ -5949,8 +5949,8 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
         tstep=0.1
     elif duration<=1:
         tstep=0.2
-#   elif duration<=5:
-#      tstep=1
+    # elif duration<=5:
+    #     tstep=1
     elif duration<=10:
         tstep=1
     elif duration<=30:
@@ -5961,7 +5961,7 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
     stepcolor=int(255/nsteps)-1
     dstart,dend,white,red,blue=0.,tstep," 255 255 255 ",255,0
     while (dstart<duration):
-#      f.write(str(dstart)+white+str(dend)+white+"\n")
+        # f.write(str(dstart)+white+str(dend)+white+"\n")
         actualcolor=str(red)+" 255 "+str(blue)
         f.write(" "+str(dstart)+" "+actualcolor+" "+str(dend)+" "+actualcolor+" \n")
         dstart=dend
@@ -5972,7 +5972,7 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
     f.write("N   255     0       255")
     f.flush()
     f.close()
-#  File earthquakeinfo.dat
+    # File earthquakeinfo.dat
     f=open(feqinfo,'w')
     f.write("0 18 12 0 0 5 Event\n")
     f.write("3 18 10 0 0 5 "+inv_param['DATA_FILE']+"\n")
@@ -5997,7 +5997,7 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
     ssmom=str(float(inv_param['SCALING_FACTOR'])*float(best[0].smom))
     if ('E' in ssmom.upper()):
         strsmom=string.split(ssmom.upper(),'E')
-#     strsmom1,strsmom2=str(round(float(strsmom[0][0:4]))),strsmom[1]
+        # strsmom1,strsmom2=str(round(float(strsmom[0][0:4]))),strsmom[1]
         strsmom1,strsmom2=str(float(strsmom[0][0:4])),strsmom[1]
         f.write("3 12 10 0 0 5 "+strsmom1+"E"+strsmom2+"Nm\n")
     else:
@@ -6045,8 +6045,8 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
     f.write("3 1 10 0 0 5 "+str(ntr)+" ("+str(nst)+" stations)\n")
     f.flush()
     f.close()
-#  File ptsolution.gmt
-#  General info
+    # File ptsolution.gmt
+    # General info
     f=open(fgmtplot,'w')
     f.write("#!/bin/bash\n")
     line="pstext <"+feqinfo+" -X2 -Y21 -JX10/6 -R0/14/0/21 -K -P >"+fplot+"\n"
@@ -6057,7 +6057,7 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
         f.write(line)
         line="psmeca "+fmeca+" -X0 -Y0 -T1 -JX -R -P -V -W10/0 -Sa14 -o -K -O >>"+fplot+"\n"
         f.write(line)
-#     Outline (copying to file)
+        # Outline (copying to file)
         fbord=open(fborder,'w')
         center_north,center_east,center_down=center[0],center[1],center[2]
         ipob=0
@@ -6079,33 +6079,33 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
         fbord.write(last_bordline)
         fbord.flush()
         fbord.close()
-#     Discretized source (copying to file)
+        # Discretized source (copying to file)
         fdisc=open(fdiscrete,'w')
         print "DISCRETE_TIME"
         print "DURATION "+str(duration)
         print "START    "+str(discrete_source_tmin)
         print "END      "+str(discrete_source_tmax)
         for point_inside in tdsm:
-#       north=0.001*(float(point_inside.north)-float(center_north))
-#       east=0.001*(float(point_inside.east)-float(center_east))
-#       up=-0.001*(float(point_inside.down)-float(center_down))
-#        time=float(point_inside.time)-discrete_source_tmin
-#       print"point inside "+str(point_inside.time)+" "+str(time)
-#        distance=math.sqrt(north*north+east*east+up*up)
-#        gamma=math.acos((east*math.sin(math.radians(best[0].strike))+\
-#             north*math.cos(math.radians(best[0].strike)))/distance)
-#       alongstrike=distance*math.cos(gamma)
-#       downdip=distance*math.sin(gamma)
-#       if (up<0):
-#          downdip=-downdip
-#       fdisc.write(str(alongstrike)+" "+str(downdip)+" "+str(time)+"\n")
+            # north=0.001*(float(point_inside.north)-float(center_north))
+            # east=0.001*(float(point_inside.east)-float(center_east))
+            # up=-0.001*(float(point_inside.down)-float(center_down))
+            # time=float(point_inside.time)-discrete_source_tmin
+            # print"point inside "+str(point_inside.time)+" "+str(time)
+            # distance=math.sqrt(north*north+east*east+up*up)
+            # gamma=math.acos((east*math.sin(math.radians(best[0].strike))+\
+            # north*math.cos(math.radians(best[0].strike)))/distance)
+            # alongstrike=distance*math.cos(gamma)
+            # downdip=distance*math.sin(gamma)
+            # if (up<0):
+            #  downdip=-downdip
+            # fdisc.write(str(alongstrike)+" "+str(downdip)+" "+str(time)+"\n")
             salongstrike=str(0.001*float(point_inside.alongstrike))
             supdip=str(-0.001*float(point_inside.downdip))
             stime=str(point_inside.time)
             fdisc.write(salongstrike+" "+supdip+" "+stime+"\n")
         fdisc.flush()
         fdisc.close()
-#     Misfit vs radius-rrv-nukl-risetime (copying to files)
+        # Misfit vs radius-rrv-nukl-risetime (copying to files)
         rmisfmax=0
         frad=open(fradmis,'w')
         frrv=open(frrvmis,'w')
@@ -6121,10 +6121,10 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
                     solnkx=float(sol.nuklx)/float(sol.radius)
                     solnky=float(sol.nukly)/float(sol.radius)
                     rnklim=0.1
-#              if (abs(bestrnkx-solnkx)<rnklim) and (abs(bestrnky-solnky)<rnklim):
-#                 frad.write(str(0.001*float(sol.radius))+" "+str(rmisf)+"\n")
-#                 if (rmisf > rmisfmax):
-#                    rmisfmax = rmisf
+                    # if (abs(bestrnkx-solnkx)<rnklim) and (abs(bestrnky-solnky)<rnklim):
+                    #    frad.write(str(0.001*float(sol.radius))+" "+str(rmisf)+"\n")
+                    #    if (rmisf > rmisfmax):
+                    #       rmisfmax = rmisf
                     frad.write(str(0.001*float(sol.radius))+" "+str(rmisf)+"\n")
                     if (rmisf > rmisfmax):
                         rmisfmax = rmisf
@@ -6158,31 +6158,31 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
             mmmin='-0.001'
             mmmax='0.011'
             mmm='0.002'
-#     Misfit vs Radius
+        # Misfit vs Radius
         f.write("psxy < "+fradmis+" -X9.5 -Y0.5 -JX3.5l/2.5 -R0.1/1000/"+mmmin+"/"+mmmax+" -K -Sc0.1 -W1/0\
                  -G255 -O -P -BSneWa10f10:'Radius [km]':/f"+mmm+"a"+mmm+":'Rel.Misfit': >>"+fplot+"\n")
         f.write("psxy <<bestradius -X0 -Y0 -JX -R -K -Sc0.1 -W1/0 -G0 -O -P >>"+fplot+"\n")
         f.write(str(0.001*float(best[0].radius))+" 0\n")
         f.write("bestradius\n")
-#     Misfit vs RelRuptVel
+        # Misfit vs RelRuptVel
         f.write("psxy < "+frrvmis+" -X4.0 -Y0 -JX3.5/2.5 -R0.0/1.5/"+mmmin+"/"+mmmax+" -K -Sc0.1 -W1/0\
                  -G255 -O -P -BSnewa0.5f0.5:'RelRuptVel':/f"+mmm+"a"+mmm+":'Rel.Misfit': >>"+fplot+"\n")
         f.write("psxy <<bestrrv -X0 -Y0 -JX -R -K -Sc0.1 -W1/0 -G0 -O -P >>"+fplot+"\n")
         f.write(str(float(best[0].relruptvel))+" 0\n")
         f.write("bestrrv\n")
-#     Misfit vs Nucleation
+        # Misfit vs Nucleation
         plnuk=str((3.5/3)*float(best[0].radius))
         plnuko=str(0.1*round(0.01*float(plnuk)))
         nukrg=nuktk=str(0.001*int(0.5*float(best[0].radius)))
-#      f.write("psxy << circ_fault -X-2 -Y4.5 -JX3.5/3.5 -R-"+plnuko+"/"+plnuko+"/-"+plnuko+"/"+plnuko\
-#              +" -K -Sc3 -W1/225 -G225 -O -P -BSWna"+nukrg+"f"+nuktk+":'along strike [km]':/f"\
-#             +nukrg+"a"+nuktk+":'downdip [km]': >>"+fplot+"\n")
-#      f.write("0 0\n")
-#      f.write("circ_fault\n")
+        # f.write("psxy << circ_fault -X-2 -Y4.5 -JX3.5/3.5 -R-"+plnuko+"/"+plnuko+"/-"+plnuko+"/"+plnuko\
+        # +" -K -Sc3 -W1/225 -G225 -O -P -BSWna"+nukrg+"f"+nuktk+":'along strike [km]':/f"\
+        #   +nukrg+"a"+nuktk+":'downdip [km]': >>"+fplot+"\n")
+        # f.write("0 0\n")
+        # f.write("circ_fault\n")
         f.write("psxy < "+fborder+" -X-2 -Y4.5 -JX3.5/3.5 -R-"+plnuko+"/"+plnuko+"/-"+plnuko+"/"+plnuko\
                 +" -K -W1/0 -G255 -O -P -BSWna"+nukrg+"f"+nuktk+":'along strike [km]':/f"\
                 +nukrg+"a"+nuktk+":'downdip [km]': >>"+fplot+"\n")
-#      f.write("psxy < "+fnukmis+" -X0 -Y0 -R -JX -K -Sc -W1/0 -G255 -O -P >>"+fplot+"\n")
+        # f.write("psxy < "+fnukmis+" -X0 -Y0 -R -JX -K -Sc -W1/0 -G255 -O -P >>"+fplot+"\n")
         f.write("pscontour <"+fdiscrete+" -C"+fcolor+" -W1/0 -I -Gd2 -X0 -Y0 -R -JX -K -O -P >>"+fplot+"\n")
         f.write("#psxy < "+fdiscrete+" -X0 -Y0 -R -JX -K -Sx.025 -W1/0 -G0 -O -P >>"+fplot+"\n")
         f.write("psxy <<bestnukl -X0 -Y0 -JX -R -K -Sx0.2 -W2/0 -O -P >>"+fplot+"\n")
@@ -6199,7 +6199,7 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
         shiftx,shifty="-11.5","-8.5"
     else:
         shiftx,shifty="0","-7"
-#  Fit header
+    # Fit header
     maxstatplot = int(inv_param['MAX_STAT_2_PLOT'])
     f.write("pstext <<fits -X"+shiftx+" -Y"+shifty+" -JX17/2 -R0/17/0/3 -K -O >>"+fplot+"\n")
     nstatplot=len(traces)
@@ -6210,7 +6210,7 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
         fitdata_type="Amplitude Spectra"
     else:
         fitdata_type="Seismograms"
-#   if (nst > maxstatplot):
+    # if (nst > maxstatplot):
     if (nstatplot > maxstatplot):
         nstatplot=maxstatplot
         f.write("0 2 12 0 0 5 Fit of "+fitdata_type+" (Closest "+str(maxstatplot)+" stations)\n")
@@ -6223,7 +6223,7 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
         f.write(str(4.5+(i*jumpx))+" 1 10 0 0 5 "+comp_names[letter]+"\n")
         i=i+1
     f.write("fits\n")
-#  Fit spectra or seismograms
+    # Fit spectra or seismograms
     checkInvParam('DATA_PLOT_STEP1',inv_param['DATA_PLOT_STEP'+inv_step],('amsp','seis'))
     checkInvParam('FILT_PLOT_STEP1',inv_param['FILT_PLOT_STEP'+inv_step],('plain','tapered','filtered'))
     checkInvParam('AMPL_PLOT_STEP1',inv_param['AMPL_PLOT_STEP'+inv_step],('amax','norm'))
@@ -6242,7 +6242,7 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
             x1=str(float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
             x2=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
         x10,x20=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
-#      x1,x2=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+        # x1,x2=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
         y1,y2=str(-amaxf),str(amaxf)
         scale = asp_r = "/".join((x1,x2,y1,y2))
         if inv_param['FILT_PLOT_STEP'+inv_step]=="plain":
