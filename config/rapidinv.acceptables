@@ -24,6 +24,7 @@ ORIG_NORTH_SHIFT float
 ORIG_EAST_SHIFT  float
 LATITUDE_NORTH   float
 LONGITUDE_EAST   float
+RISE_TIME        float
 SW_APPLY_TAPER   boolean
 SW_WEIGHT_DIST   boolean
 YEAR             integer
