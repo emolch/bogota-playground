@@ -28,6 +28,8 @@ SW_APPLY_TAPER   boolean
 SW_WEIGHT_DIST   boolean
 YEAR             integer
 JULIAN           integer
+MONTH            integer
+DAY              integer
 HOUR             integer
 MIN              integer
 SEC              integer
@@ -209,3 +211,4 @@ DISTRIBUTION     normal|unknown
 SW_BPRISETIME    boolean
 SW_APPDURATION   boolean
 SW_SKIPMOHO      boolean
+SW_TRACES0TIME   boolean
