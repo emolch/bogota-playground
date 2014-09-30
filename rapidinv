@@ -859,7 +859,7 @@ def prepStations(inv_param,traces):
                filesindir=os.listdir(inv_param['INVERSION_DIR'])
                possibletraces=[] 
                for filename in filesindir:
-                  if (filename[0:6]=='DISPL.') and (filename[-1:]==active_chan[comp][-1:]) 
+                   if (filename[0:6]=='DISPL.') and (filename[-1:]==active_chan[comp][-1:]):
                      possibletraces.append(filename)
                npossibletraces=len(possibletraces)
                if len(possibletraces)==1:

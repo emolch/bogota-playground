@@ -1,0 +1,557 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import logging
+import tempfile
+import math
+import os.path as op
+import shutil
+from optparse import OptionParser
+
+from pyrocko import trace, util, io, cake, catalog, automap, pile, model
+from pyrocko import moment_tensor
+from pyrocko.fdsn import ws, station
+
+km = 1000.
+
+geofon = catalog.Geofon()
+usgs = catalog.USGS(catalog=None)
+
+def nice_seconds_floor(s):
+    nice = [1., 10., 60., 600., 3600., 3.*3600., 12*3600., 24*3600., 48*3600.]
+    p = s
+    for x in nice:
+        if s < x:
+            return p
+
+        p = x
+
+    return s
+
+
+def get_events(time_range, region=None, catalog=geofon, **kwargs):
+    if not region:
+        return catalog.get_events(time_range, **kwargs)
+
+    events = []
+    for (west, east, south, north) in automap.split_region(region):
+        events.extend(
+            catalog.get_events(
+                time_range=time_range,
+                lonmin=west,
+                lonmax=east,
+                latmin=south,
+                latmax=north, **kwargs))
+
+    return events
+
+
+def cut_n_dump(traces, win, out_path):
+    otraces = []
+    for tr in traces:
+        try:
+            otr = tr.chop(win[0], win[1], inplace=False)
+            otraces.append(otr)
+        except trace.NoData:
+            pass
+
+    return io.save(otraces, out_path)
+
+
+aliases = {
+    '2010_haiti': '2010-01-12 21:53:00',
+    '2012_emilia': ('2012-05-20 02:03:52', '2012-05-29 07:00:03'),
+    '2009_laquila': '2009-04-06 01:32:39',
+}
+
+
+def get_events_by_name_or_date(event_names_or_dates, catalog=geofon):
+    stimes = []
+    for sev in event_names_or_dates:
+        if sev in aliases:
+            if isinstance(aliases[sev], str):
+                stimes.append(aliases[sev])
+            else:
+                stimes.extend(aliases[sev])
+        else:
+            stimes.append(sev)
+
+    events_out = []
+    for stime in stimes:
+        if op.isfile(stime):
+            events_out.extend(model.Event.load_catalog(stime))
+        elif stime.startswith('gfz'):
+            event = geofon.get_event(stime)
+            events_out.append(event)
+        else:
+            t = util.str_to_time(stime)
+            events = get_events(time_range=(t-60., t+60.), catalog=catalog)
+            events.sort(key=lambda ev: abs(ev.time - t))
+            event = events[0]
+            events_out.append(event)
+
+    return events_out
+
+
+program_name = 'rapidown'
+description = '''
+Download waveforms from FDSN web services and prepare for RAPIDINV
+'''.strip()
+
+logger = logging.getLogger('')
+
+usage = '''
+usage: rapidown [options] [--] <YYYY-MM-DD> <HH:MM:SS> <lat> <lon> <depth_km> \\
+                               <radius_km> <fmin> <sampling_rate> <eventname>
+
+       rapidown [options] [--] <YYYY-MM-DD> <HH:MM:SS> <radius_km> <fmin> \\
+                               <sampling_rate> <eventname>
+
+       rapidown [options] [--] <catalog-eventname> <radius_km> <fmin> <sampling_rate> \\
+                               <eventname>
+'''.strip() 
+
+if __name__ == '__main__':
+    parser = OptionParser(usage=usage,
+        description=description)
+
+    parser.add_option('--force',
+            dest='force',
+            action='store_true',
+            default=False,
+            help='allow recreation of output <directory>')
+
+    parser.add_option('--debug',
+            dest='debug',
+            action='store_true',
+            default=False,
+            help='print debugging information to stderr')
+
+    (options, args) = parser.parse_args(sys.argv[1:])
+
+    if options.debug:
+        util.setup_logging(program_name, 'debug')
+    else:
+        util.setup_logging(program_name, 'info')
+
+    if len(args) not in (9, 6, 5):
+        parser.print_help()
+        sys.exit(1)
+
+    try:
+        ename = ''
+        magnitude = None
+        if len(args) == 9:
+            time = util.str_to_time(args[0] + ' ' + args[1])
+            lat = float(args[2])
+            lon = float(args[3])
+            depth = float(args[4])*km
+            iarg = 5
+        elif len(args) == 6:
+            sname_or_date = args[0] + ' ' + args[1]
+            iarg = 2
+        elif len(args) == 5:
+            sname_or_date = args[0]
+            iarg = 1
+        if len(args) in (6, 5):
+            events = get_events_by_name_or_date([sname_or_date], catalog=geofon)
+            if len(events) == 0:
+                logger.critical('no event found')
+                sys.exit(1)
+            elif len(events) > 1:
+                logger.critical('more than one event found')
+                sys.exit(1)
+
+            event = events[0]
+            time = event.time
+            lat = event.lat
+            lon = event.lon
+            depth = event.depth
+            ename = event.name
+            magnitude = event.magnitude
+
+        radius = float(args[iarg])*km
+        fmin = float(args[iarg+1])
+        sample_rate = float(args[iarg+2])
+
+        eventname = args[iarg+3]
+        output_dir = op.join('data', eventname)
+        rapidinv_input_fn = op.join('config', eventname + '.inp')
+    except:
+        raise
+        parser.print_help()
+        sys.exit(1)
+
+    if options.force and op.isdir(output_dir):
+        shutil.rmtree(output_dir)
+
+    if op.exists(output_dir):
+        logger.critical(
+            'directory "%s" exists. Delete it first or use the --force option'
+            % output_dir)
+        sys.exit(1)
+
+    if options.force and op.isfile(rapidinv_input_fn):
+        os.unlink(rapidinv_input_fn)
+
+    if op.exists(rapidinv_input_fn):
+        logger.critical(
+            'rapidinv input file "%s" exists. Delete it first or use the --force option'
+            % rapidinv_input_fn)
+        sys.exit(1)
+
+    event = model.Event(time=time, lat=lat, lon=lon, depth=depth, name=ename,
+                        magnitude=magnitude)
+
+    low_velocity = 2000.
+
+    tmax = time + (depth + radius) / low_velocity
+    tmin = time
+
+    tlen = tmax - tmin
+    tmin -= tlen * 0.1 + 2. / fmin
+    tmax += tlen * 0.1 + 2. / fmin
+
+    tinc = None
+
+    station_query_conf = dict(
+        latitude=lat,
+        longitude=lon,
+        minradius=0.,
+        maxradius=radius*cake.m2d,
+        channel='?H?,?L?')
+
+    target_sample_rate = sample_rate
+    priority_band_code = ['V', 'L', 'M', 'B', 'H', 'S', 'E']
+
+    fmax = target_sample_rate
+
+    #target_sample_rate = None
+    #priority_band_code = ['H', 'B', 'M', 'L', 'V', 'E', 'S']
+
+    priority_units = ['M/S', 'M', 'M/S**2']
+    priority_instrument_code = ['H', 'L']
+
+    output_units = 'M'
+
+    sites = ['iris']
+
+    fn_template0 = \
+        'data_%(network)s.%(station)s.%(location)s.%(channel)s_%(tmin)s.mseed'
+
+    fn_template_raw = op.join(output_dir, 'raw',  fn_template0)
+    fn_template_rest = op.join(output_dir, 'rest',  fn_template0)
+
+    tfade_factor = 1.0
+    ffade_factors = 0.5, 1.5
+
+    tfade = tfade_factor / fmin
+
+    tpad = tfade
+
+    ftap = (ffade_factors[0]*fmin, fmin, fmax, ffade_factors[1]*fmax)
+
+    # chapter 1: download
+
+    sxs = []
+    for site in sites:
+        try:
+            extra_args = {
+                'iris': dict(matchtimeseries=True),
+            }.get(site, {})
+
+            extra_args.update(station_query_conf)
+
+            logger.info('downloading channel information (%s)' % site)
+            sx = ws.station(
+                site=site,
+                startbefore=tmax,
+                endafter=tmin,
+                format='text',
+                level='channel',
+                includerestricted=False,
+                **extra_args)
+
+        except ws.EmptyResult:
+            logger.error('No stations matching given criteria.')
+            sx = None
+
+        sxs.append(sx)
+
+    if all(sx is None for sx in sxs):
+        sys.exit(1)
+
+    if tinc is None:
+        tinc = 3600.
+
+    have_data_site = {}
+    for site in sites:
+        have_data_site[site] = set()
+
+    fns = []
+    it = 0
+    nt = int(math.ceil((tmax - tmin) / tinc))
+    for it in xrange(nt):
+        tmin_win = tmin + it * tinc
+        tmax_win = min(tmin + (it + 1) * tinc, tmax)
+        logger.info('time window %i/%i (%s - %s)' % (it+1, nt,
+                                                     util.tts(tmin_win),
+                                                     util.tts(tmax_win)))
+
+        have_data = set()
+        for site, sx in zip(sites, sxs):
+            if sx is None:
+                continue
+
+            selection = []
+            for nslc in sx.choose_channels(
+                    target_sample_rate=target_sample_rate,
+                    priority_band_code=priority_band_code,
+                    priority_units=priority_units,
+                    priority_instrument_code=priority_instrument_code,
+                    timespan=(tmin_win, tmax_win)):
+
+                if nslc not in have_data:
+                    selection.append(nslc + (tmin_win-1.0, tmax_win+1.0))
+
+            neach = 100
+            i = 0
+            nbatches = ((len(selection)-1) / neach) + 1
+            while i < len(selection):
+                selection_now = selection[i:i+neach]
+
+                f = tempfile.NamedTemporaryFile()
+                try:
+                    sbatch = ''
+                    if nbatches > 1:
+                        sbatch = ' (batch %i/%i)' % ((i/neach) + 1, nbatches)
+
+                    logger.info('downloading data (%s)%s' % (site, sbatch))
+
+                    data = ws.dataselect(site=site, selection=selection_now)
+                    while True:
+                        buf = data.read(1024)
+                        if not buf:
+                            break
+                        f.write(buf)
+
+                    f.flush()
+
+                    trs = io.load(f.name)
+                    for tr in trs:
+                        try:
+                            tr.chop(tmin_win, tmax_win)
+                            have_data.add(tr.nslc_id)
+                            have_data_site[site].add(tr.nslc_id)
+                        except NoData:
+                            pass
+
+                    fns2 = io.save(trs, fn_template_raw)
+                    for fn in fns2:
+                        if fn in fns:
+                            logger.warn('overwriting file %s', fn)
+                    fns.extend(fns2)
+
+                except ws.EmptyResult:
+                    pass
+
+                f.close()
+                i += neach
+
+    sxs = {}
+    for site in sites:
+        selection = []
+        for nslc in sorted(have_data_site[site]):
+            selection.append(nslc + (tmin-tpad, tmax+tpad))
+
+        if selection:
+            logger.info('downloading response information (%s)' % site)
+            sxs[site] = ws.station(site=site, level='response', selection=selection)
+            sxs[site].dump_xml(
+                filename=op.join(output_dir, 'response-%s.stationxml' % site))
+
+    # chapter 2: restitution
+
+    p = pile.make_pile(fns, show_progress=False)
+    p.get_deltatmin()
+    otinc = None
+    if otinc is None:
+        otinc = nice_seconds_floor(p.get_deltatmin() * 500000.)
+    otinc = 3600.
+    otmin = math.floor(p.tmin / otinc) * otinc
+    otmax = math.ceil(p.tmax / otinc) * otinc
+    otpad = tpad*2
+
+    fns = []
+    rest_traces_b = []
+    win_b = None
+    for traces_a in p.chopper_grouped(
+            gather=lambda tr: tr.nslc_id,
+            tmin=otmin,
+            tmax=otmax,
+            tinc=otinc,
+            tpad=otpad):
+
+        rest_traces_a = []
+        win_a = None
+        for tr in traces_a:
+            win_a = tr.wmin, tr.wmax
+
+            if win_b and win_b[0] >= win_a[0]:
+                fns.extend(cut_n_dump(rest_traces_b, win_b, fn_template_rest))
+                rest_traces_b = []
+                win_b = None
+
+            failure = None
+            response = None
+            for site in sites:
+                try:
+                    response = sxs[site].get_pyrocko_response(
+                        tr.nslc_id,
+                        timespan=(tr.tmin, tr.tmax),
+                        fake_input_units=output_units)
+                    break
+                except (station.NoResponseInformation,
+                        station.MultipleResponseInformation):
+                    pass
+
+            if response is None:
+                failure = 'no or multiple response informations'
+
+            try:
+                rest_tr = tr.transfer(tfade, ftap, response, invert=True)
+                rest_traces_a.append(rest_tr)
+
+            except (trace.TraceTooShort, trace.NoData):
+                failure = 'trace too short'
+
+            if failure:
+                logger.warn('failed to restitute trace %s.%s.%s.%s (%s)' %
+                            (tr.nslc_id + (failure,)))
+
+        if rest_traces_b:
+            rest_traces = trace.degapper(rest_traces_b + rest_traces_a,
+                                         deoverlap='crossfade_cos')
+
+            fns.extend(cut_n_dump(rest_traces, win_b, fn_template_rest))
+            rest_traces_a = []
+            if win_a:
+                for tr in rest_traces:
+                    try:
+                        rest_traces_a.append(
+                            tr.chop(win_a[0], win_a[1]+otpad,
+                                    inplace=False))
+                    except trace.NoData:
+                        pass
+
+        rest_traces_b = rest_traces_a
+        win_b = win_a
+
+    fns.extend(cut_n_dump(rest_traces_b, win_b, fn_template_rest))
+
+    # chapter 3: rapidinv setup
+
+    fn_template1 = \
+        'DISPL.%(network)s.%(station)s.%(location)s.%(channel)s'
+
+    fn_waveforms = op.join(output_dir, 'prepared',  fn_template1)
+    fn_stations = op.join(output_dir, 'prepared', 'stations.txt')
+    fn_event = op.join(output_dir, 'prepared', 'event.txt')
+
+    nsl_to_station = {}
+    for site in sites:
+        if site in sxs:
+            stations = sxs[site].get_pyrocko_stations(timespan=(tmin, tmax))
+            for station in stations:
+                nsl = station.nsl()
+                if nsl not in nsl_to_station:
+                    nsl_to_station[nsl] = station
+
+    p = pile.make_pile(fns, show_progress=False)
+
+    deltat = None
+    if sample_rate is not None:
+        deltat = 1.0 / sample_rate
+
+    used_stations = []
+    for nsl, station in nsl_to_station.iteritems():
+        station.set_event_relative_data(event)
+        traces = p.all(trace_selector=lambda tr: tr.nslc_id[:3] == nsl)
+
+        keep = []
+        for tr in traces:
+            if deltat is not None:
+                try:
+                    tr.downsample_to(deltat, snap=True, allow_upsample_max=5)
+                    keep.append(tr)
+                except util.UnavailableDecimation, e:
+                    logger.warn('Cannot downsample %s.%s.%s.%s: %s'
+                                % (tr.nslc_id + (e,)))
+                    continue
+
+        
+        for (proj, in_channels, out_channels) \
+                in station.guess_projections_to_rtu(
+                    out_channels=('R', 'T', 'Z')):
+
+            proc =  trace.project(traces, proj, in_channels, out_channels)
+            for tr in proc:
+                for ch in out_channels:
+                    if ch.name == tr.channel:
+                        station.add_channel(ch)
+
+            if proc:
+                io.save(proc, fn_waveforms)
+                used_stations.append(station)
+
+    stations = list(used_stations)
+    model.dump_stations(stations, fn_stations)
+    model.dump_events([event], fn_event)
+
+    dss = util.time_to_str(event.time, format='%Y %m %d %H %M %S').split()
+    msec = (event.time - math.floor(event.time)) * 1000.
+
+    rapidinp = '''
+INVERSION_DIR  %s
+DATA_DIR       %s
+DATA_FILE      %s
+LATITUDE_NORTH %g
+LONGITUDE_EAST %g
+YEAR             %s
+MONTH            %s
+DAY              %s
+HOUR             %s
+MIN              %s
+SEC              %s
+MSEC             %g
+''' % ((
+        op.join('result', eventname),
+        op.join('data', eventname, 'prepared'),
+        util.time_to_str(event.time, format='%Y-%m-%d_%H-%M-%S'),
+        event.lat, event.lon) + tuple(dss) + (msec,))
+    
+    if event.depth is not None:
+        depth_km = event.depth / km
+        rapidinp += '''
+DEPTH_1          %g
+DEPTH_2          %g
+''' % (depth_km, depth_km)
+
+    
+    if event.magnitude is not None:
+        moment = moment_tensor.magnitude_to_moment(event.magnitude)
+        rapidinp += '''
+SCAL_MOM_1       %g
+SCAL_MOM_2       %g
+''' % (moment, moment)
+
+    util.ensuredirs(rapidinv_input_fn)
+    util.ensuredir(op.join('result'))
+
+    f = open(rapidinv_input_fn, 'w')
+    f.write(rapidinp)
+    f.close()
+
+    logger.info('rapidinv input prepared with %i stations' % len(stations))
+
