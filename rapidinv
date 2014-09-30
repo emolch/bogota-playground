@@ -748,14 +748,14 @@ def prepStations(inv_param,traces):
     f2 = open(fstationsok,'w')
     ignoresmallerthan5=False
     for line in f:
-        trial=line.split()
-        if len(trial) == 3:
-            stat,lat,lon = line.split()
+        spl=line.split()
+        if len(spl) == 3:
+            stat,lat,lon = spl
             f2.write(lat+' '+lon+' '+'d\n')
-        elif len(trial) == 4:
-            code,stat,lat,lon = line.split()
+        elif len(spl) == 4:
+            code,stat,lat,lon = spl
             f2.write(lat+' '+lon+' '+'d\n')
-        elif len(trial)>=5:
+        elif len(spl)>=5:
             stat,lat,lon = spl[0],spl[1],spl[2]
             ignoresmallerthan5=True
     f2.flush()
