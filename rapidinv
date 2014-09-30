@@ -742,7 +742,7 @@ def prepInvDir(inv_param):
 
 def prepStations(inv_param,traces):
     # Check range of distances
-    fstations=os.path.join(".",inv_param['STAT_INP_FILE'])
+    fstations=os.path.join(inv_param['DATA_DIR'],inv_param['STAT_INP_FILE'])
     fstationsok=fstations+'.tmp'
     f = open(fstations,'r')
     f2 = open(fstationsok,'w')
