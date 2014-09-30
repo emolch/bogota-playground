@@ -757,6 +757,7 @@ def prepStations(inv_param,traces):
             f2.write(lat+' '+lon+' '+'d\n')
         elif len(spl)>=5:
             stat,lat,lon = spl[0],spl[1],spl[2]
+            f2.write(lat+' '+lon+' '+'d\n')
             ignoresmallerthan5=True
     f2.flush()
     f2.close()
@@ -798,8 +799,7 @@ def prepStations(inv_param,traces):
     f.close()
     nstatok=istatok+1
 
-    # fstatinp=os.path.join(inv_param['INVERSION_DIR'],inv_param['STAT_INP_FILE'])
-    fstatinp=os.path.join(".",inv_param['STAT_INP_FILE'])
+    fstatinp=os.path.join(inv_param['INVERSION_DIR'],inv_param['STAT_INP_FILE'])
     fstatout=os.path.join(inv_param['INVERSION_DIR'],inv_param['STAT_OUT_FILE'])
     f = open(fstatinp,'r')
     f2 = open(fstatout,'w')
@@ -807,17 +807,17 @@ def prepStations(inv_param,traces):
     istatok=0
     for line in f:
         spl=line.split()
-        if (not ignoresmallerthant5) and (len(trial) == 3):
+        if (not ignoresmallerthan5) and (len(spl) == 3):
             stat,lat,lon = spl
             if statok[istatok]:
                 f2.write(line)
             istatok=istatok+1
-        elif (not ignoresmallerthan5) and (len(trial) == 4):
-            code,stat,lat,lon = line.split()
+        elif (not ignoresmallerthan5) and (len(spl) == 4):
+            code,stat,lat,lon = spl
             if statok[istatok]:
                 f2.write(line)
             istatok=istatok+1
-        elif len(trial) >= 5:
+        elif len(spl) >= 5:
             stat,lat,lon = spl[0],spl[1],spl[2]
             ignoresmallerthan5=True
             if statok[istatok]:
@@ -836,13 +836,13 @@ def prepStations(inv_param,traces):
         trial=line.split()
         ignoreline=True
         if (not ignoresmallerthant5) and (len(trial) == 3):
-            stat,lat,lon = line.split()
+            stat,lat,lon = trial
             ignoreline=False
         if (not ignoresmallerthant5) and (len(trial) == 4):
-            code,stat,lat,lon = line.split()
+            code,stat,lat,lon = trial
             ignoreline=False
         elif len(trial) >= 5:
-            stat,lat,lon = spl[0],spl[1],spl[2]
+            stat,lat,lon = trial[:3]
             ignoreline=False
             ignoresmallerthan5=True
         if not ignoreline:
