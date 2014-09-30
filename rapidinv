@@ -742,24 +742,23 @@ def prepInvDir(inv_param):
 
 def prepStations(inv_param,traces):
     # Check range of distances
-    fstations=os.path.join(inv_param['DATA_DIR'],inv_param['STAT_INP_FILE'])
+    fstations=os.path.join(inv_param['INVERSION_DIR'],inv_param['STAT_INP_FILE'])
     fstationsok=fstations+'.tmp'
     f = open(fstations,'r')
     f2 = open(fstationsok,'w')
     ignoresmallerthan5=False
     for line in f:
         spl=line.split()
-        if len(spl) == 3:
+        if (not ignoresmallerthan5) and (len(spl) == 3):
             stat,lat,lon = spl
             f2.write(lat+' '+lon+' '+'d\n')
-        elif len(spl) == 4:
+        elif (not ignoresmallerthan5) and (len(spl) == 4):
             code,stat,lat,lon = spl
             f2.write(lat+' '+lon+' '+'d\n')
         elif len(spl)>=5:
             stat,lat,lon = spl[0],spl[1],spl[2]
             f2.write(lat+' '+lon+' '+'d\n')
             ignoresmallerthan5=True
-    f2.flush()
     f2.close()
     f.close()
 
@@ -818,12 +817,11 @@ def prepStations(inv_param,traces):
                 f2.write(line)
             istatok=istatok+1
         elif len(spl) >= 5:
-            stat,lat,lon = spl[0],spl[1],spl[2]
+            stat,lat,lon = spl[:3]
             ignoresmallerthan5=True
             if statok[istatok]:
                 f2.write(line)
             istatok=istatok+1
-    f2.flush()
     f2.close()
     f.close()
 
