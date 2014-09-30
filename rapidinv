@@ -6484,13 +6484,14 @@ class Discretesource:
       self.rho = rho
 
 
-
-
 #######################
 
 #      MAIN CODE      #
 
 #######################
+
+if len(sys.argv) <= 1:
+    sys.exit('usage: rapidinv <input-file>')
 
 # Initializing
 time0,year0=getTime()
@@ -6505,7 +6506,11 @@ start_eikonals,eikonal_solutions_3,best_eikonal_solutions_3=[],[],[]
 
 # Read input file, check and prepare inversion parameters
 print 'Read input file, check and prepare inversion parameters'
-finput,fdefaults,facceptables = sys.argv[1],'rapidinv.defaults','rapidinv.acceptables'
+
+finput,fdefaults,facceptables = (
+    sys.argv[1],
+    'config/rapidinv.defaults',
+    'config/rapidinv.acceptables')
 if ( not finput ):
    print "Correct usage: python rapidinv.py <input_filename>"
    sys.exit("ERROR: Wrong input file name")
