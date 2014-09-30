@@ -835,10 +835,10 @@ def prepStations(inv_param,traces):
     for line in f:
         trial=line.split()
         ignoreline=True
-        if (not ignoresmallerthant5) and (len(trial) == 3):
+        if (not ignoresmallerthan5) and (len(trial) == 3):
             stat,lat,lon = trial
             ignoreline=False
-        if (not ignoresmallerthant5) and (len(trial) == 4):
+        if (not ignoresmallerthan5) and (len(trial) == 4):
             code,stat,lat,lon = trial
             ignoreline=False
         elif len(trial) >= 5:
