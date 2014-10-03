@@ -7,6 +7,8 @@ import tempfile
 import math
 import os.path as op
 import shutil
+import urllib2
+import glob
 from optparse import OptionParser
 
 from pyrocko import trace, util, io, cake, catalog, automap, pile, model
@@ -17,6 +19,12 @@ km = 1000.
 
 geofon = catalog.Geofon()
 usgs = catalog.USGS(catalog=None)
+
+
+class starfill:
+    def __getitem__(self, k):
+        return '*'
+
 
 def nice_seconds_floor(s):
     nice = [1., 10., 60., 600., 3600., 3.*3600., 12*3600., 24*3600., 48*3600.]
@@ -102,31 +110,42 @@ Download waveforms from FDSN web services and prepare for RAPIDINV
 logger = logging.getLogger('')
 
 usage = '''
-usage: rapidown [options] [--] <YYYY-MM-DD> <HH:MM:SS> <lat> <lon> <depth_km> \\
-                               <radius_km> <fmin> <sampling_rate> <eventname>
+usage: rapidown [options] [--] <YYYY-MM-DD> <HH:MM:SS> <lat> <lon> \\
+                               <depth_km> <radius_km> <fmin> <sampling_rate> \\
+                               <eventname>
 
        rapidown [options] [--] <YYYY-MM-DD> <HH:MM:SS> <radius_km> <fmin> \\
                                <sampling_rate> <eventname>
 
-       rapidown [options] [--] <catalog-eventname> <radius_km> <fmin> <sampling_rate> \\
-                               <eventname>
-'''.strip() 
+       rapidown [options] [--] <catalog-eventname> <radius_km> <fmin> \\
+                               <sampling_rate> <eventname>
+'''.strip()
 
 if __name__ == '__main__':
-    parser = OptionParser(usage=usage,
+    parser = OptionParser(
+        usage=usage,
         description=description)
 
-    parser.add_option('--force',
-            dest='force',
-            action='store_true',
-            default=False,
-            help='allow recreation of output <directory>')
+    parser.add_option(
+        '--force',
+        dest='force',
+        action='store_true',
+        default=False,
+        help='allow recreation of output <directory>')
 
-    parser.add_option('--debug',
-            dest='debug',
-            action='store_true',
-            default=False,
-            help='print debugging information to stderr')
+    parser.add_option(
+        '--debug',
+        dest='debug',
+        action='store_true',
+        default=False,
+        help='print debugging information to stderr')
+
+    parser.add_option(
+        '--continue',
+        dest='continue_',
+        action='store_true',
+        default=False,
+        help='continue download after a accident')
 
     (options, args) = parser.parse_args(sys.argv[1:])
 
@@ -155,7 +174,8 @@ if __name__ == '__main__':
             sname_or_date = args[0]
             iarg = 1
         if len(args) in (6, 5):
-            events = get_events_by_name_or_date([sname_or_date], catalog=geofon)
+            events = get_events_by_name_or_date([sname_or_date],
+                                                catalog=geofon)
             if len(events) == 0:
                 logger.critical('no event found')
                 sys.exit(1)
@@ -184,9 +204,10 @@ if __name__ == '__main__':
         sys.exit(1)
 
     if options.force and op.isdir(output_dir):
-        shutil.rmtree(output_dir)
+        if not options.continue_:
+            shutil.rmtree(output_dir)
 
-    if op.exists(output_dir):
+    if op.exists(output_dir) and not options.continue_:
         logger.critical(
             'directory "%s" exists. Delete it first or use the --force option'
             % output_dir)
@@ -197,7 +218,8 @@ if __name__ == '__main__':
 
     if op.exists(rapidinv_input_fn):
         logger.critical(
-            'rapidinv input file "%s" exists. Delete it first or use the --force option'
+            'rapidinv input file "%s" exists. '
+            'Delete it first or use the --force option'
             % rapidinv_input_fn)
         sys.exit(1)
 
@@ -235,7 +257,8 @@ if __name__ == '__main__':
 
     output_units = 'M'
 
-    sites = ['iris']
+    #sites = ['geofon', 'orfeus', 'iris']
+    sites = ['geofon', 'iris']
 
     fn_template0 = \
         'data_%(network)s.%(station)s.%(location)s.%(channel)s_%(tmin)s.mseed'
@@ -285,11 +308,22 @@ if __name__ == '__main__':
     if tinc is None:
         tinc = 3600.
 
+    have_data = set()
+
+    if options.continue_:
+        fns = glob.glob(fn_template_raw % starfill())
+        p = pile.make_pile(fns)
+        for nslc in p.gather_keys(gather=lambda tr: tr.nslc_id):
+            have_data.add(nslc)
+    else:
+        fns = []
+
     have_data_site = {}
+    could_have_data_site = {}
     for site in sites:
         have_data_site[site] = set()
+        could_have_data_site[site] = set()
 
-    fns = []
     it = 0
     nt = int(math.ceil((tmax - tmin) / tinc))
     for it in xrange(nt):
@@ -299,7 +333,6 @@ if __name__ == '__main__':
                                                      util.tts(tmin_win),
                                                      util.tts(tmax_win)))
 
-        have_data = set()
         for site, sx in zip(sites, sxs):
             if sx is None:
                 continue
@@ -311,6 +344,8 @@ if __name__ == '__main__':
                     priority_units=priority_units,
                     priority_instrument_code=priority_instrument_code,
                     timespan=(tmin_win, tmax_win)):
+
+                could_have_data_site[site].add(nslc)
 
                 if nslc not in have_data:
                     selection.append(nslc + (tmin_win-1.0, tmax_win+1.0))
@@ -330,6 +365,7 @@ if __name__ == '__main__':
                     logger.info('downloading data (%s)%s' % (site, sbatch))
 
                     data = ws.dataselect(site=site, selection=selection_now)
+
                     while True:
                         buf = data.read(1024)
                         if not buf:
@@ -344,7 +380,7 @@ if __name__ == '__main__':
                             tr.chop(tmin_win, tmax_win)
                             have_data.add(tr.nslc_id)
                             have_data_site[site].add(tr.nslc_id)
-                        except NoData:
+                        except trace.NoData:
                             pass
 
                     fns2 = io.save(trs, fn_template_raw)
@@ -356,8 +392,21 @@ if __name__ == '__main__':
                 except ws.EmptyResult:
                     pass
 
+                except urllib2.HTTPError:
+                    logger.warn('an error occurred while downloading data '
+                                'for channels \n  %s'
+                                % '\n  '.join(
+                                    '.'.join(x[:4]) for x in selection_now))
+
                 f.close()
                 i += neach
+
+    for nslc in have_data:
+        # if we are in continue mode, we have to guess where the data came from
+        if not any(nslc in have_data_site[site] for site in sites):
+            for site in sites:
+                if nslc in could_have_data_site[site]:
+                    have_data_site[site].add(nslc)
 
     sxs = {}
     for site in sites:
@@ -367,11 +416,17 @@ if __name__ == '__main__':
 
         if selection:
             logger.info('downloading response information (%s)' % site)
-            sxs[site] = ws.station(site=site, level='response', selection=selection)
+            sxs[site] = ws.station(
+                site=site, level='response', selection=selection)
+
             sxs[site].dump_xml(
                 filename=op.join(output_dir, 'response-%s.stationxml' % site))
 
     # chapter 2: restitution
+
+    if not fns:
+        logger.error('no data available')
+        sys.exit(1)
 
     p = pile.make_pile(fns, show_progress=False)
     p.get_deltatmin()
@@ -407,6 +462,8 @@ if __name__ == '__main__':
             response = None
             for site in sites:
                 try:
+                    if site not in sxs:
+                        continue
                     response = sxs[site].get_pyrocko_response(
                         tr.nslc_id,
                         timespan=(tr.tmin, tr.tmax),
@@ -463,10 +520,10 @@ if __name__ == '__main__':
     for site in sites:
         if site in sxs:
             stations = sxs[site].get_pyrocko_stations(timespan=(tmin, tmax))
-            for station in stations:
-                nsl = station.nsl()
+            for s in stations:
+                nsl = s.nsl()
                 if nsl not in nsl_to_station:
-                    nsl_to_station[nsl] = station
+                    nsl_to_station[nsl] = s
 
     p = pile.make_pile(fns, show_progress=False)
 
@@ -475,8 +532,8 @@ if __name__ == '__main__':
         deltat = 1.0 / sample_rate
 
     used_stations = []
-    for nsl, station in nsl_to_station.iteritems():
-        station.set_event_relative_data(event)
+    for nsl, s in nsl_to_station.iteritems():
+        s.set_event_relative_data(event)
         traces = p.all(trace_selector=lambda tr: tr.nslc_id[:3] == nsl)
 
         keep = []
@@ -490,20 +547,19 @@ if __name__ == '__main__':
                                 % (tr.nslc_id + (e,)))
                     continue
 
-        
         for (proj, in_channels, out_channels) \
-                in station.guess_projections_to_rtu(
+                in s.guess_projections_to_rtu(
                     out_channels=('R', 'T', 'Z')):
 
-            proc =  trace.project(traces, proj, in_channels, out_channels)
+            proc = trace.project(traces, proj, in_channels, out_channels)
             for tr in proc:
                 for ch in out_channels:
                     if ch.name == tr.channel:
-                        station.add_channel(ch)
+                        s.add_channel(ch)
 
             if proc:
                 io.save(proc, fn_waveforms)
-                used_stations.append(station)
+                used_stations.append(s)
 
     stations = list(used_stations)
     model.dump_stations(stations, fn_stations)
@@ -530,7 +586,7 @@ MSEC             %g
         op.join('data', eventname, 'prepared'),
         util.time_to_str(event.time, format='%Y-%m-%d_%H-%M-%S'),
         event.lat, event.lon) + tuple(dss) + (msec,))
-    
+
     if event.depth is not None:
         depth_km = event.depth / km
         rapidinp += '''
@@ -538,7 +594,6 @@ DEPTH_1          %g
 DEPTH_2          %g
 ''' % (depth_km, depth_km)
 
-    
     if event.magnitude is not None:
         moment = moment_tensor.magnitude_to_moment(event.magnitude)
         rapidinp += '''
@@ -554,4 +609,3 @@ SCAL_MOM_2       %g
     f.close()
 
     logger.info('rapidinv input prepared with %i stations' % len(stations))
-
