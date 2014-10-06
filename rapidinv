@@ -51,11 +51,13 @@ import time
 import calendar
 from numpy import mean,std,var
 from tunguska.phase import Phase,Timing
-from mopad import MomentTensor
-from mopad import BeachBall
 #additional library:
 import numpy as N
 import fileinput
+
+sys.path[0:0] = ['modules']
+from mopad import MomentTensor
+from mopad import BeachBall
 
 #constants:
 dynecm = 1e-7
@@ -696,6 +698,7 @@ def writeDecomposition(DC,DC_pr,CLVD,CLVD_pr,ISO,ISO_pr,dinv,filename):
     # Third line ISO (M11 M22 M33 M21 M31 M32 ISO%)
     fpath=os.path.join(dinv,filename)
     f=open(fpath,'w')
+    print DC
     DCWR=str(DC[0][0])+" "+str(DC[1][1])+" "+str(DC[2][2])+" "+str(DC[0][1])+" "+str(DC[0][2])+" "+str(DC[1][2])+" "+str(DC_pr)+"\n"
     f.write(DCWR)
     CLVDWR=str(CLVD[0][0])+" "+str(CLVD[1][1])+" "+str(CLVD[2][2])+" "+str(CLVD[0][1])+" "+str(CLVD[0][2])+" "+str(CLVD[1][2])+" "+str(CLVD_pr)+"\n"
