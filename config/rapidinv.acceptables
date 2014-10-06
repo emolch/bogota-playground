@@ -213,3 +213,12 @@ SW_BPRISETIME    boolean
 SW_APPDURATION   boolean
 SW_SKIPMOHO      boolean
 SW_TRACES0TIME   boolean
+SW_FULLMT        boolean
+MT_ISO           boolean
+MT_DIPOL         boolean
+MT_CLVD          boolean
+MT_1             float
+MT_2             float
+MT_STEP          float
+LEVEL_RELAMP     positive
+LEVEL_S2N        positive

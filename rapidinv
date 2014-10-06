@@ -817,7 +817,7 @@ def prepStations(inv_param,traces):
                 f2.write(line)
             istatok=istatok+1
         elif len(spl) >= 5:
-            stat,lat,lon = spl[:3]
+            stat,lat,lon = spl[0],spl[1],spl[2]
             ignoresmallerthan5=True
             if statok[istatok]:
                 f2.write(line)
@@ -830,7 +830,9 @@ def prepStations(inv_param,traces):
     i=j=k=istatok=0
     f = open(fstations,'r')
     ignoresmallerthan5=False
+    il=0
     for line in f:
+        il=il+1
         trial=line.split()
         ignoreline=True
         if (not ignoresmallerthan5) and (len(trial) == 3):
@@ -850,23 +852,26 @@ def prepStations(inv_param,traces):
             istatok=istatok+1
             trace_comp=""
             for comp in inv_param['COMP_2_USE']:
-                trace_name="DISPL"+stat+active_chan[comp]
+                trace_name="DISPL."+stat+active_chan[comp]
                 ftrace=os.path.join(inv_param['INVERSION_DIR'],trace_name)
                 npossibletraces=1
                 if 'ALL' in active_chan[comp]:
                     filesindir=os.listdir(inv_param['INVERSION_DIR'])
                     possibletraces=[]
                     for filename in filesindir:
-                        if (filename[0:6]=='DISPL.') and (filename[-1:]==active_chan[comp][-1:]):
+                        if ((filename[0:6]=='DISPL.') and \
+                            (filename[-1:]==active_chan[comp][-1:]) and\
+                            stat in filename):
                             possibletraces.append(filename)
                     npossibletraces=len(possibletraces)
                     if len(possibletraces)==1:
-                        ftrace=possibletraces[0]
+                        ftrace=os.path.join(inv_param['INVERSION_DIR'],possibletraces[0])
                 if (os.path.isfile(ftrace) and (npossibletraces==1)):
                     trace_comp=trace_comp + comp
                     j=j+1
             if len(trace_comp)>0:
                 for comp in trace_comp:
+                    code=il
                     traces.append(Metatrace(code,stat,lat,lon,dist,azim,comp,quality))
                     i=i+1
         else:
@@ -878,16 +883,24 @@ def prepStations(inv_param,traces):
     # Rename data files
     traces.sort(key=operator.attrgetter('dist'))
     i=j=0
+    filesindir=os.listdir(inv_param['INVERSION_DIR'])
     for trace in traces:
         i=i+1
         trace.num=i
         for comp in trace.comp:
-            j=j+1
-            fbefore="DISPL."+trace.stat+"."+active_chan[comp]
-            fafter=inv_param['DATA_FILE']+"-"+str(i)+"-"+comp+"."+inv_param['DATA_FORMAT']
-            file1=os.path.join(inv_param['INVERSION_DIR'],fbefore)
-            file2=os.path.join(inv_param['INVERSION_DIR'],fafter)
-            shutil.move(file1,file2)
+            j=j+1            
+            possibletraces=[]
+            for filename in filesindir:
+                if ((filename[0:6]=='DISPL.') and \
+                            (filename[-1:]==active_chan[comp][-1:]) and\
+                            trace.stat in filename):
+                            possibletraces.append(filename)
+            npossibletraces=len(possibletraces)
+            if len(possibletraces)==1:
+                file1=os.path.join(inv_param['INVERSION_DIR'],possibletraces[0])
+                file2=os.path.join(inv_param['INVERSION_DIR'],\
+                      inv_param['DATA_FILE']+"-"+str(i)+"-"+comp+"."+inv_param['DATA_FORMAT'])
+                shutil.move(file1,file2)
 
 
 def checkDataQuality(inv_step,inv_param,traces,freceivers,fdata):
