@@ -221,4 +221,5 @@ MT_1             float
 MT_2             float
 MT_STEP          float
 LEVEL_RELAMP     positive
-LEVEL_S2N        positive
+MIN_DEPTH_GFDB   positive
+MAX_DEPTH_GFDB   positive

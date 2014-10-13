@@ -2280,6 +2280,7 @@ def analyseResultsMTsource(inv_step,inv_param,mt_solutions,n_mt_solutions,fminou
     f = open (fminout,'r')
     text=[]
     for line in f:
+        print line
         if re.search('nok',line):
             print line
             sys.exit('ERROR: minimizer internal error (minimizer1.out)')
@@ -2287,6 +2288,7 @@ def analyseResultsMTsource(inv_step,inv_param,mt_solutions,n_mt_solutions,fminou
             if not re.search('ok',line):
                 text.append(line)
                 i=i+1
+        print i
     if (inv_step == '1'):
         n_mt_solutions = i/3
     elif (inv_step == '2'):
@@ -2323,7 +2325,7 @@ def analyseResultsMTsource(inv_step,inv_param,mt_solutions,n_mt_solutions,fminou
 
 
 def analyseResultsEikonalsource(inv_step,inv_param,eikonals,n_eikonals,fminout,start_eikonals,lines_singlemisfits):
-    print 'Analysing results inversion step '+inv_step+'...'
+    print 'NOW Analysing results inversion step '+inv_step+'...'
     n_start_eikonals=n_eikonals
     i=0
     f = open (fminout,'r')
@@ -2337,6 +2339,7 @@ def analyseResultsEikonalsource(inv_step,inv_param,eikonals,n_eikonals,fminout,s
                 print line
                 sys.exit('ERROR: minimizer internal error (minimizer1.out)')
         else:
+            print line
             if not re.search('ok',line):
                 if not re.search('nucleation point is outside',line):
                     text.append(line)
@@ -2344,6 +2347,7 @@ def analyseResultsEikonalsource(inv_step,inv_param,eikonals,n_eikonals,fminout,s
                     defline='9.9\n'
                     text.append(defline)
                 i=i+1
+                print i
     if (inv_step == '3'):
         if inv_param['INV_MODE_STEP'+inv_step]=='invert_rnv':
             n_eikonals = int(i/3)
@@ -2352,10 +2356,11 @@ def analyseResultsEikonalsource(inv_step,inv_param,eikonals,n_eikonals,fminout,s
         elif inv_param['INV_MODE_STEP'+inv_step]=='invert_rt':
             n_eikonals = int(i/3)
         elif inv_param['INV_MODE_STEP'+inv_step]=='ccgrid':
-            n_eikonals = int(i/3)
+            n_eikonals = int(i/2)
         else:                                    #'grid'
             n_eikonals = int(i/2)
     f.close()
+    print i, n_eikonals, inv_param['INV_MODE_STEP3']
     if (n_start_eikonals!=n_eikonals):
         print n_start_eikonals,n_eikonals
         sys.exit('ERROR 2: n start sol <> n point sol (minimizer.out)')
@@ -2364,7 +2369,7 @@ def analyseResultsEikonalsource(inv_step,inv_param,eikonals,n_eikonals,fminout,s
             local_eikonal=start_eikonals[i]
             local_eikonal.misf_shift=99999
             if inv_param['INV_MODE_STEP'+inv_step]=='invert_rnv':
-                radius,nuklx,nukly,relruptvel=text[i*3+1].split()
+                radius,nuklx,nukly,relruptvel=text[i*3+2].split()
                 misfit=float(text[i*3+2])
                 local_eikonal.radius=radius
                 local_eikonal.nuklx=nuklx
@@ -2385,12 +2390,13 @@ def analyseResultsEikonalsource(inv_step,inv_param,eikonals,n_eikonals,fminout,s
                 local_eikonal.misfit=misfit
                 local_eikonal.risetime=risetime
             elif inv_param['INV_MODE_STEP'+inv_step]=='ccgrid':
-                lines_singlemisfits.append(text[i*3+1])
-                misfit=float(text[i*3+2])
+                lines_singlemisfits.append(text[i*2+1])
+                misfit=float(text[i*2+2])
                 local_eikonal.misfit=misfit
             else:                                  #'grid'
                 lines_singlemisfits.append(text[i*2])
                 misfit=float(text[i*2+1])
+                print "here misfit",misfit
                 local_eikonal.misfit=misfit
             print "EIKO-SOLUTION",i+1,local_eikonal.misfit,\
                                   local_eikonal.nuklx,local_eikonal.nukly
@@ -2575,13 +2581,14 @@ def calculateEikSynthetics(inv_step,inv_param,eikonals,traces,apply_taper,frecei
     f.write(line_mf)
     localdepth=int(float(sdep)/1000)
     fdep=float(sdep)
-    mindepgfdb=inv_param['MIN_DEP_GFDB']
-    maxdepgfdb=inv_param['MAX_DEP_GFDB']
+#    mindepgfdb=inv_param['MIN_DEP_GFDB']
+#    maxdepgfdb=inv_param['MAX_DEP_GFDB']
     if (fdep>=mohodepth):
         # line_depth_constraints="set_source_constraints 0 0 0 0 0 -1 0 0 95000 0 0 1\n"
-        mindepgfdb=inv_param['MIN_DEP_GFDB']
-        maxdepgfdb=inv_param['MAX_DEP_GFDB']
+        mindepgfdb=str(1000.*float(inv_param['MIN_DEP_GFDB']))
+        maxdepgfdb=str(1000.*float(inv_param['MAX_DEP_GFDB']))
         line_depth_constraints="set_source_constraints 0 0 "+mindepgfdb+" 0 0 -1 0 0 "+maxdepgfdb+" 0 0 1\n"
+#        line_depth_constraints="set_source_constraints 0 0 0 0 0 -1 0 0 800000 0 0 1\n"
         f.write(line_depth_constraints)
     if apply_taper:
         for trace in traces:
@@ -2920,10 +2927,10 @@ def prepMinimizerInputEikonalsource(inv_step,fmininp,fminout,inv_param,freceiver
         srrv,srise=str(startsol.relruptvel),str(startsol.risetime)
         if (prevdepth!=sdep):
             fdep=float(sdep)
-            mindepgfdb=inv_param['MIN_DEP_GFDB']
-            maxdepgfdb=inv_param['MAX_DEP_GFDB']
+            mindepgfdb=str(1000.*float(inv_param['MIN_DEP_GFDB']))
+            maxdepgfdb=str(1000.*float(inv_param['MAX_DEP_GFDB']))
             if (fdep>=mohodepth):
-                # line_depth_constraints="set_source_constraints 0 0 0 0 0 -1 0 0 95000 0 0 1\n"
+#                line_depth_constraints="set_source_constraints 0 0 0 0 0 -1 0 0 750000 0 0 1\n"
                 line_depth_constraints="set_source_constraints 0 0 "+mindepgfdb+" 0 0 -1 0 0 "+maxdepgfdb+" 0 0 1\n"
                 f.write(line_depth_constraints)
             else:
@@ -4210,8 +4217,8 @@ def findUnfittingStations(inv_step,inv_param,eikonals,traces,apply_taper,best_po
     sstr,sdip,srak=str(eikonals[0].strike),str(eikonals[0].dip),str(eikonals[0].rake)
     srise=str(eikonals[0].risetime)
     fdep=float(sdep)
-    mindepgfdb=inv_param['MIN_DEP_GFDB']
-    maxdepgfdb=inv_param['MAX_DEP_GFDB']
+    mindepgfdb=str(1000.*float(inv_param['MIN_DEP_GFDB']))
+    maxdepgfdb=str(1000.*float(inv_param['MAX_DEP_GFDB']))
     if (fdep>=mohodepth):
         # line_depth_constraints="set_source_constraints 0 0 0 0 0 -1 0 0 95000 0 0 1\n"
         line_depth_constraints="set_source_constraints 0 0 "+mindepgfdb+" 0 0 -1 0 0 "+maxdepgfdb+" 0 0 1\n"

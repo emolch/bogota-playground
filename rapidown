@@ -11,15 +11,18 @@ import urllib2
 import glob
 from optparse import OptionParser
 
-from pyrocko import trace, util, io, cake, catalog, automap, pile, model
+from pyrocko import trace, util, io, cake, catalog, automap, pile, model, pz
 from pyrocko import moment_tensor
 from pyrocko.fdsn import ws, station
+from pyrocko.guts import Object, Tuple, String, Timestamp, Float
+
+sys.path[0:0] = ['modules']
+import pz_archive
 
 km = 1000.
 
 geofon = catalog.Geofon()
 usgs = catalog.USGS(catalog=None)
-
 
 class starfill:
     def __getitem__(self, k):
@@ -147,6 +150,18 @@ if __name__ == '__main__':
         default=False,
         help='continue download after a accident')
 
+    parser.add_option(
+        '--local-data',
+        dest='local_data',
+        action='append',
+        help='add file/directory with local data')
+
+    parser.add_option(
+        '--local-responses',
+        dest='local_responses',
+        action='append',
+        help='add file/directory with local responses')
+
     (options, args) = parser.parse_args(sys.argv[1:])
 
     if options.debug:
@@ -258,7 +273,8 @@ if __name__ == '__main__':
     output_units = 'M'
 
     #sites = ['geofon', 'orfeus', 'iris']
-    sites = ['geofon', 'iris']
+    #sites = ['geofon', 'iris']
+    sites = ['iris']
 
     fn_template0 = \
         'data_%(network)s.%(station)s.%(location)s.%(channel)s_%(tmin)s.mseed'
@@ -422,6 +438,28 @@ if __name__ == '__main__':
             sxs[site].dump_xml(
                 filename=op.join(output_dir, 'response-%s.stationxml' % site))
 
+    # chapter 1.5: inject local data
+
+    if options.local_data:
+        have_data_site['local'] = set()
+        plocal = pile.make_pile(options.local_data)
+        for traces in plocal.chopper_grouped(
+                gather=lambda tr: tr.nslc_id,
+                tmin=tmin,
+                tmax=tmax,
+                tinc=tinc):
+
+            for tr in traces:
+                if tr.nslc_id not in have_data:
+                    fns.extend(io.save(traces, fn_template_raw))
+                    have_data_site['local'].add(tr.nslc_id)
+                    have_data.add(tr.nslc_id)
+
+        sites.append('local')
+
+    if options.local_responses:
+        sxs['local'] = pz_archive.load(options.local_responses)
+
     # chapter 2: restitution
 
     if not fns:
@@ -522,6 +560,7 @@ if __name__ == '__main__':
             stations = sxs[site].get_pyrocko_stations(timespan=(tmin, tmax))
             for s in stations:
                 nsl = s.nsl()
+                print nsl
                 if nsl not in nsl_to_station:
                     nsl_to_station[nsl] = s
 
@@ -562,6 +601,7 @@ if __name__ == '__main__':
                 used_stations.append(s)
 
     stations = list(used_stations)
+    util.ensure_dirs(fn_stations)
     model.dump_stations(stations, fn_stations)
     model.dump_events([event], fn_event)
 
