@@ -560,7 +560,6 @@ if __name__ == '__main__':
             stations = sxs[site].get_pyrocko_stations(timespan=(tmin, tmax))
             for s in stations:
                 nsl = s.nsl()
-                print nsl
                 if nsl not in nsl_to_station:
                     nsl_to_station[nsl] = s
 
@@ -601,7 +600,7 @@ if __name__ == '__main__':
                 used_stations.append(s)
 
     stations = list(used_stations)
-    util.ensure_dirs(fn_stations)
+    util.ensuredirs(fn_stations)
     model.dump_stations(stations, fn_stations)
     model.dump_events([event], fn_event)
 
