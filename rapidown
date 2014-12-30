@@ -280,6 +280,7 @@ if __name__ == '__main__':
         'data_%(network)s.%(station)s.%(location)s.%(channel)s_%(tmin)s.mseed'
 
     fn_template_raw = op.join(output_dir, 'raw',  fn_template0)
+    fn_stations_raw = op.join(output_dir, 'raw',  'stations.txt')
     fn_template_rest = op.join(output_dir, 'rest',  fn_template0)
 
     tfade_factor = 1.0
@@ -459,6 +460,22 @@ if __name__ == '__main__':
 
     if options.local_responses:
         sxs['local'] = pz_archive.load(options.local_responses)
+
+    # chapter 1.6: dump raw data stations file
+
+    nsl_to_station = {}
+    for site in sites:
+        if site in sxs:
+            stations = sxs[site].get_pyrocko_stations(timespan=(tmin, tmax))
+            for s in stations:
+                nsl = s.nsl()
+                if nsl not in nsl_to_station:
+                    nsl_to_station[nsl] = s
+
+    stations = [nsl_to_station[nsl] for nsl in sorted(nsl_to_station.keys())]
+
+    util.ensuredirs(fn_stations_raw)
+    model.dump_stations(stations, fn_stations_raw)
 
     # chapter 2: restitution
 
