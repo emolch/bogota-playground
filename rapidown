@@ -11,8 +11,10 @@ import urllib2
 import glob
 from optparse import OptionParser
 
+import numpy as num
+
 from pyrocko import trace, util, io, cake, catalog, automap, pile, model, pz
-from pyrocko import moment_tensor
+from pyrocko import moment_tensor, orthodrome
 from pyrocko.fdsn import ws, station
 from pyrocko.guts import Object, Tuple, String, Timestamp, Float
 
@@ -23,6 +25,9 @@ km = 1000.
 
 geofon = catalog.Geofon()
 usgs = catalog.USGS(catalog=None)
+
+tfade_factor = 1.0
+ffade_factors = 0.5, 1.5
 
 class starfill:
     def __getitem__(self, k):
@@ -105,6 +110,44 @@ def get_events_by_name_or_date(event_names_or_dates, catalog=geofon):
     return events_out
 
 
+class NoArrival(Exception):
+    pass
+
+
+class PhaseWindow:
+
+    def __init__(self, model, phases, omin, omax):
+        self.model = model
+        self.phases = phases
+        self.omin = omin
+        self.omax = omax
+
+    def __call__(self, distance, depth):
+        for ray in self.model.arrivals(
+                phases=self.phases,
+                zstart=depth,
+                distances=[distance*cake.m2d]):
+
+            return ray.t + self.omin, ray.t + self.omax
+        
+        raise NoArrival
+
+
+class VelocityWindow:
+    def __init__(self, vmin, vmax=None):
+        self.vmin = vmin
+        self.vmax = vmax
+
+    def __call__(self, distance, depth):
+        ttmax = (depth + distance) / self.vmin
+        if self.vmax is not None:
+            ttmin = (depth + distance) / self.vmax
+        else:
+            ttmin = 0.0
+
+        return ttmin, ttmax
+
+
 program_name = 'rapidown'
 description = '''
 Download waveforms from FDSN web services and prepare for RAPIDINV
@@ -161,6 +204,13 @@ if __name__ == '__main__':
         dest='local_responses',
         action='append',
         help='add file/directory with local responses')
+
+    parser.add_option(
+        '--window',
+        choices=['full', 'p'],
+        dest='window',
+        default='full',
+        help='set time window to choose [full, p]')
 
     (options, args) = parser.parse_args(sys.argv[1:])
 
@@ -241,14 +291,39 @@ if __name__ == '__main__':
     event = model.Event(time=time, lat=lat, lon=lon, depth=depth, name=ename,
                         magnitude=magnitude)
 
-    low_velocity = 2000.
+    if options.window == 'full':
+        low_velocity = 2000.
+        timewindow = VelocityWindow(low_velocity)
+        ttmin, ttmax = timewindow(radius, depth)
+        tmin = time + ttmin
+        tmax = time + ttmax
 
-    tmax = time + (depth + radius) / low_velocity
-    tmin = time
+    elif options.window == 'p':
+        phases=map(cake.PhaseDef, 'P p'.split())
+        emod = cake.load_model()
+        timewindow = PhaseWindow(emod, phases, -100., 120.)
+
+        traveltimes = []
+        for dist in num.linspace(0, radius, 20):
+            try:
+                traveltimes.extend(timewindow(dist, depth))
+            except NoArrival:
+                pass
+
+        if not traveltimes:
+            logger.error('required phase arrival not found')
+            sys.exit(1)
+
+        tmin = time + min(traveltimes)
+        tmax = time + max(traveltimes)
 
     tlen = tmax - tmin
-    tmin -= tlen * 0.1 + 2. / fmin
-    tmax += tlen * 0.1 + 2. / fmin
+    tfade = tfade_factor / fmin
+
+    tpad = tfade
+
+    tmin -= tpad
+    tmax += tpad
 
     tinc = None
 
@@ -273,8 +348,8 @@ if __name__ == '__main__':
     output_units = 'M'
 
     #sites = ['geofon', 'orfeus', 'iris']
-    #sites = ['geofon', 'iris']
-    sites = ['iris']
+    sites = ['geofon', 'iris']
+    #sites = ['iris']
 
     fn_template0 = \
         'data_%(network)s.%(station)s.%(location)s.%(channel)s_%(tmin)s.mseed'
@@ -282,12 +357,6 @@ if __name__ == '__main__':
     fn_template_raw = op.join(output_dir, 'raw',  fn_template0)
     fn_template_rest = op.join(output_dir, 'rest',  fn_template0)
 
-    tfade_factor = 1.0
-    ffade_factors = 0.5, 1.5
-
-    tfade = tfade_factor / fmin
-
-    tpad = tfade
 
     ftap = (ffade_factors[0]*fmin, fmin, fmax, ffade_factors[1]*fmax)
 
@@ -354,17 +423,27 @@ if __name__ == '__main__':
                 continue
 
             selection = []
-            for nslc in sx.choose_channels(
+            channels = sx.choose_channels(
                     target_sample_rate=target_sample_rate,
                     priority_band_code=priority_band_code,
                     priority_units=priority_units,
                     priority_instrument_code=priority_instrument_code,
-                    timespan=(tmin_win, tmax_win)):
+                    timespan=(tmin_win, tmax_win))
 
+            for nslc in sorted(channels.keys()):
                 could_have_data_site[site].add(nslc)
 
                 if nslc not in have_data:
-                    selection.append(nslc + (tmin_win-1.0, tmax_win+1.0))
+                    channel = channels[nslc]
+                    dist = orthodrome.distance_accurate50m_numpy(
+                        event.lat, event.lon, 
+                        channel.latitude.value, channel.longitude.value)
+                    
+                    ttmin, ttmax = timewindow(dist, event.depth)
+                    tmin_this = event.time + ttmin - tpad
+                    tmax_this = event.time + ttmax + tpad
+                    
+                    selection.append(nslc + (tmin_this-1.0, tmax_this+1.0))
 
             neach = 100
             i = 0
