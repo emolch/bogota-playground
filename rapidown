@@ -15,7 +15,7 @@ import numpy as num
 
 from pyrocko import trace, util, io, cake, catalog, automap, pile, model, pz
 from pyrocko import moment_tensor, orthodrome
-from pyrocko.fdsn import ws, station
+from pyrocko.fdsn import ws, station, resp
 from pyrocko.guts import Object, Tuple, String, Timestamp, Float
 
 sys.path[0:0] = ['modules']
@@ -200,10 +200,22 @@ if __name__ == '__main__':
         help='add file/directory with local data')
 
     parser.add_option(
-        '--local-responses',
-        dest='local_responses',
+        '--local-stations',
+        dest='local_stations',
         action='append',
-        help='add file/directory with local responses')
+        help='add local stations file')
+
+    parser.add_option(
+        '--local-responses-resp',
+        dest='local_responses_resp',
+        action='append',
+        help='add file/directory with local responses in RESP format')
+
+    parser.add_option(
+        '--local-responses-pz',
+        dest='local_responses_pz',
+        action='append',
+        help='add file/directory with local pole-zero responses')
 
     parser.add_option(
         '--window',
@@ -213,6 +225,17 @@ if __name__ == '__main__':
         help='set time window to choose [full, p]')
 
     (options, args) = parser.parse_args(sys.argv[1:])
+
+    if options.local_responses_pz and options.local_responses_resp:
+        logger.critical('cannot use local responses in PZ and RESP '
+                        'format at the same time')
+        sys.exit(1)
+
+
+    if options.local_responses_resp and not options.local_stations:
+        logger.critical('--local-responses-resp can only be used '
+                        'when --stations is also given.')
+        sys.exit(1)
 
     if options.debug:
         util.setup_logging(program_name, 'debug')
@@ -537,8 +560,17 @@ if __name__ == '__main__':
 
         sites.append('local')
 
-    if options.local_responses:
-        sxs['local'] = pz_archive.load(options.local_responses)
+    if options.local_responses_pz:
+        sxs['local'] = pz_archive.load(options.local_responses_pz)
+
+    if options.local_responses_resp:
+        local_stations = []
+        for fn in options.local_stations:
+            local_stations.extend(
+                model.load_stations(fn))
+
+        sxs['local'] = resp.make_stationxml(
+            local_stations, resp.iload(options.local_responses_resp))
 
     # chapter 1.6: dump raw data stations file
 
