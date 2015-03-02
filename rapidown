@@ -218,6 +218,12 @@ if __name__ == '__main__':
         help='add file/directory with local pole-zero responses')
 
     parser.add_option(
+        '--local-responses-stationxml',
+        dest='local_responses_stationxml',
+        action='append',
+        help='add station-xml file with local response information')
+
+    parser.add_option(
         '--window',
         choices=['full', 'p'],
         dest='window',
@@ -560,8 +566,10 @@ if __name__ == '__main__':
 
         sites.append('local')
 
+    local_sxs = []
     if options.local_responses_pz:
-        sxs['local'] = pz_archive.load(options.local_responses_pz)
+        local_sxs.append(enhanced_sacpz.make_stationxml(
+            enhanced_sacpz.iload(options.local_responses_pz)
 
     if options.local_responses_resp:
         local_stations = []
@@ -569,8 +577,15 @@ if __name__ == '__main__':
             local_stations.extend(
                 model.load_stations(fn))
 
-        sxs['local'] = resp.make_stationxml(
+        local_sxs.append(resp.make_stationxml(
             local_stations, resp.iload(options.local_responses_resp))
+
+    if options.local_responses_stationxml:
+        for fn in options.local_responses_stationxml:
+            local_sxs.append(station.load_xml(fn))
+
+    if local_sxs:
+        sxs['local'] = station.merge(local_sxs)
 
     # chapter 1.6: dump raw data stations file
 
