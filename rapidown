@@ -134,9 +134,10 @@ class PhaseWindow:
 
 
 class VelocityWindow:
-    def __init__(self, vmin, vmax=None):
+    def __init__(self, vmin, vmax=None, tpad=0.0):
         self.vmin = vmin
         self.vmax = vmax
+        self.tpad = tpad
 
     def __call__(self, distance, depth):
         ttmax = (depth + distance) / self.vmin
@@ -145,7 +146,7 @@ class VelocityWindow:
         else:
             ttmin = 0.0
 
-        return ttmin, ttmax
+        return ttmin - self.tpad, ttmax + self.tpad
 
 
 program_name = 'rapidown'
@@ -315,8 +316,8 @@ if __name__ == '__main__':
                         magnitude=magnitude)
 
     if options.window == 'full':
-        low_velocity = 2000.
-        timewindow = VelocityWindow(low_velocity)
+        low_velocity = 1500.
+        timewindow = VelocityWindow(low_velocity, tpad=3.0/fmin)
         ttmin, ttmax = timewindow(radius, depth)
         tmin = time + ttmin
         tmax = time + ttmax
