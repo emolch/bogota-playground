@@ -1469,25 +1469,82 @@ def defineGridWalkMTsource(inv_step,bestdc,start_mt_solutions,mt_solutions,inv_p
             istm12,istm13,istm23=0,0,0
             start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,istm11,istm12,istm13,\
                                                   istm22,istm23,istm33,stiso,stdc,stclvd,stmsh,strise))
+            istm11,istm22,istm33=-float(smom)/math.sqrt(3),-float(smom)/math.sqrt(3),-float(smom)/math.sqrt(3)
+            istm12,istm13,istm23=0,0,0
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,istm11,istm12,istm13,\
+                                                  istm22,istm23,istm33,stiso,stdc,stclvd,stmsh,strise))
+            istm11=0.5*(omts[0]+float(smom)/math.sqrt(3))
+            istm22=0.5*(omts[1]+float(smom)/math.sqrt(3))
+            istm33=0.5*(omts[2]+float(smom)/math.sqrt(3))
+            istm12,istm13,istm23=0.5*omts[3],0.5*omts[4],0.5*omts[5]
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,istm11,istm12,istm13,\
+                                                  istm22,istm23,istm33,stiso,stdc,stclvd,stmsh,strise))
+            istm11=0.5*(omts[0]-float(smom)/math.sqrt(3))
+            istm22=0.5*(omts[1]-float(smom)/math.sqrt(3))
+            istm33=0.5*(omts[2]-float(smom)/math.sqrt(3))
+            istm12,istm13,istm23=0.5*omts[3],0.5*omts[4],0.5*omts[5]
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,istm11,istm12,istm13,\
+                                                  istm22,istm23,istm33,stiso,stdc,stclvd,stmsh,strise))
 
         if inv_param['MT_DIPOL'].upper()=="TRUE":
             d1stm11=float(smom)
             d1stm12,d1stm13,d1stm23,d1stm22,d1stm33=0,0,0,0,0
             start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,d1stm11,d1stm12,d1stm13,\
                                               d1stm22,d1stm23,d1stm33,stiso,stdc,stclvd,stmsh,strise))
+            dstm11,dstm22,dstm33=0.5*(d1stm11+omts[0]),0.5*(d1stm22+omts[1]),0.5*(d1stm33+omts[2])
+            dstm12,dstm13,dstm23=0.5*(d1stm11+omts[3]),0.5*(d1stm22+omts[4]),0.5*(d1stm33+omts[5])
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,dstm11,dstm12,dstm13,\
+                                              dstm22,dstm23,dstm33,stiso,stdc,stclvd,stmsh,strise))
             d2stm22=float(smom)
             d2stm12,d2stm13,d2stm23,d2stm11,d2stm33=0,0,0,0,0
             start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,d2stm11,d2stm12,d2stm13,\
                                               d2stm22,d2stm23,d2stm33,stiso,stdc,stclvd,stmsh,strise))
+            dstm11,dstm22,dstm33=0.5*(d2stm11+omts[0]),0.5*(d2stm22+omts[1]),0.5*(d2stm33+omts[2])
+            dstm12,dstm13,dstm23=0.5*(d2stm11+omts[3]),0.5*(d2stm22+omts[4]),0.5*(d2stm33+omts[5])
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,dstm11,dstm12,dstm13,\
+                                              dstm22,dstm23,dstm33,stiso,stdc,stclvd,stmsh,strise))
             d3stm33=float(smom)
             d3stm12,d3stm13,d3stm23,d3stm11,d3stm22=0,0,0,0,0
             start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,d3stm11,d3stm12,d3stm13,\
                                               d3stm22,d3stm23,d3stm33,stiso,stdc,stclvd,stmsh,strise))
+            dstm11,dstm22,dstm33=0.5*(d3stm11+omts[0]),0.5*(d3stm22+omts[1]),0.5*(d3stm33+omts[2])
+            dstm12,dstm13,dstm23=0.5*(d3stm11+omts[3]),0.5*(d3stm22+omts[4]),0.5*(d3stm33+omts[5])
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,dstm11,dstm12,dstm13,\
+                                              dstm22,dstm23,dstm33,stiso,stdc,stclvd,stmsh,strise))
+
+            d1stm11=-float(smom)
+            d1stm12,d1stm13,d1stm23,d1stm22,d1stm33=0,0,0,0,0
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,d1stm11,d1stm12,d1stm13,\
+                                              d1stm22,d1stm23,d1stm33,stiso,stdc,stclvd,stmsh,strise))
+            dstm11,dstm22,dstm33=0.5*(d1stm11+omts[0]),0.5*(d1stm22+omts[1]),0.5*(d1stm33+omts[2])
+            dstm12,dstm13,dstm23=0.5*(d1stm11+omts[3]),0.5*(d1stm22+omts[4]),0.5*(d1stm33+omts[5])
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,dstm11,dstm12,dstm13,\
+                                              dstm22,dstm23,dstm33,stiso,stdc,stclvd,stmsh,strise))
+            d2stm22=-float(smom)
+            d2stm12,d2stm13,d2stm23,d2stm11,d2stm33=0,0,0,0,0
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,d2stm11,d2stm12,d2stm13,\
+                                              d2stm22,d2stm23,d2stm33,stiso,stdc,stclvd,stmsh,strise))
+            dstm11,dstm22,dstm33=0.5*(d2stm11+omts[0]),0.5*(d2stm22+omts[1]),0.5*(d2stm33+omts[2])
+            dstm12,dstm13,dstm23=0.5*(d2stm11+omts[3]),0.5*(d2stm22+omts[4]),0.5*(d2stm33+omts[5])
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,dstm11,dstm12,dstm13,\
+                                              dstm22,dstm23,dstm33,stiso,stdc,stclvd,stmsh,strise))
+            d3stm33=-float(smom)
+            d3stm12,d3stm13,d3stm23,d3stm11,d3stm22=0,0,0,0,0
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,d3stm11,d3stm12,d3stm13,\
+                                              d3stm22,d3stm23,d3stm33,stiso,stdc,stclvd,stmsh,strise))
+            dstm11,dstm22,dstm33=0.5*(d3stm11+omts[0]),0.5*(d3stm22+omts[1]),0.5*(d3stm33+omts[2])
+            dstm12,dstm13,dstm23=0.5*(d3stm11+omts[3]),0.5*(d3stm22+omts[4]),0.5*(d3stm33+omts[5])
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,dstm11,dstm12,dstm13,\
+                                              dstm22,dstm23,dstm33,stiso,stdc,stclvd,stmsh,strise))
 
         if inv_param['MT_CLVD'].upper()=="TRUE":
-            clstm11=float(smom)/math.sqrt(3)
-            clstm22,clstm33=-(float(smom)/math.sqrt(3))/2,-(float(smom)/math.sqrt(3))/2
-            clstm12,clstm13,clstm23=0,0,0
+            cl1stm11=float(smom)/math.sqrt(3)
+            cl1stm22,cl1stm33=-(float(smom)/math.sqrt(3))/2,-(float(smom)/math.sqrt(3))/2
+            cl1stm12,cl1stm13,cl1stm23=0,0,0
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,cl1stm11,cl1stm12,cl1stm13,\
+                                              cl1stm22,cl1stm23,cl1stm33,stiso,stdc,stclvd,stmsh,strise))
+            clstm11,clstm22,clstm33=0.5*(cl1stm11+omts[0]),0.5*(cl1stm22+omts[1]),0.5*(cl1stm33+omts[2])
+            clstm12,clstm13,clstm23=0.5*(cl1stm11+omts[3]),0.5*(cl1stm22+omts[4]),0.5*(cl1stm33+omts[5])
             start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,clstm11,clstm12,clstm13,\
                                               clstm22,clstm23,clstm33,stiso,stdc,stclvd,stmsh,strise))
             cl2stm22=float(smom)/math.sqrt(3)
@@ -1495,12 +1552,48 @@ def defineGridWalkMTsource(inv_step,bestdc,start_mt_solutions,mt_solutions,inv_p
             cl2stm12,cl2stm13,cl2stm23=0,0,0
             start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,cl2stm11,cl2stm12,cl2stm13,\
                                               cl2stm22,cl2stm23,cl2stm33,stiso,stdc,stclvd,stmsh,strise))
-
+            clstm11,clstm22,clstm33=0.5*(cl2stm11+omts[0]),0.5*(cl2stm22+omts[1]),0.5*(cl2stm33+omts[2])
+            clstm12,clstm13,clstm23=0.5*(cl2stm11+omts[3]),0.5*(cl2stm22+omts[4]),0.5*(cl2stm33+omts[5])
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,clstm11,clstm12,clstm13,\
+                                              clstm22,clstm23,clstm33,stiso,stdc,stclvd,stmsh,strise))
             cl3stm33=float(smom)/math.sqrt(3)
             cl3stm22,cl3stm11=-(float(smom)/math.sqrt(3))/2,-(float(smom)/math.sqrt(3))/2
             cl3stm12,cl3stm13,cl3stm23=0,0,0
             start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,cl3stm11,cl3stm12,cl3stm13,\
                                               cl3stm22,cl3stm23,cl3stm33,stiso,stdc,stclvd,stmsh,strise))
+            clstm11,clstm22,clstm33=0.5*(cl3stm11+omts[0]),0.5*(cl3stm22+omts[1]),0.5*(cl3stm33+omts[2])
+            clstm12,clstm13,clstm23=0.5*(cl3stm11+omts[3]),0.5*(cl3stm22+omts[4]),0.5*(cl3stm33+omts[5])
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,clstm11,clstm12,clstm13,\
+                                              clstm22,clstm23,clstm33,stiso,stdc,stclvd,stmsh,strise))
+
+            cl1stm11=-float(smom)/math.sqrt(3)
+            cl1stm22,cl1stm33=(float(smom)/math.sqrt(3))/2,(float(smom)/math.sqrt(3))/2
+            cl1stm12,cl1stm13,cl1stm23=0,0,0
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,cl1stm11,cl1stm12,cl1stm13,\
+                                              cl1stm22,cl1stm23,cl1stm33,stiso,stdc,stclvd,stmsh,strise))
+            clstm11,clstm22,clstm33=0.5*(cl1stm11+omts[0]),0.5*(cl1stm22+omts[1]),0.5*(cl1stm33+omts[2])
+            clstm12,clstm13,clstm23=0.5*(cl1stm11+omts[3]),0.5*(cl1stm22+omts[4]),0.5*(cl1stm33+omts[5])
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,clstm11,clstm12,clstm13,\
+                                              clstm22,clstm23,clstm33,stiso,stdc,stclvd,stmsh,strise))
+            cl2stm22=-float(smom)/math.sqrt(3)
+            cl2stm11,cl2stm33=(float(smom)/math.sqrt(3))/2,(float(smom)/math.sqrt(3))/2
+            cl2stm12,cl2stm13,cl2stm23=0,0,0
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,cl2stm11,cl2stm12,cl2stm13,\
+                                              cl2stm22,cl2stm23,cl2stm33,stiso,stdc,stclvd,stmsh,strise))
+            clstm11,clstm22,clstm33=0.5*(cl2stm11+omts[0]),0.5*(cl2stm22+omts[1]),0.5*(cl2stm33+omts[2])
+            clstm12,clstm13,clstm23=0.5*(cl2stm11+omts[3]),0.5*(cl2stm22+omts[4]),0.5*(cl2stm33+omts[5])
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,clstm11,clstm12,clstm13,\
+                                              clstm22,clstm23,clstm33,stiso,stdc,stclvd,stmsh,strise))
+            cl3stm33=-float(smom)/math.sqrt(3)
+            cl3stm22,cl3stm11=(float(smom)/math.sqrt(3))/2,(float(smom)/math.sqrt(3))/2
+            cl3stm12,cl3stm13,cl3stm23=0,0,0
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,cl3stm11,cl3stm12,cl3stm13,\
+                                              cl3stm22,cl3stm23,cl3stm33,stiso,stdc,stclvd,stmsh,strise))
+            clstm11,clstm22,clstm33=0.5*(cl3stm11+omts[0]),0.5*(cl3stm22+omts[1]),0.5*(cl3stm33+omts[2])
+            clstm12,clstm13,clstm23=0.5*(cl3stm11+omts[3]),0.5*(cl3stm22+omts[4]),0.5*(cl3stm33+omts[5])
+            start_mt_solutions.append(MTsource(inv_step,stmis,stnor,stest,sttim,stdep,clstm11,clstm12,clstm13,\
+                                              clstm22,clstm23,clstm33,stiso,stdc,stclvd,stmsh,strise))
+
 
     elif (inv_step == '2'):
         start_mt_solutions.append(mt_solutions[0])
@@ -1585,7 +1678,8 @@ def defineGridWalkEikonalsource(inv_step,start_eikonals,eikonals,inv_param):
             # risetimes=[1]
         elif (mw <6.6):
             #  radiuses=[2500.,5000.,7500.,10000.,12500.,15000.,20000.]
-            radiuses=[2000.,5000.,7500.,10000.,15000.,20000.,25000.]
+            radiuses=[2500.,3500.,5000.,7500.,10000.,12500.,15000.]
+#            radiuses=[2500.,5000.,7500.,10000.,15000.,20000.,25000.]
             # risetimes=[1]
         elif (mw <7.1):
             # radiuses=[5000., 10000.,20000., 50000.]
@@ -1631,12 +1725,13 @@ def defineGridWalkEikonalsource(inv_step,start_eikonals,eikonals,inv_param):
                     # bx5=by5=0.9*radius
                     if (mw<5.6):
                         nucleations=[(bx1,by3),(bx3,by3),(bx5,by3),(bx3,by1),(bx3,by5)]
-                    elif (mw<6.1):
+                    elif (mw<6.6):
                         nucleations=[(bx1,by3),(bx2,by3),(bx3,by3),(bx4,by3),(bx5,by3)]
                     else:
-                        nucleations=[(bx3,by1),(bx1,by3),(bx2,by3),(bx3,by3),\
-                                     (bx4,by3),(bx5,by3),(bx3,by5)]
-                        # nucleations=[(bx1,by3),(bx2,by3),(bx3,by3),(bx4,by3),(bx5,by3)]
+                        nucleations=[(bx3,by1),(bx2,by2),(bx3,by2),(bx4,by2),\
+                                     (bx1,by3),(bx2,by3),(bx3,by3),(bx4,by3),(bx5,by3),\
+                                     (bx2,by4),(bx3,by4),(bx4,by4),(bx3,by5)]
+                        #nucleations=[(bx3,by1),(bx1,by3),(bx3,by3),(bx5,by3),(bx3,by5)]
                     for nukl in nucleations:
                         r_rupt_vel=float(inv_param['REL_RUPT_VEL_1'])
                         while r_rupt_vel <= float(inv_param['REL_RUPT_VEL_2']):
@@ -3128,7 +3223,7 @@ def plotDuration(inv_step,inv_param):
 def calcDuration(inv_step,inv_param,bests,apply_taper,fdata,freceivers):
     checkedrisetimes=[]
     mw = m0tomw(float(inv_param['SCALING_FACTOR'])*float(bests[0].smom))
-    coeff_appdur=0.1
+    coeff_appdur=0.25
     if mw<3.0:
         coeff_appdur=0.01
     # if mw>7.0:
@@ -4307,7 +4402,11 @@ def calcBootstrapMisfit(locallinemisfits,randomindexes):
     for iri in range(len(randomindexes)):
         misfit=misfit+(misfits[randomindexes[iri]]*misfits[randomindexes[iri]])
         normcoef=normcoef+(normcoefs[randomindexes[iri]]*normcoefs[randomindexes[iri]])
-    misfit=math.sqrt(misfit/normcoef)
+    try:
+        misfit=math.sqrt(misfit/normcoef)
+    except:
+        print "BOOTSTRAP FAILED" 
+        misfit=math.sqrt(misfit/misfit)
     return misfit
 
 
