@@ -625,8 +625,8 @@ if __name__ == '__main__':
                 rest_traces_b = []
                 win_b = None
 
-            failure = None
             response = None
+            failure = []
             for site in sites:
                 try:
                     if site not in sxs:
@@ -635,15 +635,20 @@ if __name__ == '__main__':
                         tr.nslc_id,
                         timespan=(tr.tmin, tr.tmax),
                         fake_input_units=output_units)
+
                     break
-                except (station.NoResponseInformation,
-                        station.MultipleResponseInformation):
-                    pass
+
+                except station.NoResponseInformation:
+                    failure.append('%s: no response information' % site)
+
+                except station.MultipleResponseInformation:
+                    failure.append('%s: multiple response information' % site)
 
             if response is None:
-                failure = 'no or multiple response informations'
+                failure = ', '.join(failure)
 
             else:
+                failure = ''
                 try:
                     rest_tr = tr.transfer(tfade, ftap, response, invert=True)
                     rest_traces_a.append(rest_tr)
