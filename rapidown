@@ -225,6 +225,14 @@ if __name__ == '__main__':
         default='full',
         help='set time window to choose [full, p]')
 
+    parser.add_option(
+        '--out-components',
+        choices=['enu', 'rtu'],
+        dest='out_components',
+        default='rtu',
+        help='set output component orientations to radial-transverse-up [rtu] '
+             '(default) or east-north-up [enu]')
+
     (options, args) = parser.parse_args(sys.argv[1:])
 
     if options.local_responses_pz and options.local_responses_resp:
@@ -720,9 +728,14 @@ if __name__ == '__main__':
                                 % (tr.nslc_id + (e,)))
                     continue
 
-        for (proj, in_channels, out_channels) \
-                in s.guess_projections_to_rtu(
-                    out_channels=('R', 'T', 'Z')):
+        if options.out_components == 'rtu':
+            pios = s.guess_projections_to_rtu(out_channels=('R', 'T', 'Z'))
+        elif options.out_components == 'enu':
+            pios = s.guess_projections_to_enu(out_channels=('E', 'N', 'Z'))
+        else:
+            assert False
+
+        for (proj, in_channels, out_channels) in pios:
 
             proc = trace.project(traces, proj, in_channels, out_channels)
             for tr in proc:
