@@ -1,0 +1,125 @@
+#!/usr/bin/env python
+
+import sys
+from collections import defaultdict, Counter
+
+from pyrocko import pile, util, model
+from pyrocko.fdsn import resp, enhanced_sacpz, station as station_xml
+
+from optparse import OptionParser
+
+usage = 'rapidown_check_local [options]'
+
+description = '''
+Local dataset debugger
+
+Checks for inconsistencies in local datasets.
+'''
+
+parser = OptionParser(
+    usage=usage,
+    description=description,
+    formatter=util.BetterHelpFormatter())
+
+parser.add_option(
+    '--waveforms',
+    dest='waveform_paths',
+    action='append',
+    default=[],
+    help='add waveform directory / file')
+
+parser.add_option(
+    '--stations',
+    dest='station_paths',
+    action='append',
+    default=[],
+    help='add Pyrocko format station file')
+
+parser.add_option(
+    '--station-xml',
+    dest='station_xml_paths',
+    action='append',
+    default=[],
+    help='add StationXML file')
+
+parser.add_option(
+    '--resps',
+    dest='resp_paths',
+    action='append',
+    default=[],
+    help='add RESP directory / file')
+
+parser.add_option(
+    '--sacpzs',
+    dest='sacpz_paths',
+    default=[],
+    help='add SAC-PZ response directory / file')
+
+(options, args) = parser.parse_args(sys.argv[1:])
+
+have = defaultdict(Counter)
+if options.waveform_paths:
+    p = pile.make_pile(options.waveform_paths)
+    for k in p.nslc_ids.keys():
+        have[k]['waveform'] += 1
+
+if options.resp_paths:
+    for cr in resp.iload(options.resp_paths):
+        have[cr.codes]['resp'] += 1
+
+if options.station_paths:
+    for fn in options.station_paths:
+        stations = model.load_stations(fn)
+        for s in stations:
+            have[s.nsl() + (None,)]['station'] += 1
+
+if options.sacpz_paths:
+    for cr in enhanced_sacpz.iload(options.sacpz_paths):
+        have[cr.codes]['sacpz'] += 1
+
+if options.station_xml_paths:
+    for fn in options.station_xml_paths:
+        sx = station_xml.load_xml(filename=fn)
+        for network in sx.network_list:
+            for station in network.station_list:
+                for channel in station.channel_list:
+                    if channel.response is not None:
+                        nslc = (network.code, station.code,
+                                channel.location_code, channel.code)
+                        have[nslc]['stationxml'] += 1
+
+nsls = list(set(nslc[:3] for nslc in have.keys()))
+nslcs = list(set(nslc for nslc in have.keys() if nslc[3] is not None))
+
+nsls.sort(key=lambda k: (k[1], k[0], k[2]))
+nslcs.sort(key=lambda k: (k[1], k[0], k[2], k[3]))
+nsl_to_nslc = {}
+
+old_sta = None
+for nsl in nsls:
+    if old_sta is not None and old_sta != nsl[1]:
+        print
+
+    old_sta = nsl[1]
+
+    w = r = ' '
+    s = ' S'[have[nsl+(None,)]['station'] > 0]
+
+    nslcs_station = [nslc for nslc in nslcs if nslc[:3] == nsl]
+    if not nslcs_station:
+        print '%-2s %-5s %-2s %-3s  %s %s %s' % (nsl + ('*', w, s, r))
+
+    for nslc in nslcs_station:
+
+        w = ' W'[have[nslc]['waveform'] > 0]
+        r = ' R'[have[nslc]['resp'] > 0]
+        p = ' P'[have[nslc]['sacpz'] > 0]
+        x = ' X'[have[nslc]['stationxml'] > 0]
+
+        print '%-2s %-5s %-2s %-3s  %s %s %s %s %s' % (nslc + (w, s, r, p, x))
+
+for nslc in sorted(have.keys(), key=lambda k: (k[1], k[0], k[2], k[3])):
+    if any(k is not None and k.find(' ') != -1 for k in nslc):
+        print 'whitespace in NSLC codes: %s' % repr(nslc)
+
+
