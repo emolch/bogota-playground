@@ -431,8 +431,6 @@ if __name__ == '__main__':
     if options.continue_:
         fns = glob.glob(fn_template_raw % starfill())
         p = pile.make_pile(fns)
-        for nslc in p.gather_keys(gather=lambda tr: tr.nslc_id):
-            have_data.add(nslc)
     else:
         fns = []
 
@@ -451,6 +449,12 @@ if __name__ == '__main__':
                                                      util.tts(tmin_win),
                                                      util.tts(tmax_win)))
 
+        have_data_this_window = set()
+        if options.continue_:
+            trs_avail = p.all(tmin=tmin_win, tmax=tmax_win, load_data=False)
+            for tr in trs_avail:
+                have_data_this_window.add(tr.nslc_id)
+
         for site, sx in zip(sites, sxs):
             if sx is None:
                 continue
@@ -466,17 +470,22 @@ if __name__ == '__main__':
             for nslc in sorted(channels.keys()):
                 could_have_data_site[site].add(nslc)
 
-                if nslc not in have_data:
+                if nslc not in have_data_this_window:
                     channel = channels[nslc]
                     dist = orthodrome.distance_accurate50m_numpy(
-                        event.lat, event.lon, 
+                        event.lat, event.lon,
                         channel.latitude.value, channel.longitude.value)
-                    
+
                     ttmin, ttmax = timewindow(dist, event.depth)
+
                     tmin_this = event.time + ttmin - tpad
                     tmax_this = event.time + ttmax + tpad
-                    
-                    selection.append(nslc + (tmin_this-1.0, tmax_this+1.0))
+
+                    tmin_req = max(tmin_win, tmin_this)
+                    tmax_req = min(tmax_win, tmax_this)
+
+                    if tmin_req < tmax_req:
+                        selection.append(nslc + (tmin_req-1.0, tmax_req+1.0))
 
             neach = 100
             i = 0
