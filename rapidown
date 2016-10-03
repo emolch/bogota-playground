@@ -10,13 +10,13 @@ import shutil
 import urllib2
 import glob
 from optparse import OptionParser
+from collections import defaultdict
 
 import numpy as num
 
-from pyrocko import trace, util, io, cake, catalog, automap, pile, model, pz
+from pyrocko import trace, util, io, cake, catalog, automap, pile, model
 from pyrocko import moment_tensor, orthodrome
 from pyrocko.fdsn import ws, station, resp
-from pyrocko.guts import Object, Tuple, String, Timestamp, Float
 
 sys.path[0:0] = ['modules']
 import pz_archive
@@ -28,6 +28,7 @@ usgs = catalog.USGS(catalog=None)
 
 tfade_factor = 1.0
 ffade_factors = 0.5, 1.5
+
 
 class starfill:
     def __getitem__(self, k):
@@ -129,7 +130,7 @@ class PhaseWindow:
                 distances=[distance*cake.m2d]):
 
             return ray.t + self.omin, ray.t + self.omax
-        
+
         raise NoArrival
 
 
@@ -158,7 +159,8 @@ logger = logging.getLogger('')
 
 usage = '''
 usage: rapidown [options] [--] <YYYY-MM-DD> <HH:MM:SS> <lat> <lon> \\
-                               <depth_km> <radius_km> <fmin_hz> <sampling_rate_hz> \\
+                               <depth_km> <radius_km> <fmin_hz> \\
+                               <sampling_rate_hz> \\
                                <eventname>
 
        rapidown [options] [--] <YYYY-MM-DD> <HH:MM:SS> <radius_km> <fmin_hz> \\
@@ -186,6 +188,14 @@ if __name__ == '__main__':
         action='store_true',
         default=False,
         help='print debugging information to stderr')
+
+    parser.add_option(
+        '--dry-run',
+        dest='dry_run',
+        action='store_true',
+        default=False,
+        help='show available stations/channels and exit '
+             '(do not download waveforms)')
 
     parser.add_option(
         '--continue',
@@ -239,7 +249,6 @@ if __name__ == '__main__':
         logger.critical('cannot use local responses in PZ and RESP '
                         'format at the same time')
         sys.exit(1)
-
 
     if options.local_responses_resp and not options.local_stations:
         logger.critical('--local-responses-resp can only be used '
@@ -331,7 +340,7 @@ if __name__ == '__main__':
         tmax = time + ttmax
 
     elif options.window == 'p':
-        phases=map(cake.PhaseDef, 'P p'.split())
+        phases = map(cake.PhaseDef, 'P p'.split())
         emod = cake.load_model()
         timewindow = PhaseWindow(emod, phases, -100., 120.)
 
@@ -371,17 +380,17 @@ if __name__ == '__main__':
 
     fmax = target_sample_rate
 
-    #target_sample_rate = None
-    #priority_band_code = ['H', 'B', 'M', 'L', 'V', 'E', 'S']
+    # target_sample_rate = None
+    # priority_band_code = ['H', 'B', 'M', 'L', 'V', 'E', 'S']
 
     priority_units = ['M/S', 'M', 'M/S**2']
     priority_instrument_code = ['H', 'L']
 
     output_units = 'M'
 
-    #sites = ['geofon', 'orfeus', 'iris']
+    # sites = ['geofon', 'orfeus', 'iris']
     sites = ['geofon', 'iris']
-    #sites = ['iris']
+    # sites = ['iris']
 
     fn_template0 = \
         'data_%(network)s.%(station)s.%(location)s.%(channel)s_%(tmin)s.mseed'
@@ -389,7 +398,6 @@ if __name__ == '__main__':
     fn_template_raw = op.join(output_dir, 'raw',  fn_template0)
     fn_stations_raw = op.join(output_dir, 'raw',  'stations.txt')
     fn_template_rest = op.join(output_dir, 'rest',  fn_template0)
-
 
     ftap = (ffade_factors[0]*fmin, fmin, fmax, ffade_factors[1]*fmax)
 
@@ -440,6 +448,7 @@ if __name__ == '__main__':
         have_data_site[site] = set()
         could_have_data_site[site] = set()
 
+    available_through = defaultdict(set)
     it = 0
     nt = int(math.ceil((tmax - tmin) / tinc))
     for it in xrange(nt):
@@ -461,11 +470,11 @@ if __name__ == '__main__':
 
             selection = []
             channels = sx.choose_channels(
-                    target_sample_rate=target_sample_rate,
-                    priority_band_code=priority_band_code,
-                    priority_units=priority_units,
-                    priority_instrument_code=priority_instrument_code,
-                    timespan=(tmin_win, tmax_win))
+                target_sample_rate=target_sample_rate,
+                priority_band_code=priority_band_code,
+                priority_units=priority_units,
+                priority_instrument_code=priority_instrument_code,
+                timespan=(tmin_win, tmax_win))
 
             for nslc in sorted(channels.keys()):
                 could_have_data_site[site].add(nslc)
@@ -487,56 +496,108 @@ if __name__ == '__main__':
                     if tmin_req < tmax_req:
                         selection.append(nslc + (tmin_req-1.0, tmax_req+1.0))
 
-            neach = 100
-            i = 0
-            nbatches = ((len(selection)-1) / neach) + 1
-            while i < len(selection):
-                selection_now = selection[i:i+neach]
+            if options.dry_run:
+                for (net, sta, loc, cha, tmin, tmax) in selection:
+                    available_through[net, sta, loc, cha].add(site)
 
-                f = tempfile.NamedTemporaryFile()
-                try:
-                    sbatch = ''
-                    if nbatches > 1:
-                        sbatch = ' (batch %i/%i)' % ((i/neach) + 1, nbatches)
+            else:
+                neach = 100
+                i = 0
+                nbatches = ((len(selection)-1) / neach) + 1
+                while i < len(selection):
+                    selection_now = selection[i:i+neach]
 
-                    logger.info('downloading data (%s)%s' % (site, sbatch))
+                    f = tempfile.NamedTemporaryFile()
+                    try:
+                        sbatch = ''
+                        if nbatches > 1:
+                            sbatch = ' (batch %i/%i)' % (
+                                (i/neach) + 1, nbatches)
 
-                    data = ws.dataselect(site=site, selection=selection_now)
+                        logger.info('downloading data (%s)%s' % (site, sbatch))
 
-                    while True:
-                        buf = data.read(1024)
-                        if not buf:
-                            break
-                        f.write(buf)
+                        data = ws.dataselect(
+                            site=site, selection=selection_now)
 
-                    f.flush()
+                        while True:
+                            buf = data.read(1024)
+                            if not buf:
+                                break
+                            f.write(buf)
 
-                    trs = io.load(f.name)
-                    for tr in trs:
-                        try:
-                            tr.chop(tmin_win, tmax_win)
-                            have_data.add(tr.nslc_id)
-                            have_data_site[site].add(tr.nslc_id)
-                        except trace.NoData:
-                            pass
+                        f.flush()
 
-                    fns2 = io.save(trs, fn_template_raw)
-                    for fn in fns2:
-                        if fn in fns:
-                            logger.warn('overwriting file %s', fn)
-                    fns.extend(fns2)
+                        trs = io.load(f.name)
+                        for tr in trs:
+                            try:
+                                tr.chop(tmin_win, tmax_win)
+                                have_data.add(tr.nslc_id)
+                                have_data_site[site].add(tr.nslc_id)
+                            except trace.NoData:
+                                pass
 
-                except ws.EmptyResult:
-                    pass
+                        fns2 = io.save(trs, fn_template_raw)
+                        for fn in fns2:
+                            if fn in fns:
+                                logger.warn('overwriting file %s', fn)
+                        fns.extend(fns2)
 
-                except urllib2.HTTPError:
-                    logger.warn('an error occurred while downloading data '
-                                'for channels \n  %s'
-                                % '\n  '.join(
-                                    '.'.join(x[:4]) for x in selection_now))
+                    except ws.EmptyResult:
+                        pass
 
-                f.close()
-                i += neach
+                    except urllib2.HTTPError:
+                        logger.warn(
+                            'an error occurred while downloading data '
+                            'for channels \n  %s' % '\n  '.join(
+                                '.'.join(x[:4]) for x in selection_now))
+
+                    f.close()
+                    i += neach
+
+    if options.dry_run:
+        nslcs = sorted(available_through.keys())
+
+        all_channels = defaultdict(set)
+        all_stations = defaultdict(set)
+
+        def plural_s(x):
+            return '' if x == 1 else 's'
+
+        for nslc in nslcs:
+            sites = tuple(sorted(available_through[nslc]))
+            logger.info('selected: %s.%s.%s.%s from site%s %s' % (
+                nslc + (plural_s(len(sites)), '+'.join(sites))))
+
+            all_channels[sites].add(nslc)
+            all_stations[sites].add(nslc[:3])
+
+        nchannels_all = 0
+        nstations_all = 0
+        for sites in sorted(
+                all_channels.keys(),
+                key=lambda sites: (-len(sites), sites)):
+
+            nchannels = len(all_channels[sites])
+            nstations = len(all_stations[sites])
+            nchannels_all += nchannels
+            nstations_all += nstations
+            logger.info(
+                'selected (%s): %i channel%s (%i station%s)' % (
+                    '+'.join(sites),
+                    nchannels,
+                    plural_s(nchannels),
+                    nstations,
+                    plural_s(nstations)))
+
+        logger.info(
+            'selected total: %i channel%s (%i station%s)' % (
+                nchannels_all,
+                plural_s(nchannels_all),
+                nstations_all,
+                plural_s(nstations_all)))
+
+        logger.info('dry run done.')
+        sys.exit(0)
 
     for nslc in have_data:
         # if we are in continue mode, we have to guess where the data came from
@@ -601,7 +662,8 @@ if __name__ == '__main__':
                 if nsl not in nsl_to_station:
                     nsl_to_station[nsl] = s
 
-    stations = [nsl_to_station[nsl] for nsl in sorted(nsl_to_station.keys())]
+    stations = [
+        nsl_to_station[nsl_] for nsl_ in sorted(nsl_to_station.keys())]
 
     util.ensuredirs(fn_stations_raw)
     model.dump_stations(stations, fn_stations_raw)
