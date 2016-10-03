@@ -493,8 +493,18 @@ if __name__ == '__main__':
                     tmin_req = max(tmin_win, tmin_this)
                     tmax_req = min(tmax_win, tmax_this)
 
+                    if channel.sample_rate:
+                        deltat = 1.0 / channel.sample_rate.value
+                    else:
+                        deltat = 1.0
+
                     if tmin_req < tmax_req:
-                        selection.append(nslc + (tmin_req-1.0, tmax_req+1.0))
+                        # extend time window by some samples because otherwise
+                        # sometimes gaps are produced
+                        selection.append(
+                            nslc + (
+                                tmin_req-deltat*10.0,
+                                tmax_req+deltat*10.0))
 
             if options.dry_run:
                 for (net, sta, loc, cha, tmin, tmax) in selection:
