@@ -9,6 +9,7 @@ import os.path as op
 import shutil
 import urllib2
 import glob
+import pipes
 from optparse import OptionParser
 from collections import defaultdict
 
@@ -150,6 +151,13 @@ class VelocityWindow:
         return ttmin - self.tpad, ttmax + self.tpad
 
 
+def dump_commandline(argv, fn):
+    s = ' '.join([pipes.quote(x) for x in argv])
+    with open(fn, 'w') as f:
+        f.write(s)
+        f.write('\n')
+
+
 program_name = 'rapidown'
 description = '''
 Download waveforms from FDSN web services and prepare for RAPIDINV
@@ -243,6 +251,14 @@ if __name__ == '__main__':
         help='set output component orientations to radial-transverse-up [rtu] '
              '(default) or east-north-up [enu]')
 
+    parser.add_option(
+        '--padding-factor',
+        type=float,
+        default=3.0,
+        dest='padding_factor',
+        help='extend time window on either side, in multiples of 1/<fmin_hz> '
+             '(default: 5)')
+
     (options, args) = parser.parse_args(sys.argv[1:])
 
     if options.local_responses_pz and options.local_responses_resp:
@@ -334,7 +350,9 @@ if __name__ == '__main__':
 
     if options.window == 'full':
         low_velocity = 1500.
-        timewindow = VelocityWindow(low_velocity, tpad=3.0/fmin)
+        timewindow = VelocityWindow(
+            low_velocity, tpad=options.padding_factor/fmin)
+
         ttmin, ttmax = timewindow(radius, depth)
         tmin = time + ttmin
         tmax = time + ttmax
@@ -342,7 +360,9 @@ if __name__ == '__main__':
     elif options.window == 'p':
         phases = map(cake.PhaseDef, 'P p'.split())
         emod = cake.load_model()
-        timewindow = PhaseWindow(emod, phases, -100., 120.)
+
+        tpad = options.padding_factor / fmin
+        timewindow = PhaseWindow(emod, phases, -tpad, tpad)
 
         traveltimes = []
         for dist in num.linspace(0, radius, 20):
@@ -398,6 +418,7 @@ if __name__ == '__main__':
     fn_template_raw = op.join(output_dir, 'raw',  fn_template0)
     fn_stations_raw = op.join(output_dir, 'raw',  'stations.txt')
     fn_template_rest = op.join(output_dir, 'rest',  fn_template0)
+    fn_commandline = op.join(output_dir, 'rapidown.command')
 
     ftap = (ffade_factors[0]*fmin, fmin, fmax, ffade_factors[1]*fmax)
 
@@ -677,6 +698,8 @@ if __name__ == '__main__':
 
     util.ensuredirs(fn_stations_raw)
     model.dump_stations(stations, fn_stations_raw)
+
+    dump_commandline(sys.argv, fn_commandline)
 
     # chapter 2: restitution
 
