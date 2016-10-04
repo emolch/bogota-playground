@@ -50,7 +50,6 @@ from datetime import datetime
 import time
 import calendar
 from numpy import mean,std,var
-from tunguska.phase import Phase,Timing
 #additional library:
 import numpy as N
 import fileinput
@@ -58,6 +57,7 @@ import fileinput
 sys.path[0:0] = ['modules']
 from mopad import MomentTensor
 from mopad import BeachBall
+from tunguska.phase import Phase,Timing
 
 #constants:
 dynecm = 1e-7
