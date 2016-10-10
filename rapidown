@@ -237,6 +237,11 @@ if __name__ == '__main__':
         help='add file/directory with local pole-zero responses')
 
     parser.add_option(
+        '--local-responses-stationxml',
+        dest='local_responses_stationxml',
+        help='add file with local response information in StationXML format')
+
+    parser.add_option(
         '--window',
         choices=['full', 'p'],
         dest='window',
@@ -261,14 +266,8 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args(sys.argv[1:])
 
-    if options.local_responses_pz and options.local_responses_resp:
-        logger.critical('cannot use local responses in PZ and RESP '
-                        'format at the same time')
-        sys.exit(1)
-
-    if options.local_responses_resp and not options.local_stations:
-        logger.critical('--local-responses-resp can only be used '
-                        'when --stations is also given.')
+    if len(args) not in (9, 6, 5):
+        parser.print_help()
         sys.exit(1)
 
     if options.debug:
@@ -276,8 +275,29 @@ if __name__ == '__main__':
     else:
         util.setup_logging(program_name, 'info')
 
-    if len(args) not in (9, 6, 5):
-        parser.print_help()
+    if options.local_responses_pz and options.local_responses_resp:
+        logger.critical('cannot use local responses in PZ and RESP '
+                        'format at the same time')
+        sys.exit(1)
+
+    n_resp_opt = 0
+    for resp_opt in (
+            options.local_responses_pz,
+            options.local_responses_resp,
+            options.local_responses_stationxml):
+
+        if resp_opt:
+            n_resp_opt += 1
+
+    if n_resp_opt > 1:
+        logger.critical('can only handle local responses from either PZ or '
+                        'RESP or StationXML. Cannot yet merge different '
+                        'response formats.')
+        sys.exit(1)
+
+    if options.local_responses_resp and not options.local_stations:
+        logger.critical('--local-responses-resp can only be used '
+                        'when --stations is also given.')
         sys.exit(1)
 
     try:
@@ -681,6 +701,10 @@ if __name__ == '__main__':
 
         sxs['local'] = resp.make_stationxml(
             local_stations, resp.iload(options.local_responses_resp))
+
+    if options.local_responses_stationxml:
+        sxs['local'] = station.load_xml(
+            filename=options.local_responses_stationxml)
 
     # chapter 1.6: dump raw data stations file
 
