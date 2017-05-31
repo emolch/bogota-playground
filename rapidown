@@ -172,11 +172,13 @@ def dump_commandline(argv, fn):
 
 
 g_user_credentials = {}
+g_auth_tokens = {}
 
 
 def get_user_credentials(site):
     user, passwd = g_user_credentials.get(site, (None, None))
-    return dict(user=user, passwd=passwd)
+    token = g_auth_tokens.get(site, None)
+    return dict(user=user, passwd=passwd, token=token)
 
 
 program_name = 'rapidown'
@@ -298,6 +300,15 @@ if __name__ == '__main__':
         metavar='SITE,USER,PASSWD',
         help='user credentials for specific site to access restricted data '
              '(this option can be repeated)')
+
+    parser.add_option(
+        '--token',
+        dest='auth_tokens',
+        metavar='SITE,FILENAME',
+        action='append',
+        default=[],
+        help='user authentication token for specific site to access '
+             'restricted data (this option can be repeated)')
 
     parser.add_option(
         '--sites',
@@ -541,6 +552,15 @@ if __name__ == '__main__':
             logger.critical('invalid format for user credentials: "%s"' % s)
             sys.exit(1)
 
+    for s in options.auth_tokens:
+        try:
+            site, token_filename = s.split(',')
+            with open(token_filename, 'r') as f:
+                g_auth_tokens[site] = f.read()
+        except (ValueError, OSError, IOError):
+            logger.critical('cannot get token from file: %s' % token_filename)
+            sys.exit(1)
+
     fn_template0 = \
         'data_%(network)s.%(station)s.%(location)s.%(channel)s_%(tmin)s.mseed'
 
@@ -569,7 +589,8 @@ if __name__ == '__main__':
                 endafter=tmin,
                 format='text',
                 level='channel',
-                includerestricted=site in g_user_credentials,
+                includerestricted=(
+                    site in g_user_credentials or site in g_auth_tokens),
                 **extra_args)
 
         except ws.EmptyResult:
