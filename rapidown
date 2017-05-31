@@ -20,15 +20,19 @@ from pyrocko import moment_tensor, orthodrome
 from pyrocko.fdsn import ws, station, resp
 
 sys.path[0:0] = ['modules']
-import pz_archive
+import pz_archive  # noqa
 
 km = 1000.
+
+g_sites_available = sorted(ws.g_site_abbr.keys())
 
 geofon = catalog.Geofon()
 usgs = catalog.USGS(catalog=None)
 
 tfade_factor = 1.0
 ffade_factors = 0.5, 1.5
+
+ws.g_timeout = 60.
 
 
 class starfill:
@@ -124,13 +128,13 @@ class PhaseWindow:
         self.omin = omin
         self.omax = omax
 
-    def __call__(self, distance, depth):
+    def __call__(self, time, distance, depth):
         for ray in self.model.arrivals(
                 phases=self.phases,
                 zstart=depth,
                 distances=[distance*cake.m2d]):
 
-            return ray.t + self.omin, ray.t + self.omax
+            return time + ray.t + self.omin, time + ray.t + self.omax
 
         raise NoArrival
 
@@ -141,14 +145,23 @@ class VelocityWindow:
         self.vmax = vmax
         self.tpad = tpad
 
-    def __call__(self, distance, depth):
+    def __call__(self, time, distance, depth):
         ttmax = (depth + distance) / self.vmin
         if self.vmax is not None:
             ttmin = (depth + distance) / self.vmax
         else:
             ttmin = 0.0
 
-        return ttmin - self.tpad, ttmax + self.tpad
+        return time + ttmin - self.tpad, time + ttmax + self.tpad
+
+
+class FixedWindow:
+    def __init__(self, tmin, tmax):
+        self.tmin = tmin
+        self.tmax = tmax
+
+    def __call__(self, time, distance, depth):
+        return self.tmin, self.tmax
 
 
 def dump_commandline(argv, fn):
@@ -156,6 +169,14 @@ def dump_commandline(argv, fn):
     with open(fn, 'w') as f:
         f.write(s)
         f.write('\n')
+
+
+g_user_credentials = {}
+
+
+def get_user_credentials(site):
+    user, passwd = g_user_credentials.get(site, (None, None))
+    return dict(user=user, passwd=passwd)
 
 
 program_name = 'rapidown'
@@ -175,6 +196,9 @@ usage: rapidown [options] [--] <YYYY-MM-DD> <HH:MM:SS> <lat> <lon> \\
                                <sampling_rate_hz> <eventname>
 
        rapidown [options] [--] <catalog-eventname> <radius_km> <fmin_hz> \\
+                               <sampling_rate_hz> <eventname>
+
+       rapidown [options] [--] <lat> <lon> <radius_km> <fmin_hz> \\
                                <sampling_rate_hz> <eventname>
 '''.strip()
 
@@ -243,10 +267,10 @@ if __name__ == '__main__':
 
     parser.add_option(
         '--window',
-        choices=['full', 'p'],
         dest='window',
         default='full',
-        help='set time window to choose [full, p]')
+        help='set time window to choose [full, p, "<time-start>,<time-end>"'
+             '] (time format is YYYY-MM-DD HH:MM:SS)')
 
     parser.add_option(
         '--out-components',
@@ -263,6 +287,37 @@ if __name__ == '__main__':
         dest='padding_factor',
         help='extend time window on either side, in multiples of 1/<fmin_hz> '
              '(default: 5)')
+
+    parser.add_option(
+        '--credentials',
+        dest='user_credentials',
+        action='append',
+        default=[],
+        metavar='SITE,USER,PASSWD',
+        help='user credentials for specific site to access restricted data '
+             '(this option can be repeated)')
+
+    parser.add_option(
+        '--sites',
+        dest='sites',
+        metavar='SITE1,SITE2,...',
+        default='geofon,iris,orfeus',
+        help='sites to query (available: %s, default: "%%default"'
+        % ', '.join(g_sites_available))
+
+    parser.add_option(
+        '--band-codes',
+        dest='priority_band_code',
+        metavar='V,L,M,B,H,S,E,...',
+        default='V,L,M,B,H,S,E',
+        help='select and prioritize band codes (default: %default)')
+
+    parser.add_option(
+        '--instrument-codes',
+        dest='priority_instrument_code',
+        metavar='H,L,G,...',
+        default='H,L',
+        help='select and prioritize instrument codes (default: %default)')
 
     (options, args) = parser.parse_args(sys.argv[1:])
 
@@ -309,13 +364,24 @@ if __name__ == '__main__':
             lon = float(args[3])
             depth = float(args[4])*km
             iarg = 5
+
         elif len(args) == 6:
-            sname_or_date = args[0] + ' ' + args[1]
+            if args[0].find('-') == -1:
+                sname_or_date = None
+                lat = float(args[0])
+                lon = float(args[1])
+                event = None
+                time = None
+            else:
+                sname_or_date = args[0] + ' ' + args[1]
+
             iarg = 2
+
         elif len(args) == 5:
             sname_or_date = args[0]
             iarg = 1
-        if len(args) in (6, 5):
+
+        if len(args) in (6, 5) and sname_or_date is not None:
             events = get_events_by_name_or_date([sname_or_date],
                                                 catalog=geofon)
             if len(events) == 0:
@@ -365,38 +431,60 @@ if __name__ == '__main__':
             % rapidinv_input_fn)
         sys.exit(1)
 
-    event = model.Event(time=time, lat=lat, lon=lon, depth=depth, name=ename,
-                        magnitude=magnitude)
+    if time is not None:
+        event = model.Event(
+            time=time, lat=lat, lon=lon, depth=depth, name=ename,
+            magnitude=magnitude)
 
     if options.window == 'full':
+        if event is None:
+            logger.critical('need event for --window=full')
+            sys.exit(1)
+
         low_velocity = 1500.
         timewindow = VelocityWindow(
             low_velocity, tpad=options.padding_factor/fmin)
 
-        ttmin, ttmax = timewindow(radius, depth)
-        tmin = time + ttmin
-        tmax = time + ttmax
+        tmin, tmax = timewindow(time, radius, depth)
 
     elif options.window == 'p':
+        if event is None:
+            logger.critical('need event for --window=p')
+            sys.exit(1)
+
         phases = map(cake.PhaseDef, 'P p'.split())
         emod = cake.load_model()
 
         tpad = options.padding_factor / fmin
         timewindow = PhaseWindow(emod, phases, -tpad, tpad)
 
-        traveltimes = []
+        arrivaltimes = []
         for dist in num.linspace(0, radius, 20):
             try:
-                traveltimes.extend(timewindow(dist, depth))
+                arrivaltimes.extend(timewindow(time, dist, depth))
             except NoArrival:
                 pass
 
-        if not traveltimes:
+        if not arrivaltimes:
             logger.error('required phase arrival not found')
             sys.exit(1)
 
-        tmin = time + min(traveltimes)
-        tmax = time + max(traveltimes)
+        tmin = min(arrivaltimes)
+        tmax = max(arrivaltimes)
+
+    else:
+        try:
+            stmin, stmax = options.window.split(',')
+            print stmin, stmax
+            tmin = util.str_to_time(stmin.strip())
+            tmax = util.str_to_time(stmax.strip())
+
+            timewindow = FixedWindow(tmin, tmax)
+
+        except ValueError:
+            logger.critical('invalid argument to --window: "%s"'
+                            % options.window)
+            sys.exit(1)
 
     tlen = tmax - tmin
     tfade = tfade_factor / fmin
@@ -408,15 +496,24 @@ if __name__ == '__main__':
 
     tinc = None
 
+    priority_band_code = options.priority_band_code.split(',')
+    for s in priority_band_code:
+        if len(s) != 1:
+            logger.critical('invalid band code: %s' % s)
+
+    priority_instrument_code = options.priority_instrument_code.split(',')
+    for s in priority_instrument_code:
+        if len(s) != 1:
+            logger.critical('invalid instrument code: %s' % s)
+
     station_query_conf = dict(
         latitude=lat,
         longitude=lon,
         minradius=0.,
         maxradius=radius*cake.m2d,
-        channel='?H?,?L?')
+        channel=','.join('?%s?' % s for s in priority_band_code))
 
     target_sample_rate = sample_rate
-    priority_band_code = ['V', 'L', 'M', 'B', 'H', 'S', 'E']
 
     fmax = target_sample_rate
 
@@ -424,13 +521,23 @@ if __name__ == '__main__':
     # priority_band_code = ['H', 'B', 'M', 'L', 'V', 'E', 'S']
 
     priority_units = ['M/S', 'M', 'M/S**2']
-    priority_instrument_code = ['H', 'L']
 
     output_units = 'M'
 
-    # sites = ['geofon', 'orfeus', 'iris']
-    sites = ['geofon', 'iris']
-    # sites = ['iris']
+    sites = options.sites.split(',')
+
+    for site in sites:
+        if site not in g_sites_available:
+            logger.critical('unknown FDSN site: %s' % site)
+            sys.exit(1)
+
+    for s in options.user_credentials:
+        try:
+            site, user, passwd = s.split(',')
+            g_user_credentials[site] = user, passwd
+        except ValueError:
+            logger.critical('invalid format for user credentials: "%s"' % s)
+            sys.exit(1)
 
     fn_template0 = \
         'data_%(network)s.%(station)s.%(location)s.%(channel)s_%(tmin)s.mseed'
@@ -460,7 +567,7 @@ if __name__ == '__main__':
                 endafter=tmin,
                 format='text',
                 level='channel',
-                includerestricted=False,
+                includerestricted=site in g_user_credentials,
                 **extra_args)
 
         except ws.EmptyResult:
@@ -522,14 +629,26 @@ if __name__ == '__main__':
 
                 if nslc not in have_data_this_window:
                     channel = channels[nslc]
+                    if event:
+                        lat_, lon_ = event.lat, event.lon
+                    else:
+                        lat_, lon_ = lat, lon
+
                     dist = orthodrome.distance_accurate50m_numpy(
-                        event.lat, event.lon,
+                        lat_, lon_,
                         channel.latitude.value, channel.longitude.value)
 
-                    ttmin, ttmax = timewindow(dist, event.depth)
+                    if event:
+                        depth_ = event.depth
+                        time_ = event.time
+                    else:
+                        depth_ = None
+                        time_ = None
 
-                    tmin_this = event.time + ttmin - tpad
-                    tmax_this = event.time + ttmax + tpad
+                    tmin_, tmax_ = timewindow(time_, dist, depth_)
+
+                    tmin_this = tmin_ - tpad
+                    tmax_this = tmax_ + tpad
 
                     tmin_req = max(tmin_win, tmin_this)
                     tmax_req = min(tmax_win, tmax_this)
@@ -568,7 +687,8 @@ if __name__ == '__main__':
                         logger.info('downloading data (%s)%s' % (site, sbatch))
 
                         data = ws.dataselect(
-                            site=site, selection=selection_now)
+                            site=site, selection=selection_now,
+                            **get_user_credentials(site))
 
                         while True:
                             buf = data.read(1024)
@@ -817,6 +937,9 @@ if __name__ == '__main__':
     fns.extend(cut_n_dump(rest_traces_b, win_b, fn_template_rest))
 
     # chapter 3: rapidinv setup
+
+    if not event:
+        sys.exit(0)
 
     fn_template1 = \
         'DISPL.%(network)s.%(station)s.%(location)s.%(channel)s'
