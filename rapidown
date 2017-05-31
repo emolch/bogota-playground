@@ -198,7 +198,9 @@ usage: rapidown [options] [--] <YYYY-MM-DD> <HH:MM:SS> <lat> <lon> \\
        rapidown [options] [--] <catalog-eventname> <radius_km> <fmin_hz> \\
                                <sampling_rate_hz> <eventname>
 
-       rapidown [options] [--] <lat> <lon> <radius_km> <fmin_hz> \\
+       rapidown [options] --window="<YYYY-MM-DD HH:MM:SS, YYYY-MM-DD HH:MM:\
+SS>" \\
+                               [--] <lat> <lon> <radius_km> <fmin_hz> \\
                                <sampling_rate_hz> <eventname>
 '''.strip()
 
@@ -366,7 +368,7 @@ if __name__ == '__main__':
             iarg = 5
 
         elif len(args) == 6:
-            if args[0].find('-') == -1:
+            if args[1].find(':') == -1:
                 sname_or_date = None
                 lat = float(args[0])
                 lon = float(args[1])
