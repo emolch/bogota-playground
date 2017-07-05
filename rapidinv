@@ -1262,6 +1262,24 @@ def line_mask(sourcetype,true_parameters,inv_param):
             elif parameter=='rise-time':
                 spar_mins.append(0.)
                 spar_maxs.append(300.)
+            elif parameter=='m11':
+                spar_mins.append(-1.e30)
+                spar_maxs.append(1.e30)
+            elif parameter=='m22':
+                spar_mins.append(-1.e30)
+                spar_maxs.append(1.e30)
+            elif parameter=='m33':
+                spar_mins.append(-1.e30)
+                spar_maxs.append(1.e30)
+            elif parameter=='m12':
+                spar_mins.append(-1.e30)
+                spar_maxs.append(1.e30)
+            elif parameter=='m13':
+                spar_mins.append(-1.e30)
+                spar_maxs.append(1.e30)
+            elif parameter=='m23':
+                spar_mins.append(-1.e30)
+                spar_maxs.append(1.e30)
             else:
                 print parameter,'unknown limits'
                 sys.exit()
