@@ -17,10 +17,7 @@ import numpy as num
 
 from pyrocko import trace, util, io, cake, catalog, automap, pile, model
 from pyrocko import moment_tensor, orthodrome
-from pyrocko.fdsn import ws, station, resp
-
-sys.path[0:0] = ['modules']
-import pz_archive  # noqa
+from pyrocko.fdsn import ws, station, resp, enhanced_sacpz as epz
 
 km = 1000.
 
@@ -488,7 +485,6 @@ if __name__ == '__main__':
     else:
         try:
             stmin, stmax = options.window.split(',')
-            print stmin, stmax
             tmin = util.str_to_time(stmin.strip())
             tmax = util.str_to_time(stmax.strip())
 
@@ -818,7 +814,7 @@ if __name__ == '__main__':
 
     if options.local_data:
         have_data_site['local'] = set()
-        plocal = pile.make_pile(options.local_data)
+        plocal = pile.make_pile(options.local_data, fileformat='detect')
         for traces in plocal.chopper_grouped(
                 gather=lambda tr: tr.nslc_id,
                 tmin=tmin,
@@ -834,7 +830,8 @@ if __name__ == '__main__':
         sites.append('local')
 
     if options.local_responses_pz:
-        sxs['local'] = pz_archive.load(options.local_responses_pz)
+        sxs['local'] = epz.make_stationxml(
+            epz.iload(options.local_responses_pz))
 
     if options.local_responses_resp:
         local_stations = []
