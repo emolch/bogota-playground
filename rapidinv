@@ -3267,30 +3267,65 @@ def plotDuration(inv_step,inv_param):
     if appdurmin<0.:
         appdurmin=0.
     fatt.close()
-    fgmt=open(fappdurgmt,'w')
-    fgmt.write("#!/bin/bash\n")
-    fgmt.write("makecpt -Cpolar -T"+str(appdurmin)+"/"+str(appdurmax)+"/"+effe2+" >"+fappdurcpt+" \n")
-    degs=1.5*0.01*float(inv_param['EPIC_DIST_MAX'])
-    lonemin,lonemax=str(float(inv_param['LONGITUDE_EAST'])-degs),str(float(inv_param['LONGITUDE_EAST'])+degs)
-    latnmin,latnmax=str(float(inv_param['LATITUDE_NORTH'])-degs),str(float(inv_param['LATITUDE_NORTH'])+degs)
-    rrange=lonemin+"/"+lonemax+"/"+latnmin+"/"+latnmax
-    fgmt.write("psbasemap -X3 -Y5 -R"+rrange+" -JM10 -K -V -P -BSneWa5f5:'Lon E [deg]':/a5f5:' Lat N [deg]': >"+fappdurps+"\n")
-    # fgmt.write("psbasemap -X1.5 -Y14 -R -JM10 -K -O -V -P -BSneWa5f5:' ':/a5f5:' ': >>"+fappdurps+"\n")
-    fgmt.write("pscoast -X0 -Y0 -JM -R -Dl -A5000 -N1/1/0 -K -O -V -G125/125/0 -S0/0/125 -W3/205 -BSWEN >>"+fappdurps+"\n")
-    fgmt.write("psxy <<loc -X0 -Y0 -JM -R -K -O -W1/0 -Sa0.5 -G255/0/0 -V -P >>"+fappdurps+"\n")
-    fgmt.write(inv_param['LONGITUDE_EAST']+" "+inv_param['LATITUDE_NORTH']+"\n")
-    fgmt.write("loc\n")
-    fgmt.write("psxy "+fappdurloc+" -X0 -Y0 -JM -R -K -O -W1/0 -C"+fappdurcpt+" -Sc.25 -V -P >>"+fappdurps+"\n")
-    fgmt.write("psxy "+fappduratt+" -X10.5 -Y4.5 -JX5/4 -R-180/180/"+str(appdurmin)+"/"+str(appdurmax)+\
-               " -K -O -Sc0.125 -W1/0 -C"+fappdurcpt+" -M -V -P -BEswna90f90:' ':/a"+\
-               effe2+"f"+effe2+":'App.Dur.[s]': >>"+fappdurps+"\n")
-    fgmt.write("psxy "+fappdursh1+" -X0 -Y0 -JX -R -K -O -W3/0 -V -P -B >>"+fappdurps+"\n")
-    fgmt.write("psxy "+fappduratt+" -X0 -Y-4.5 -JX5/4 -R -K -O -Sc0.125 -C"+fappdurcpt+" -W1/0 -M -V -P -BSEwna90f90:'Azimuth[deg]':/a"+\
-               effe2+"f"+effe2+":'App.Dur.[s]': >>"+fappdurps+"\n")
-    fgmt.write("psxy "+fappdursh2+" -X0 -Y0 -JX -R -K -O -W3/0 -V -P -B >>"+fappdurps+"\n")
-    fgmt.write("psscale -D2.6/10.33/5.2/0.25h -C"+fappdurcpt+" -L -O -V >>"+fappdurps+"\n")
-    fgmt.flush()
-    fgmt.close()
+
+    if inv_param['GMT_VERSION']=='5':
+        fgmt=open(fappdurgmt,'w')
+        fgmt.write("#!/bin/bash\n")
+        fgmt.write("gmt gmtset MAP_DEGREE_SYMBOL colon\n")
+        fgmt.write("gmt gmtset MAP_GRID_CROSS_SIZE_PRIMARY 0.4c\n")
+        fgmt.write("gmt gmtset PS_LINE_JOIN round\n")
+        fgmt.write("gmt gmtset MAP_TICK_LENGTH 0.1c\n")
+        fgmt.write("gmt gmtset MAP_TICK_PEN 0.24p\n")
+        fgmt.write("gmt gmtset MAP_FRAME_WIDTH 0.05c\n")
+        fgmt.write("gmt gmtset MAP_FRAME_TYPE plain\n")
+        fgmt.write("gmt makecpt -Cpolar -T"+str(appdurmin)+"/"+str(appdurmax)+"/"+effe2+" >"+fappdurcpt+" \n")
+        degs=1.5*0.01*float(inv_param['EPIC_DIST_MAX'])
+        lonemin,lonemax=str(float(inv_param['LONGITUDE_EAST'])-degs),str(float(inv_param['LONGITUDE_EAST'])+degs)
+        latnmin,latnmax=str(float(inv_param['LATITUDE_NORTH'])-degs),str(float(inv_param['LATITUDE_NORTH'])+degs)
+        rrange=lonemin+"/"+lonemax+"/"+latnmin+"/"+latnmax
+        fgmt.write("gmt psbasemap -X3 -Y5 -R"+rrange+" -JM10 -K -V -P -BSWEN >"+fappdurps+"\n")
+        fgmt.write("gmt pscoast -X0 -Y0 -JM -R -W3,0 -Di -BWSen -G125/125/0 -S0/0/125 "+\
+                   '-Bxa5f5+l"Lon E [deg]" -Bya5f5+l"Lat N [deg]" -K >'+fappdurps+"\n")
+        fgmt.write("gmt psxy <<loc -X0 -Y0 -JM -R -K -O -Wthin,0 -Sa0.5 -G255/0/0 -V -P >>"+fappdurps+"\n")
+        fgmt.write(inv_param['LONGITUDE_EAST']+" "+inv_param['LATITUDE_NORTH']+"\n")
+        fgmt.write("loc\n")
+        fgmt.write("gmt psxy "+fappdurloc+" -X0 -Y0 -JM -R -K -O -Wthin,0 -C"+fappdurcpt+" -Sc.25 -V -P >>"+fappdurps+"\n")
+        fgmt.write("gmt psxy "+fappduratt+" -X10.5 -Y4.5 -JX5/4 -R-180/180/"+str(appdurmin)+"/"+str(appdurmax)+\
+                   " -K -O -Sc0.125 -Wthin,0 -C"+fappdurcpt+" -V -P -BEswn -Bxa90f90 -By"+\
+                   effe2+"f"+effe2+'+l"App.Dur.[s]" >>'+fappdurps+"\n")
+        fgmt.write("gmt psxy "+fappdursh1+" -X0 -Y0 -JX -R -K -O -Wthick,0 -V -P -B >>"+fappdurps+"\n")
+        fgmt.write("gmt psxy "+fappduratt+" -X0 -Y-4.5 -JX5/4 -R -K -O -Sc0.125 -C"+fappdurcpt+" -Wthin,0 -V -P "+\
+                   '-BSwEn -Bxa90f90+l"Azimuth[deg]" -By'+effe2+"f"+effe2+'+l"App.Dur.[s]" >>'+fappdurps+"\n")
+        fgmt.write("gmt psxy "+fappdursh2+" -X0 -Y0 -JX -R -K -O -Wthick,0 -V -P -B >>"+fappdurps+"\n")
+        fgmt.write("gmt psscale -D2.6/10.33/5.2/0.25h -C"+fappdurcpt+" -L -O -V >>"+fappdurps+"\n")
+        fgmt.flush()
+        fgmt.close()
+    else:
+        fgmt=open(fappdurgmt,'w')
+        fgmt.write("#!/bin/bash\n")
+        fgmt.write("makecpt -Cpolar -T"+str(appdurmin)+"/"+str(appdurmax)+"/"+effe2+" >"+fappdurcpt+" \n")
+        degs=1.5*0.01*float(inv_param['EPIC_DIST_MAX'])
+        lonemin,lonemax=str(float(inv_param['LONGITUDE_EAST'])-degs),str(float(inv_param['LONGITUDE_EAST'])+degs)
+        latnmin,latnmax=str(float(inv_param['LATITUDE_NORTH'])-degs),str(float(inv_param['LATITUDE_NORTH'])+degs)
+        rrange=lonemin+"/"+lonemax+"/"+latnmin+"/"+latnmax
+        fgmt.write("psbasemap -X3 -Y5 -R"+rrange+" -JM10 -K -V -P -BSneWa5f5:'Lon E [deg]':/a5f5:' Lat N [deg]': >"+fappdurps+"\n")
+        # fgmt.write("psbasemap -X1.5 -Y14 -R -JM10 -K -O -V -P -BSneWa5f5:' ':/a5f5:' ': >>"+fappdurps+"\n")
+        fgmt.write("pscoast -X0 -Y0 -JM -R -Dl -A5000 -N1/1/0 -K -O -V -G125/125/0 -S0/0/125 -W3/205 -BSWEN >>"+fappdurps+"\n")
+        fgmt.write("psxy <<loc -X0 -Y0 -JM -R -K -O -W1/0 -Sa0.5 -G255/0/0 -V -P >>"+fappdurps+"\n")
+        fgmt.write(inv_param['LONGITUDE_EAST']+" "+inv_param['LATITUDE_NORTH']+"\n")
+        fgmt.write("loc\n")
+        fgmt.write("psxy "+fappdurloc+" -X0 -Y0 -JM -R -K -O -W1/0 -C"+fappdurcpt+" -Sc.25 -V -P >>"+fappdurps+"\n")
+        fgmt.write("psxy "+fappduratt+" -X10.5 -Y4.5 -JX5/4 -R-180/180/"+str(appdurmin)+"/"+str(appdurmax)+\
+                   " -K -O -Sc0.125 -W1/0 -C"+fappdurcpt+" -M -V -P -BEswna90f90:' ':/a"+\
+                   effe2+"f"+effe2+":'App.Dur.[s]': >>"+fappdurps+"\n")
+        fgmt.write("psxy "+fappdursh1+" -X0 -Y0 -JX -R -K -O -W3/0 -V -P -B >>"+fappdurps+"\n")
+        fgmt.write("psxy "+fappduratt+" -X0 -Y-4.5 -JX5/4 -R -K -O -Sc0.125 -C"+fappdurcpt+" -W1/0 -M -V -P -BSEwna90f90:'Azimuth[deg]':/a"+\
+                   effe2+"f"+effe2+":'App.Dur.[s]': >>"+fappdurps+"\n")
+        fgmt.write("psxy "+fappdursh2+" -X0 -Y0 -JX -R -K -O -W3/0 -V -P -B >>"+fappdurps+"\n")
+        fgmt.write("psscale -D2.6/10.33/5.2/0.25h -C"+fappdurcpt+" -L -O -V >>"+fappdurps+"\n")
+        fgmt.flush()
+        fgmt.close()
+
     cmd="chmod a+x "+fappdurgmt
     os.system(cmd)
     cmd=fappdurgmt
@@ -5199,275 +5234,547 @@ def plotMTSolution(inv_step,inv_param,bestdc,mt_solutions,best_mt_solutions,trac
     f.flush()
     f.close()
 
-    f=open(fgmtplot,'w')
-    f.write("#!/bin/bash\n")
-    line="pstext <"+feqinfo+" -X2 -Y20 -JX10/8 -R0/14/0/28 -K -P >"+fplot+"\n"
-    f.write(line)
-    #
-    # Fit header 3 Fit MT matrix
-    line="psxy <<he -X2.2 -Y2.6 -JX6.1/3 -R0/6.1/0/3 -Bwsen -G0/0/220 -W0/0/220 -K -O -V -P >> "+fplot+"\n"
-    f.write(line)
-    f.write("he\n")
-    f.write("pstext <<fits -X0 -Y0 -JX6.1/3 -R0/6/0/3 -K -O >>"+fplot+"\n")
-    f.write("0.3 2.3 10 0 0 5 "+mt11+"\n")
-    f.write("2.2 2.3 10 0 0 5 "+mt12+"\n")
-    f.write("4.1 2.3 10 0 0 5 "+mt13+"\n")
-    f.write("0.3 1.5 10 0 0 5 "+mt12+"\n")
-    f.write("2.2 1.5 10 0 0 5 "+mt22+"\n")
-    f.write("4.1 1.5 10 0 0 5 "+mt23+"\n")
-    f.write("0.3 0.7 10 0 0 5 "+mt13+"\n")
-    f.write("2.2 0.7 10 0 0 5 "+mt23+"\n")
-    f.write("4.1 0.7 10 0 0 5 "+mt33+"\n")
-    f.write("fits\n")
-
-
-    # Plot matrix
-    if (inv_step == '1'):
-        f.write("pstext <<fits -X-2.2 -Y-22 -JX17/20 -R0/20/0/20 -K -O >>"+fplot+"\n")
-        f.write("0 19. 12 0 0 5 Decomposition: \n")
-        f.write("0 18.3 10 0 0 5 Deviatoric part: \n")
-        f.write("0 17.8 11 0 0 5 DC = "+dcpr+" % \n")
-        f.write("0 17.3 11 0 0 5 CLVD =  "+clvdpr+" % \n")
-        f.write("6 18.3 10 0 0 5 Deviatoric part:  \n")
-        f.write("6 17.8 11 0 0 5 ISO =  "+isopr+" % \n")
+    if inv_param['GMT_VERSION']=='5':
+        f=open(fgmtplot,'w')
+        f.write("#!/bin/bash\n")
+        line="gmt pstext <"+feqinfo+" -X2 -Y20 -JX10/8 -R0/14/0/28 -K -P >"+fplot+"\n"
+        f.write(line)
+        #
+        # Fit header 3 Fit MT matrix
+        line="gmt psxy <<he -X2.2 -Y2.6 -JX6.1/3 -R0/6.1/0/3 -Bwsen -G0/0/220 -Wthin,0/0/220 -K -O -V -P >> "+fplot+"\n"
+        f.write(line)
+        f.write("he\n")
+        f.write("gmt pstext <<fits -X0 -Y0 -JX6.1/3 -R0/6/0/3 -K -O >>"+fplot+"\n")
+        f.write("0.3 2.3 10 0 0 5 "+mt11+"\n")
+        f.write("2.2 2.3 10 0 0 5 "+mt12+"\n")
+        f.write("4.1 2.3 10 0 0 5 "+mt13+"\n")
+        f.write("0.3 1.5 10 0 0 5 "+mt12+"\n")
+        f.write("2.2 1.5 10 0 0 5 "+mt22+"\n")
+        f.write("4.1 1.5 10 0 0 5 "+mt23+"\n")
+        f.write("0.3 0.7 10 0 0 5 "+mt13+"\n")
+        f.write("2.2 0.7 10 0 0 5 "+mt23+"\n")
+        f.write("4.1 0.7 10 0 0 5 "+mt33+"\n")
         f.write("fits\n")
-        # Fit header
-        maxstatplot = int(inv_param['MAX_STAT_2_PLOT'])
-        f.write("pstext <<fits -X0 -Y14.5 -JX17/2 -R0/17/0/3 -K -O >>"+fplot+"\n")
-        nstatplot=len(traces)
-        ncomp=len(inv_param['COMP_2_USE'])
-        spacex=0.5
-        jumpx=((13-((ncomp-1)*spacex))/ncomp)+spacex
-        if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
-            fitdata_type="Amplitude Spectra"
-        else:
-            fitdata_type="Seismograms"
-        # if (nst > maxstatplot):
-        if (nstatplot > maxstatplot):
-            nstatplot=maxstatplot
-            f.write("0 2 12 0 0 5 Fit of "+fitdata_type+" (Closest "+str(maxstatplot)+" stations)\n")
-        else:
-            f.write("0 2 12 0 0 5 Fit of "+fitdata_type+"\n")
-        f.write("0 1 10 0 0 5 Stat Dist Az Amax\n")
-        usedcomp = inv_param['COMP_2_USE']
-        i=0
-        for letter in usedcomp:
-            f.write(str(4.5+(i*jumpx))+" 1 10 0 0 5 "+comp_names[letter]+"\n")
-            i=i+1
-        f.write("fits\n")
-        # Fit spectra or seismograms
-        checkInvParam('DATA_PLOT_STEP1',inv_param['DATA_PLOT_STEP'+inv_step],('amsp','seis'))
-        checkInvParam('FILT_PLOT_STEP1',inv_param['FILT_PLOT_STEP'+inv_step],('plain','tapered','filtered'))
-        checkInvParam('AMPL_PLOT_STEP1',inv_param['AMPL_PLOT_STEP'+inv_step],('amax','norm'))
 
-        if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
-            x1,x2,y1,y2="0",inv_param['BP_F4_STEP'+inv_step],"0",str(amaxf)
-            scale = asp_r = "/".join((x1,x2,y1,y2))
-            asp_rd = asp_rs = asp_r
-            tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
-        else:
-            if inv_param['SW_TRACES0TIME'].upper=='TRUE':
-                traces0time=0.
-                x1,x2=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
-            else:
-                traces0time=float(getParseTime(inv_param))
-                x1=str(float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
-                x2=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
-            x10,x20=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
-            # x1,x2=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
-            y1,y2=str(-amaxf),str(amaxf)
-            scale = asp_r = "/".join((x1,x2,y1,y2))
-            if inv_param['FILT_PLOT_STEP'+inv_step]=="plain":
-                tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
-            elif inv_param['FILT_PLOT_STEP'+inv_step]=="tapered":
-                tr_name="seit"
-            else:
-                tr_name="seif"
-        tr_name=tr_name+inv_step
 
-        asp_jxx = str(float(jumpx-(2*spacex)))
-        asp_jxy = str(float(12.0/float(nstatplot)))
-        asp_jx = asp_jxx+"/"+asp_jxy
-        last_x=last_y=0
-        istat=0
-        jumpy=float(12.0/float(nstatplot))
-
-        amax=amaxf
-        amaxstat=[]
-        for i in range(nstatplot):
-            istat=istat+1
-            amaxst=0
-            for component in usedcomp:
-                fdtrace=os.path.join(dinv,"mtd"+tr_name+"-"+str(istat)+"-"+component+".table")
-                fstrace=os.path.join(dinv,"mts"+tr_name+"-"+str(istat)+"-"+component+".table")
-                if os.path.isfile(fdtrace):
-                    fdat=open(fdtrace,'r')
-                    for line in fdat:
-                        x,y=line.split()
-                        dat=abs(float(y))
-                        if (dat>=amaxst):
-                            amaxst=dat
-                    fdat.close()
-                    fsyn=open(fstrace,'r')
-                    for line in fsyn:
-                        x,y=line.split()
-                        dat=abs(float(y))
-                        if (dat>=amaxst):
-                            amaxst=dat
-                    fsyn.close()
-            amaxstat.append(amaxst)
-
-        f.write("pstext <<disaz -K -O -X0 -Y-12 -JX17/12 -R0/17/0/"+str(nstatplot)+" -P >>"+fplot+"\n")
-        for i in range(nstatplot):
-            line="0 "+str(nstatplot-i-0.5)+" 8 0 0 5 "+str(i+1)+" "+traces[i].stat
-            line=line+" "+strDecim(traces[i].dist,1)+" "+strDecim(traces[i].azi,1)
-            if ['AMPL_PLOT_STEP'+inv_step]=='amax':
-                line=line+" "+strDecim((amax/100000),3)+"\n"
-            else:
-                line=line+" "+strDecim(((amaxstat[i])/100000),3)+"\n"
-            f.write(line)
-        f.write("disaz\n")
+        # Plot matrix
         if (inv_step == '1'):
-            faz=open(fazi,"w")
-            for trace in traces:
-                faz.write(str(trace.azi)+" "+str(trace.stat)+" "+str(trace.comp)+" "+str(trace.quality)+"\n")
-            faz.flush()
-            faz.close()
-        istat=0
-        for i in range(nstatplot):
-            if inv_param['AMPL_PLOT_STEP'+inv_step]=="amax":
-                if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
-                    asp_rd = "/".join((x1,x2,str(-amaxf*3),str(amaxf)))
-                    asp_rs = "/".join((x1,x2,str(-amaxf*2),str(amaxf*2)))
-                    asp_rt = "/".join((x10,x20,"0","4"))
-            else:
-                if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
-                    asp_rd = asp_rs = asp_r = "/".join((x1,x2,"0",str(float(amaxstat[i]))))
-                else:
-                    asp_rd = "/".join((x1,x2,str(-float(amaxstat[i])*3),str(float(amaxstat[i]))))
-                    asp_rs = "/".join((x1,x2,str(-float(amaxstat[i])*2),str(float(amaxstat[i])*2)))
-                    asp_rt = "/".join((x10,x20,"0","4"))
-            istat=istat+1
-            icomp=0
-            for component in usedcomp:
-                icomp=icomp+1
-                fdtrace=os.path.join(dinv,"mtd"+tr_name+"-"+str(istat)+"-"+component+".table")
-                fstrace=os.path.join(dinv,"dcs"+tr_name+"-"+str(istat)+"-"+component+".table")
-                fttrace=os.path.join(dinv,"taper-"+str(istat)+"-"+component)
-                if os.path.isfile(fdtrace):
-                    next_x=4.5+((icomp-1)*jumpx)
-                    next_y=0.05+((nstatplot-istat)*jumpy)
-                    asp_x=str(next_x-last_x)
-                    asp_y=str(next_y-last_y)
-                    last_x=next_x
-                    last_y=next_y
-                    if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
-                        line="psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BWSNE -JX"+asp_jx
-                        linedata=line+" -R"+asp_rd+" -P -K -O -W1/255/0/0 -G200/0/0 >>"+fplot+"\n"
-                    else:
-                        line="psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BWSNE -JX"+asp_jx
-                        linedata=line+" -R"+asp_rd+" -P -K -O -W2/255/0/0 >>"+fplot+"\n"
-                    f.write(linedata)
-                    linesynt="psxy <"+fstrace+" -R"+asp_rs+" -BWSNE -X0 -Y0 -JX -P -K -O -W1/0 >>"+fplot+"\n"
-                    f.write(linesynt)
-                    if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
-                        linesynt="psxy <"+fttrace+" -R"+asp_rt+" -BWSNE -X0 -Y0 -JX -P -K -O -W1/100 -G150 >>"+fplot+"\n"
-                        f.write(linesynt)
-                # else:
-                #     print fdtrace+" not found"
-        icomp=0
-        for comp in usedcomp:
-            icomp=icomp+1
-            next_x=4.5+((icomp-1)*jumpx)
-            next_y=0.0
-            asp_x=str(next_x-last_x)
-            asp_y=str(next_y-last_y)
-            last_x=next_x
-            last_y=next_y
+            f.write("gmt pstext <<fits -X-2.2 -Y-22 -JX17/20 -R0/20/0/20 -K -O >>"+fplot+"\n")
+            f.write("0 19. 12 0 0 5 Decomposition: \n")
+            f.write("0 18.3 10 0 0 5 Deviatoric part: \n")
+            f.write("0 17.8 11 0 0 5 DC = "+dcpr+" % \n")
+            f.write("0 17.3 11 0 0 5 CLVD =  "+clvdpr+" % \n")
+            f.write("6 18.3 10 0 0 5 Deviatoric part:  \n")
+            f.write("6 17.8 11 0 0 5 ISO =  "+isopr+" % \n")
+            f.write("fits\n")
+            # Fit header
+            maxstatplot = int(inv_param['MAX_STAT_2_PLOT'])
+            f.write("gmt pstext <<fits -X0 -Y14.5 -JX17/2 -R0/17/0/3 -K -O >>"+fplot+"\n")
+            nstatplot=len(traces)
+            ncomp=len(inv_param['COMP_2_USE'])
+            spacex=0.5
+            jumpx=((13-((ncomp-1)*spacex))/ncomp)+spacex
             if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
-                line="psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O "\
-                     +"-BSa"+inv_param['BP_F4_STEP'+inv_step]+"f"+inv_param['BP_F4_STEP'+inv_step]\
-                     +":'Frequency [Hz]': >>"+fplot+"\n"
+                fitdata_type="Amplitude Spectra"
             else:
-                line="psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O -BSa"\
-                     +inv_param['TICK_PLOT_STEP'+inv_step]+"f"+inv_param['TICK_PLOT_STEP'+inv_step]\
-                     +":'Time [s]': >>"+fplot+"\n"
+                fitdata_type="Seismograms"
+            # if (nst > maxstatplot):
+            if (nstatplot > maxstatplot):
+                nstatplot=maxstatplot
+                f.write("0 2 12 0 0 5 Fit of "+fitdata_type+" (Closest "+str(maxstatplot)+" stations)\n")
+            else:
+                f.write("0 2 12 0 0 5 Fit of "+fitdata_type+"\n")
+            f.write("0 1 10 0 0 5 Stat Dist Az Amax\n")
+            usedcomp = inv_param['COMP_2_USE']
+            i=0
+            for letter in usedcomp:
+                f.write(str(4.5+(i*jumpx))+" 1 10 0 0 5 "+comp_names[letter]+"\n")
+                i=i+1
+            f.write("fits\n")
+            # Fit spectra or seismograms
+            checkInvParam('DATA_PLOT_STEP1',inv_param['DATA_PLOT_STEP'+inv_step],('amsp','seis'))
+            checkInvParam('FILT_PLOT_STEP1',inv_param['FILT_PLOT_STEP'+inv_step],('plain','tapered','filtered'))
+            checkInvParam('AMPL_PLOT_STEP1',inv_param['AMPL_PLOT_STEP'+inv_step],('amax','norm'))
+
+            if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                x1,x2,y1,y2="0",inv_param['BP_F4_STEP'+inv_step],"0",str(amaxf)
+                scale = asp_r = "/".join((x1,x2,y1,y2))
+                asp_rd = asp_rs = asp_r
+                tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
+            else:
+                if inv_param['SW_TRACES0TIME'].upper=='TRUE':
+                    traces0time=0.
+                    x1,x2=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+                else:
+                    traces0time=float(getParseTime(inv_param))
+                    x1=str(float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
+                    x2=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
+                x10,x20=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+                # x1,x2=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+                y1,y2=str(-amaxf),str(amaxf)
+                scale = asp_r = "/".join((x1,x2,y1,y2))
+                if inv_param['FILT_PLOT_STEP'+inv_step]=="plain":
+                    tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
+                elif inv_param['FILT_PLOT_STEP'+inv_step]=="tapered":
+                    tr_name="seit"
+                else:
+                    tr_name="seif"
+            tr_name=tr_name+inv_step
+
+            asp_jxx = str(float(jumpx-(2*spacex)))
+            asp_jxy = str(float(12.0/float(nstatplot)))
+            asp_jx = asp_jxx+"/"+asp_jxy
+            last_x=last_y=0
+            istat=0
+            jumpy=float(12.0/float(nstatplot))
+
+            amax=amaxf
+            amaxstat=[]
+            for i in range(nstatplot):
+                istat=istat+1
+                amaxst=0
+                for component in usedcomp:
+                    fdtrace=os.path.join(dinv,"mtd"+tr_name+"-"+str(istat)+"-"+component+".table")
+                    fstrace=os.path.join(dinv,"mts"+tr_name+"-"+str(istat)+"-"+component+".table")
+                    if os.path.isfile(fdtrace):
+                        fdat=open(fdtrace,'r')
+                        for line in fdat:
+                            x,y=line.split()
+                            dat=abs(float(y))
+                            if (dat>=amaxst):
+                                amaxst=dat
+                        fdat.close()
+                        fsyn=open(fstrace,'r')
+                        for line in fsyn:
+                            x,y=line.split()
+                            dat=abs(float(y))
+                            if (dat>=amaxst):
+                                amaxst=dat
+                        fsyn.close()
+                amaxstat.append(amaxst)
+
+            f.write("gmt pstext <<disaz -K -O -X0 -Y-12 -JX17/12 -R0/17/0/"+str(nstatplot)+" -P >>"+fplot+"\n")
+            for i in range(nstatplot):
+                line="0 "+str(nstatplot-i-0.5)+" 8 0 0 5 "+str(i+1)+" "+traces[i].stat
+                line=line+" "+strDecim(traces[i].dist,1)+" "+strDecim(traces[i].azi,1)
+                if ['AMPL_PLOT_STEP'+inv_step]=='amax':
+                    line=line+" "+strDecim((amax/100000),3)+"\n"
+                else:
+                    line=line+" "+strDecim(((amaxstat[i])/100000),3)+"\n"
+                f.write(line)
+            f.write("disaz\n")
+            if (inv_step == '1'):
+                faz=open(fazi,"w")
+                for trace in traces:
+                    faz.write(str(trace.azi)+" "+str(trace.stat)+" "+str(trace.comp)+" "+str(trace.quality)+"\n")
+                faz.flush()
+                faz.close()
+            istat=0
+            for i in range(nstatplot):
+                if inv_param['AMPL_PLOT_STEP'+inv_step]=="amax":
+                    if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
+                        asp_rd = "/".join((x1,x2,str(-amaxf*3),str(amaxf)))
+                        asp_rs = "/".join((x1,x2,str(-amaxf*2),str(amaxf*2)))
+                        asp_rt = "/".join((x10,x20,"0","4"))
+                else:
+                    if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                        asp_rd = asp_rs = asp_r = "/".join((x1,x2,"0",str(float(amaxstat[i]))))
+                    else:
+                        asp_rd = "/".join((x1,x2,str(-float(amaxstat[i])*3),str(float(amaxstat[i]))))
+                        asp_rs = "/".join((x1,x2,str(-float(amaxstat[i])*2),str(float(amaxstat[i])*2)))
+                        asp_rt = "/".join((x10,x20,"0","4"))
+                istat=istat+1
+                icomp=0
+                for component in usedcomp:
+                    icomp=icomp+1
+                    fdtrace=os.path.join(dinv,"mtd"+tr_name+"-"+str(istat)+"-"+component+".table")
+                    fstrace=os.path.join(dinv,"dcs"+tr_name+"-"+str(istat)+"-"+component+".table")
+                    fttrace=os.path.join(dinv,"taper-"+str(istat)+"-"+component)
+                    if os.path.isfile(fdtrace):
+                        next_x=4.5+((icomp-1)*jumpx)
+                        next_y=0.05+((nstatplot-istat)*jumpy)
+                        asp_x=str(next_x-last_x)
+                        asp_y=str(next_y-last_y)
+                        last_x=next_x
+                        last_y=next_y
+                        if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                            line="gmt psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BWSNE -JX"+asp_jx
+                            linedata=line+" -R"+asp_rd+" -P -K -O -Wthin,255/0/0 -G200/0/0 >>"+fplot+"\n"
+                        else:
+                            line="gmt psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BWSNE -JX"+asp_jx
+                            linedata=line+" -R"+asp_rd+" -P -K -O -Wthin,255/0/0 >>"+fplot+"\n"
+                        f.write(linedata)
+                        linesynt="gmt psxy <"+fstrace+" -R"+asp_rs+" -BWSNE -X0 -Y0 -JX -P -K -O -Wthin,0 >>"+fplot+"\n"
+                        f.write(linesynt)
+                        if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
+                            linesynt="gmt psxy <"+fttrace+" -R"+asp_rt+" -BWSNE -X0 -Y0 -JX -P -K -O -Wthin,100 -G150 >>"+fplot+"\n"
+                            f.write(linesynt)
+                    # else:
+                    #     print fdtrace+" not found"
+            icomp=0
+            for comp in usedcomp:
+                icomp=icomp+1
+                next_x=4.5+((icomp-1)*jumpx)
+                next_y=0.0
+                asp_x=str(next_x-last_x)
+                asp_y=str(next_y-last_y)
+                last_x=next_x
+                last_y=next_y
+                if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                    line="gmt psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O "\
+                         +"-BS -Bxa"+inv_param['BP_F4_STEP'+inv_step]+"f"+inv_param['BP_F4_STEP'+inv_step]\
+                         +'+l"Frequency [Hz]" >>'+fplot+"\n"
+                else:
+                    line="gmt psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O -BS -Bxa"\
+                         +inv_param['TICK_PLOT_STEP'+inv_step]+"f"+inv_param['TICK_PLOT_STEP'+inv_step]\
+                         +'+l"Time [s]" >>'+fplot+"\n"
+                f.write(line)
+                f.write("0 0\n0 0\nxscale\n")
+        if (inv_step == '2'):
+            f.write("gmt pstext <<fits -X-2.2 -Y-22 -JX20/20 -R0/20/0/20 -K -O >>"+fplot+"\n")
+            f.write("0 18.2 12 0 0 5 Decomposition: \n")
+            f.write("0 15.5 12 0 0 5 DC =  \n")
+            f.write("0 10.5 12 0 0 5 CLVD =   \n")
+            f.write("0 5.5 12 0 0 5 ISO =  \n")
+            f.write("fits\n")
+            # Fit ISO matrix
+            line="gmt psxy <<he -X2 -Y4 -JX6.1/3 -R0/6.1/0/3 -Bwsen -G0/0/220 -Wthin,0/0/220 -K -O -V -P >> "+fplot+"\n"
             f.write(line)
-            f.write("0 0\n0 0\nxscale\n")
-    if (inv_step == '2'):
-        f.write("pstext <<fits -X-2.2 -Y-22 -JX20/20 -R0/20/0/20 -K -O >>"+fplot+"\n")
-        f.write("0 18.2 12 0 0 5 Decomposition: \n")
-        f.write("0 15.5 12 0 0 5 DC =  \n")
-        f.write("0 10.5 12 0 0 5 CLVD =   \n")
-        f.write("0 5.5 12 0 0 5 ISO =  \n")
-        f.write("fits\n")
-        # Fit ISO matrix
-        line="psxy <<he -X2 -Y4 -JX6.1/3 -R0/6.1/0/3 -Bwsen -G0/0/220 -W0/0/220 -K -O -V -P >> "+fplot+"\n"
+            f.write("he\n")
+            f.write("gmt pstext <<fits -X0 -Y0 -JX6.1/3 -R0/6/0/3 -K -O >>"+fplot+"\n")
+            f.write("0.3 2.3 10 0 0 5 "+isom11+"\n")
+            f.write("2.2 2.3 10 0 0 5 "+isom12+"\n")
+            f.write("4.1 2.3 10 0 0 5 "+isom13+"\n")
+            f.write("0.3 1.5 10 0 0 5 "+isom12+"\n")
+            f.write("2.2 1.5 10 0 0 5 "+isom22+"\n")
+            f.write("4.1 1.5 10 0 0 5 "+isom23+"\n")
+            f.write("0.3 0.7 10 0 0 5 "+isom13+"\n")
+            f.write("2.2 0.7 10 0 0 5 "+isom23+"\n")
+            f.write("4.1 0.7 10 0 0 5 "+isom33+"\n")
+            f.write("fits\n")
+            # Fit CLVD matrix
+            line="gmt psxy <<he -X0 -Y5 -JX6.1/3 -R0/6.1/0/3 -Bwsen -G0/0/220 -Wthin,0/0/220 -K -O -V -P >> "+fplot+"\n"
+            f.write(line)
+            f.write("he\n")
+            f.write("gmt pstext <<fits -X0 -Y0 -JX6.1/3 -R0/6.1/0/3 -K -O >>"+fplot+"\n")
+            f.write("0.3 2.3 10 0 0 5 "+clvdm11+"\n")
+            f.write("2.2 2.3 10 0 0 5 "+clvdm12+"\n")
+            f.write("4.1 2.3 10 0 0 5 "+clvdm13+"\n")
+            f.write("0.3 1.5 10 0 0 5 "+clvdm12+"\n")
+            f.write("2.2 1.5 10 0 0 5 "+clvdm22+"\n")
+            f.write("4.1 1.5 10 0 0 5 "+clvdm23+"\n")
+            f.write("0.3 0.7 10 0 0 5 "+clvdm13+"\n")
+            f.write("2.2 0.7 10 0 0 5 "+clvdm23+"\n")
+            f.write("4.1 0.7 10 0 0 5 "+clvdm33+"\n")
+            f.write("fits\n")
+            # Fit DC matrix
+            line="gmt psxy <<he -X0 -Y5 -JX6.1/3 -R0/6.1/0/3 -Bwsen -G0/0/220 -Wthin,0/0/220 -K -O -V -P >> "+fplot+"\n"
+            f.write(line)
+            f.write("he\n")
+            f.write("gmt pstext <<fits -X0 -Y0 -JX6/3 -R0/6/0/3 -K -O >>"+fplot+"\n")
+            f.write("0.3 2.3 10 0 0 5 "+dcm11+"\n")
+            f.write("2.2 2.3 10 0 0 5 "+dcm12+"\n")
+            f.write("4.1 2.3 10 0 0 5 "+dcm13+"\n")
+            f.write("0.3 1.5 10 0 0 5 "+dcm12+"\n")
+            f.write("2.2 1.5 10 0 0 5 "+dcm22+"\n")
+            f.write("4.1 1.5 10 0 0 5 "+dcm23+"\n")
+            f.write("0.3 0.7 10 0 0 5 "+dcm13+"\n")
+            f.write("2.2 0.7 10 0 0 5 "+dcm23+"\n")
+            f.write("4.1 0.7 10 0 0 5 "+dcm33+"\n")
+            f.write("fits\n")
+            # Plot percentage
+            f.write("gmt pstext <<fits -X12 -Y-13 -JX5/21 -R0/5/0/21 -K -O >>"+fplot+"\n")
+            f.write("0.5 14.5 12 0 0 5 "+dcpr+" %\n")
+            f.write("0.5 9.5 12 0 0 5 "+clvdpr+" % \n")
+            f.write("0.5 4.5 12 0 0 5 "+isopr+" % \n")
+            f.write("fits\n")
+            # Plot BeachBalls
+        if (inv_step == '1'):
+            f.write("gmt psxy < "+TableMT_lines+" -X0 -Y19.5 -JX3/3 -R-1/1/-1/1 -Wthin,0 -P -K -O >> "+fplot+"\n")
+            f.write("gmt pstext <<endplot -O -X0 -Y0 -JX -R -P >>"+fplot+"\n")
+            f.write("endplot\n")
+        if (inv_step == '2'):
+            f.write("gmt makecpt -Cpolar -Z > "+cpt+"\n")
+            f.write("gmt psxy < "+TableMT_fill+" -X-4 -Y21 -JX3/3 -R-1/1/-1/1 -Wthin,0 -P -C"+cpt+" -K -O -L >> "+fplot+"\n")
+            f.write("gmt psxy < "+TableDC_fill+" -X0 -Y-8 -JX3/3 -R-1/1/-1/1 -Wthin,0 -P -C"+cpt+" -K -O -L >> "+fplot+"\n")
+            f.write("gmt psxy < "+TableCLVD_fill+" -X0 -Y-5 -JX3/3 -R-1/1/-1/1 -Wthin,0 -P -C"+cpt+" -L -K -O >> "+fplot+"\n")
+            f.write("gmt psxy < "+TableISO_fill+" -X0 -Y-5 -JX3/3 -R-1/1/-1/1 -Wthin,0 -P -C"+cpt+" -K -O >> "+fplot+"\n")
+            f.write("gmt psxy <"+TableISO_lines+" -X0 -Y0 -JX3/3 -R-1/1/-1/1 -Wthin,0 -P -K -O >> "+fplot+"\n")
+            f.write("gmt pstext <<endplot -O -X0 -Y0 -JX -R -P >>"+fplot+"\n")
+            f.write("endplot\n")
+        f.flush()
+        f.close()
+
+    else:
+        f=open(fgmtplot,'w')
+        f.write("#!/bin/bash\n")
+        line="gmt pstext <"+feqinfo+" -X2 -Y20 -JX10/8 -R0/14/0/28 -K -P >"+fplot+"\n"
+        f.write(line)
+        #
+        # Fit header 3 Fit MT matrix
+        line="gmt psxy <<he -X2.2 -Y2.6 -JX6.1/3 -R0/6.1/0/3 -Bwsen -G0/0/220 -Wthin,0/0/220 -K -O -V -P >> "+fplot+"\n"
         f.write(line)
         f.write("he\n")
-        f.write("pstext <<fits -X0 -Y0 -JX6.1/3 -R0/6/0/3 -K -O >>"+fplot+"\n")
-        f.write("0.3 2.3 10 0 0 5 "+isom11+"\n")
-        f.write("2.2 2.3 10 0 0 5 "+isom12+"\n")
-        f.write("4.1 2.3 10 0 0 5 "+isom13+"\n")
-        f.write("0.3 1.5 10 0 0 5 "+isom12+"\n")
-        f.write("2.2 1.5 10 0 0 5 "+isom22+"\n")
-        f.write("4.1 1.5 10 0 0 5 "+isom23+"\n")
-        f.write("0.3 0.7 10 0 0 5 "+isom13+"\n")
-        f.write("2.2 0.7 10 0 0 5 "+isom23+"\n")
-        f.write("4.1 0.7 10 0 0 5 "+isom33+"\n")
+        f.write("gmt pstext <<fits -X0 -Y0 -JX6.1/3 -R0/6/0/3 -K -O >>"+fplot+"\n")
+        f.write("0.3 2.3 10 0 0 5 "+mt11+"\n")
+        f.write("2.2 2.3 10 0 0 5 "+mt12+"\n")
+        f.write("4.1 2.3 10 0 0 5 "+mt13+"\n")
+        f.write("0.3 1.5 10 0 0 5 "+mt12+"\n")
+        f.write("2.2 1.5 10 0 0 5 "+mt22+"\n")
+        f.write("4.1 1.5 10 0 0 5 "+mt23+"\n")
+        f.write("0.3 0.7 10 0 0 5 "+mt13+"\n")
+        f.write("2.2 0.7 10 0 0 5 "+mt23+"\n")
+        f.write("4.1 0.7 10 0 0 5 "+mt33+"\n")
         f.write("fits\n")
-        # Fit CLVD matrix
-        line="psxy <<he -X0 -Y5 -JX6.1/3 -R0/6.1/0/3 -Bwsen -G0/0/220 -W0/0/220 -K -O -V -P >> "+fplot+"\n"
-        f.write(line)
-        f.write("he\n")
-        f.write("pstext <<fits -X0 -Y0 -JX6.1/3 -R0/6.1/0/3 -K -O >>"+fplot+"\n")
-        f.write("0.3 2.3 10 0 0 5 "+clvdm11+"\n")
-        f.write("2.2 2.3 10 0 0 5 "+clvdm12+"\n")
-        f.write("4.1 2.3 10 0 0 5 "+clvdm13+"\n")
-        f.write("0.3 1.5 10 0 0 5 "+clvdm12+"\n")
-        f.write("2.2 1.5 10 0 0 5 "+clvdm22+"\n")
-        f.write("4.1 1.5 10 0 0 5 "+clvdm23+"\n")
-        f.write("0.3 0.7 10 0 0 5 "+clvdm13+"\n")
-        f.write("2.2 0.7 10 0 0 5 "+clvdm23+"\n")
-        f.write("4.1 0.7 10 0 0 5 "+clvdm33+"\n")
-        f.write("fits\n")
-        # Fit DC matrix
-        line="psxy <<he -X0 -Y5 -JX6.1/3 -R0/6.1/0/3 -Bwsen -G0/0/220 -W0/0/220 -K -O -V -P >> "+fplot+"\n"
-        f.write(line)
-        f.write("he\n")
-        f.write("pstext <<fits -X0 -Y0 -JX6/3 -R0/6/0/3 -K -O >>"+fplot+"\n")
-        f.write("0.3 2.3 10 0 0 5 "+dcm11+"\n")
-        f.write("2.2 2.3 10 0 0 5 "+dcm12+"\n")
-        f.write("4.1 2.3 10 0 0 5 "+dcm13+"\n")
-        f.write("0.3 1.5 10 0 0 5 "+dcm12+"\n")
-        f.write("2.2 1.5 10 0 0 5 "+dcm22+"\n")
-        f.write("4.1 1.5 10 0 0 5 "+dcm23+"\n")
-        f.write("0.3 0.7 10 0 0 5 "+dcm13+"\n")
-        f.write("2.2 0.7 10 0 0 5 "+dcm23+"\n")
-        f.write("4.1 0.7 10 0 0 5 "+dcm33+"\n")
-        f.write("fits\n")
-        # Plot percentage
-        f.write("pstext <<fits -X12 -Y-13 -JX5/21 -R0/5/0/21 -K -O >>"+fplot+"\n")
-        f.write("0.5 14.5 12 0 0 5 "+dcpr+" %\n")
-        f.write("0.5 9.5 12 0 0 5 "+clvdpr+" % \n")
-        f.write("0.5 4.5 12 0 0 5 "+isopr+" % \n")
-        f.write("fits\n")
-        # Plot BeachBalls
-    if (inv_step == '1'):
-        f.write("psxy < "+TableMT_lines+" -X0 -Y19.5 -JX3/3 -R-1/1/-1/1 -W2/0 -P -K -O -M >> "+fplot+"\n")
-        f.write("pstext <<endplot -O -X0 -Y0 -JX -R -P >>"+fplot+"\n")
-        f.write("endplot\n")
-    if (inv_step == '2'):
-        f.write("makecpt -Cpolar -Z > "+cpt+"\n")
-        f.write("psxy < "+TableMT_fill+" -X-4 -Y21 -JX3/3 -R-1/1/-1/1 -W2/0 -P -C"+cpt+" -K -O -M -L >> "+fplot+"\n")
-        f.write("psxy < "+TableDC_fill+" -X0 -Y-8 -JX3/3 -R-1/1/-1/1 -W2/0 -P -C"+cpt+" -K -O -M -L >> "+fplot+"\n")
-        f.write("psxy < "+TableCLVD_fill+" -X0 -Y-5 -JX3/3 -R-1/1/-1/1 -W2/0 -P -C"+cpt+" -L -K -O -M>> "+fplot+"\n")
-        f.write("psxy < "+TableISO_fill+" -X0 -Y-5 -JX3/3 -R-1/1/-1/1 -W2/0 -P -C"+cpt+" -K -O -M>> "+fplot+"\n")
-        f.write("psxy <"+TableISO_lines+" -X0 -Y0 -JX3/3 -R-1/1/-1/1 -W2/0 -P -K -O -M>> "+fplot+"\n")
-        f.write("pstext <<endplot -O -X0 -Y0 -JX -R -P >>"+fplot+"\n")
-        f.write("endplot\n")
-    f.flush()
-    f.close()
+
+        # Plot matrix
+        if (inv_step == '1'):
+            f.write("gmt pstext <<fits -X-2.2 -Y-22 -JX17/20 -R0/20/0/20 -K -O >>"+fplot+"\n")
+            f.write("0 19. 12 0 0 5 Decomposition: \n")
+            f.write("0 18.3 10 0 0 5 Deviatoric part: \n")
+            f.write("0 17.8 11 0 0 5 DC = "+dcpr+" % \n")
+            f.write("0 17.3 11 0 0 5 CLVD =  "+clvdpr+" % \n")
+            f.write("6 18.3 10 0 0 5 Deviatoric part:  \n")
+            f.write("6 17.8 11 0 0 5 ISO =  "+isopr+" % \n")
+            f.write("fits\n")
+            # Fit header
+            maxstatplot = int(inv_param['MAX_STAT_2_PLOT'])
+            f.write("gmt pstext <<fits -X0 -Y14.5 -JX17/2 -R0/17/0/3 -K -O >>"+fplot+"\n")
+            nstatplot=len(traces)
+            ncomp=len(inv_param['COMP_2_USE'])
+            spacex=0.5
+            jumpx=((13-((ncomp-1)*spacex))/ncomp)+spacex
+            if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                fitdata_type="Amplitude Spectra"
+            else:
+                fitdata_type="Seismograms"
+            # if (nst > maxstatplot):
+            if (nstatplot > maxstatplot):
+                nstatplot=maxstatplot
+                f.write("0 2 12 0 0 5 Fit of "+fitdata_type+" (Closest "+str(maxstatplot)+" stations)\n")
+            else:
+                f.write("0 2 12 0 0 5 Fit of "+fitdata_type+"\n")
+            f.write("0 1 10 0 0 5 Stat Dist Az Amax\n")
+            usedcomp = inv_param['COMP_2_USE']
+            i=0
+            for letter in usedcomp:
+                f.write(str(4.5+(i*jumpx))+" 1 10 0 0 5 "+comp_names[letter]+"\n")
+                i=i+1
+            f.write("fits\n")
+            # Fit spectra or seismograms
+            checkInvParam('DATA_PLOT_STEP1',inv_param['DATA_PLOT_STEP'+inv_step],('amsp','seis'))
+            checkInvParam('FILT_PLOT_STEP1',inv_param['FILT_PLOT_STEP'+inv_step],('plain','tapered','filtered'))
+            checkInvParam('AMPL_PLOT_STEP1',inv_param['AMPL_PLOT_STEP'+inv_step],('amax','norm'))
+
+            if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                x1,x2,y1,y2="0",inv_param['BP_F4_STEP'+inv_step],"0",str(amaxf)
+                scale = asp_r = "/".join((x1,x2,y1,y2))
+                asp_rd = asp_rs = asp_r
+                tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
+            else:
+                if inv_param['SW_TRACES0TIME'].upper=='TRUE':
+                    traces0time=0.
+                    x1,x2=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+                else:
+                    traces0time=float(getParseTime(inv_param))
+                    x1=str(float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
+                    x2=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
+                x10,x20=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+                # x1,x2=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+                y1,y2=str(-amaxf),str(amaxf)
+                scale = asp_r = "/".join((x1,x2,y1,y2))
+                if inv_param['FILT_PLOT_STEP'+inv_step]=="plain":
+                    tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
+                elif inv_param['FILT_PLOT_STEP'+inv_step]=="tapered":
+                    tr_name="seit"
+                else:
+                    tr_name="seif"
+            tr_name=tr_name+inv_step
+
+            asp_jxx = str(float(jumpx-(2*spacex)))
+            asp_jxy = str(float(12.0/float(nstatplot)))
+            asp_jx = asp_jxx+"/"+asp_jxy
+            last_x=last_y=0
+            istat=0
+            jumpy=float(12.0/float(nstatplot))
+
+            amax=amaxf
+            amaxstat=[]
+            for i in range(nstatplot):
+                istat=istat+1
+                amaxst=0
+                for component in usedcomp:
+                    fdtrace=os.path.join(dinv,"mtd"+tr_name+"-"+str(istat)+"-"+component+".table")
+                    fstrace=os.path.join(dinv,"mts"+tr_name+"-"+str(istat)+"-"+component+".table")
+                    if os.path.isfile(fdtrace):
+                        fdat=open(fdtrace,'r')
+                        for line in fdat:
+                            x,y=line.split()
+                            dat=abs(float(y))
+                            if (dat>=amaxst):
+                                amaxst=dat
+                        fdat.close()
+                        fsyn=open(fstrace,'r')
+                        for line in fsyn:
+                            x,y=line.split()
+                            dat=abs(float(y))
+                            if (dat>=amaxst):
+                                amaxst=dat
+                        fsyn.close()
+                amaxstat.append(amaxst)
+
+            f.write("gmt pstext <<disaz -K -O -X0 -Y-12 -JX17/12 -R0/17/0/"+str(nstatplot)+" -P >>"+fplot+"\n")
+            for i in range(nstatplot):
+                line="0 "+str(nstatplot-i-0.5)+" 8 0 0 5 "+str(i+1)+" "+traces[i].stat
+                line=line+" "+strDecim(traces[i].dist,1)+" "+strDecim(traces[i].azi,1)
+                if ['AMPL_PLOT_STEP'+inv_step]=='amax':
+                    line=line+" "+strDecim((amax/100000),3)+"\n"
+                else:
+                    line=line+" "+strDecim(((amaxstat[i])/100000),3)+"\n"
+                f.write(line)
+            f.write("disaz\n")
+            if (inv_step == '1'):
+                faz=open(fazi,"w")
+                for trace in traces:
+                    faz.write(str(trace.azi)+" "+str(trace.stat)+" "+str(trace.comp)+" "+str(trace.quality)+"\n")
+                faz.flush()
+                faz.close()
+            istat=0
+            for i in range(nstatplot):
+                if inv_param['AMPL_PLOT_STEP'+inv_step]=="amax":
+                    if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
+                        asp_rd = "/".join((x1,x2,str(-amaxf*3),str(amaxf)))
+                        asp_rs = "/".join((x1,x2,str(-amaxf*2),str(amaxf*2)))
+                        asp_rt = "/".join((x10,x20,"0","4"))
+                else:
+                    if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                        asp_rd = asp_rs = asp_r = "/".join((x1,x2,"0",str(float(amaxstat[i]))))
+                    else:
+                        asp_rd = "/".join((x1,x2,str(-float(amaxstat[i])*3),str(float(amaxstat[i]))))
+                        asp_rs = "/".join((x1,x2,str(-float(amaxstat[i])*2),str(float(amaxstat[i])*2)))
+                        asp_rt = "/".join((x10,x20,"0","4"))
+                istat=istat+1
+                icomp=0
+                for component in usedcomp:
+                    icomp=icomp+1
+                    fdtrace=os.path.join(dinv,"mtd"+tr_name+"-"+str(istat)+"-"+component+".table")
+                    fstrace=os.path.join(dinv,"dcs"+tr_name+"-"+str(istat)+"-"+component+".table")
+                    fttrace=os.path.join(dinv,"taper-"+str(istat)+"-"+component)
+                    if os.path.isfile(fdtrace):
+                        next_x=4.5+((icomp-1)*jumpx)
+                        next_y=0.05+((nstatplot-istat)*jumpy)
+                        asp_x=str(next_x-last_x)
+                        asp_y=str(next_y-last_y)
+                        last_x=next_x
+                        last_y=next_y
+                        if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                            line="gmt psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BWSNE -JX"+asp_jx
+                            linedata=line+" -R"+asp_rd+" -P -K -O -Wthin,255/0/0 -G200/0/0 >>"+fplot+"\n"
+                        else:
+                            line="gmt psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BWSNE -JX"+asp_jx
+                            linedata=line+" -R"+asp_rd+" -P -K -O -Wthin,255/0/0 >>"+fplot+"\n"
+                        f.write(linedata)
+                        linesynt="gmt psxy <"+fstrace+" -R"+asp_rs+" -BWSNE -X0 -Y0 -JX -P -K -O -Wthin,0 >>"+fplot+"\n"
+                        f.write(linesynt)
+                        if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
+                            linesynt="gmt psxy <"+fttrace+" -R"+asp_rt+" -BWSNE -X0 -Y0 -JX -P -K -O -Wthin,100 -G150 >>"+fplot+"\n"
+                            f.write(linesynt)
+                    # else:
+                    #     print fdtrace+" not found"
+            icomp=0
+            for comp in usedcomp:
+                icomp=icomp+1
+                next_x=4.5+((icomp-1)*jumpx)
+                next_y=0.0
+                asp_x=str(next_x-last_x)
+                asp_y=str(next_y-last_y)
+                last_x=next_x
+                last_y=next_y
+                if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                    line="gmt psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O "\
+                         +"-BS -Bxa"+inv_param['BP_F4_STEP'+inv_step]+"f"+inv_param['BP_F4_STEP'+inv_step]\
+                         +'+l"Frequency [Hz]" >>'+fplot+"\n"
+                else:
+                    line="gmt psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O -BS -Bxa"\
+                         +inv_param['TICK_PLOT_STEP'+inv_step]+"f"+inv_param['TICK_PLOT_STEP'+inv_step]\
+                         +'+l"Time [s]" >>'+fplot+"\n"
+                f.write(line)
+                f.write("0 0\n0 0\nxscale\n")
+        if (inv_step == '2'):
+            f.write("gmt pstext <<fits -X-2.2 -Y-22 -JX20/20 -R0/20/0/20 -K -O >>"+fplot+"\n")
+            f.write("0 18.2 12 0 0 5 Decomposition: \n")
+            f.write("0 15.5 12 0 0 5 DC =  \n")
+            f.write("0 10.5 12 0 0 5 CLVD =   \n")
+            f.write("0 5.5 12 0 0 5 ISO =  \n")
+            f.write("fits\n")
+            # Fit ISO matrix
+            line="gmt psxy <<he -X2 -Y4 -JX6.1/3 -R0/6.1/0/3 -Bwsen -G0/0/220 -Wthin,0/0/220 -K -O -V -P >> "+fplot+"\n"
+            f.write(line)
+            f.write("he\n")
+            f.write("gmt pstext <<fits -X0 -Y0 -JX6.1/3 -R0/6/0/3 -K -O >>"+fplot+"\n")
+            f.write("0.3 2.3 10 0 0 5 "+isom11+"\n")
+            f.write("2.2 2.3 10 0 0 5 "+isom12+"\n")
+            f.write("4.1 2.3 10 0 0 5 "+isom13+"\n")
+            f.write("0.3 1.5 10 0 0 5 "+isom12+"\n")
+            f.write("2.2 1.5 10 0 0 5 "+isom22+"\n")
+            f.write("4.1 1.5 10 0 0 5 "+isom23+"\n")
+            f.write("0.3 0.7 10 0 0 5 "+isom13+"\n")
+            f.write("2.2 0.7 10 0 0 5 "+isom23+"\n")
+            f.write("4.1 0.7 10 0 0 5 "+isom33+"\n")
+            f.write("fits\n")
+            # Fit CLVD matrix
+            line="gmt psxy <<he -X0 -Y5 -JX6.1/3 -R0/6.1/0/3 -Bwsen -G0/0/220 -Wthin,0/0/220 -K -O -V -P >> "+fplot+"\n"
+            f.write(line)
+            f.write("he\n")
+            f.write("gmt pstext <<fits -X0 -Y0 -JX6.1/3 -R0/6.1/0/3 -K -O >>"+fplot+"\n")
+            f.write("0.3 2.3 10 0 0 5 "+clvdm11+"\n")
+            f.write("2.2 2.3 10 0 0 5 "+clvdm12+"\n")
+            f.write("4.1 2.3 10 0 0 5 "+clvdm13+"\n")
+            f.write("0.3 1.5 10 0 0 5 "+clvdm12+"\n")
+            f.write("2.2 1.5 10 0 0 5 "+clvdm22+"\n")
+            f.write("4.1 1.5 10 0 0 5 "+clvdm23+"\n")
+            f.write("0.3 0.7 10 0 0 5 "+clvdm13+"\n")
+            f.write("2.2 0.7 10 0 0 5 "+clvdm23+"\n")
+            f.write("4.1 0.7 10 0 0 5 "+clvdm33+"\n")
+            f.write("fits\n")
+            # Fit DC matrix
+            line="gmt psxy <<he -X0 -Y5 -JX6.1/3 -R0/6.1/0/3 -Bwsen -G0/0/220 -Wthin,0/0/220 -K -O -V -P >> "+fplot+"\n"
+            f.write(line)
+            f.write("he\n")
+            f.write("gmt pstext <<fits -X0 -Y0 -JX6/3 -R0/6/0/3 -K -O >>"+fplot+"\n")
+            f.write("0.3 2.3 10 0 0 5 "+dcm11+"\n")
+            f.write("2.2 2.3 10 0 0 5 "+dcm12+"\n")
+            f.write("4.1 2.3 10 0 0 5 "+dcm13+"\n")
+            f.write("0.3 1.5 10 0 0 5 "+dcm12+"\n")
+            f.write("2.2 1.5 10 0 0 5 "+dcm22+"\n")
+            f.write("4.1 1.5 10 0 0 5 "+dcm23+"\n")
+            f.write("0.3 0.7 10 0 0 5 "+dcm13+"\n")
+            f.write("2.2 0.7 10 0 0 5 "+dcm23+"\n")
+            f.write("4.1 0.7 10 0 0 5 "+dcm33+"\n")
+            f.write("fits\n")
+            # Plot percentage
+            f.write("gmt pstext <<fits -X12 -Y-13 -JX5/21 -R0/5/0/21 -K -O >>"+fplot+"\n")
+            f.write("0.5 14.5 12 0 0 5 "+dcpr+" %\n")
+            f.write("0.5 9.5 12 0 0 5 "+clvdpr+" % \n")
+            f.write("0.5 4.5 12 0 0 5 "+isopr+" % \n")
+            f.write("fits\n")
+            # Plot BeachBalls
+        if (inv_step == '1'):
+            f.write("gmt psxy < "+TableMT_lines+" -X0 -Y19.5 -JX3/3 -R-1/1/-1/1 -Wthin,0 -P -K -O >> "+fplot+"\n")
+            f.write("gmt pstext <<endplot -O -X0 -Y0 -JX -R -P >>"+fplot+"\n")
+            f.write("endplot\n")
+        if (inv_step == '2'):
+            f.write("gmt makecpt -Cpolar -Z > "+cpt+"\n")
+            f.write("gmt psxy < "+TableMT_fill+" -X-4 -Y21 -JX3/3 -R-1/1/-1/1 -Wthin,0 -P -C"+cpt+" -K -O -L -M >> "+fplot+"\n")
+            f.write("gmt psxy < "+TableDC_fill+" -X0 -Y-8 -JX3/3 -R-1/1/-1/1 -Wthin,0 -P -C"+cpt+" -K -O -L -M >> "+fplot+"\n")
+            f.write("gmt psxy < "+TableCLVD_fill+" -X0 -Y-5 -JX3/3 -R-1/1/-1/1 -Wthin,0 -P -C"+cpt+" -L -K -O -M >> "+fplot+"\n")
+            f.write("gmt psxy < "+TableISO_fill+" -X0 -Y-5 -JX3/3 -R-1/1/-1/1 -Wthin,0 -P -C"+cpt+" -K -O -M >> "+fplot+"\n")
+            f.write("gmt psxy <"+TableISO_lines+" -X0 -Y0 -JX3/3 -R-1/1/-1/1 -Wthin,0 -P -K -O -M >> "+fplot+"\n")
+            f.write("gmt pstext <<endplot -O -X0 -Y0 -JX -R -P >>"+fplot+"\n")
+            f.write("endplot\n")
+        f.flush()
+        f.close()
+
     cmd = "chmod a+x "+fgmtplot
     os.system(cmd)
     cmd = fgmtplot
@@ -5539,7 +5846,10 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
     f.close()
     # File meca.dat
     f=open(fmeca,'w')
-    line="0 0 "+str(round(float(best[0].strike)))+" "+str(round(float(best[0].dip)))+" "+str(round(float(best[0].rake)))+" 1 0 0 N"
+    if inv_param['GMT_VERSION']=='5':
+        line="0 0 10 "+str(round(float(best[0].strike)))+" "+str(round(float(best[0].dip)))+" "+str(round(float(best[0].rake)))+" 1 0 0 N"
+    else:
+        line="0 0 "+str(round(float(best[0].strike)))+" "+str(round(float(best[0].dip)))+" "+str(round(float(best[0].rake)))+" 1 0 0 N"
     f.write(line)
     f.flush()
     f.close()
@@ -5559,8 +5869,12 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
                 tdepth=tdepth+sdepth
             if not adepth in depths:
                 depths.append(adepth)
-                line=str(float(sol.depth)/1000)+" "+str(rmisf)+" "+str(round(float(sol.strike)))+" "
-                line=line+str(round(float(sol.dip)))+" "+str(round(float(sol.rake)))+" 1 0 0\n"
+                if inv_param['GMT_VERSION']=='5':
+                    line=str(float(sol.depth)/1000)+" "+str(rmisf)+" "+str(round(float(sol.strike)))+" 10 "
+                    line=line+str(round(float(sol.dip)))+" "+str(round(float(sol.rake)))+" 1 0 0\n"
+                else:
+                    line=str(float(sol.depth)/1000)+" "+str(rmisf)+" "+str(round(float(sol.strike)))+" "
+                    line=line+str(round(float(sol.dip)))+" "+str(round(float(sol.rake)))+" 1 0 0\n"
                 fsel.write(line)
         line=str(sol.depth)+" "+str(rmisf)+" \n"
         fall.write(line)
@@ -5632,347 +5946,706 @@ def plotDCSolution(inv_step,inv_param,all,best,traces):
     f.close()
     # File ptsolution.gmt
     # General info
-    f=open(fgmtplot,'w')
-    f.write("#!/bin/bash\n")
-    line="pstext <"+feqinfo+" -X2 -Y21 -JX10/6 -R0/14/0/21 -K -P >"+fplot+"\n"
-    f.write(line)
-    if (inv_step == '1'):
-        # Misfit vs Depth
-        fdep=open(fdepmis,'w')
-        rmisfmax=0
-        for sol in all:
-            if (sol.strike == best[0].strike) & (sol.dip == best[0].dip) & (sol.rake == best[0].rake):
-                rmisf=relativeMisfit(sol.misfit,best[0].misfit)
-                if (rmisf > rmisfmax):
-                    rmisfmax = rmisf
-                line=str(float(sol.depth)/1000)+" "+str(rmisf)+"\n"
-                fdep.write(line)
-        fdep.flush()
-        fdep.close()
-        mmmax=strDecim(rmisfmax*1.2,3)
-        mmm=strDecim(rmisfmax*0.2,3)
-        mmmin=strDecim(-rmisfmax*0.2,3)
-        if (abs(float(mmmin))<0.001):
-            mmmin='-0.001'
-            mmmax='0.011'
-            mmm='0.001'
-        line="psmeca "+fmeca+" -X0 -Y-3.5 -JX3/3 -R-1/1/-1/1 -P -V -W3/255/0/0 -T0"
-        line=line+" -G255 -Sa14 -o -K -O >>"+fplot+"\n"
-        f.write(line)
-        rd1=str(float(inv_param['DEPTH_UPPERLIM'])-float(inv_param['DEPTH_STEP']))
-        rd2=str(float(inv_param['DEPTH_BOTTOMLIM'])+float(inv_param['DEPTH_STEP']))
-        deps=str(inv_param['DEPTH_STEP'])
-        line="psxy < "+fdepmis+" -X10 -Y5 -JX7/2.5 -R"+rd1+"/"+rd2
-        line=line+"/"+mmmin+"/"+mmmax+" -K -Sc0.1 -W1/0 -G255 -O -P "
-        line=line+"-BSneWa"+deps+"f"+deps+":'Depth [km]':/f"+mmm+"a"+mmm+":'Rel.Misfit': >>"+fplot+"\n"
-        f.write(line)
-        line="psmeca "+fselmeca+" -X0 -Y0 -JX -R -K -O -Sa2 -o"
-        line=line+" -T0 -W2/255/0/0 -G255 -P >>"+fplot+"\n"
-        f.write(line)
-        # Misfit vs strike-dip-slip (copying to files)
-        rmisfmax=0
-        fstr=open(fstrmis,'w')
-        fdip=open(fdipmis,'w')
-        frak=open(frakmis,'w')
-        for sol in all:
-            if (sol.depth == best[0].depth) & (sol.dip == best[0].dip) & (sol.rake == best[0].rake):
-                rmisf=relativeMisfit(sol.misfit,best[0].misfit)
-                if (rmisf > rmisfmax):
-                    rmisfmax = rmisf
-                line=str(sol.strike)+" "+str(rmisf)+"\n"
-                fstr.write(line)
-            if (sol.depth == best[0].depth) & (sol.strike == best[0].strike) & (sol.rake == best[0].rake):
-                rmisf=relativeMisfit(sol.misfit,best[0].misfit)
-                if (rmisf > rmisfmax):
-                    rmisfmax = rmisf
-                line=str(sol.dip)+" "+str(rmisf)+"\n"
-                fdip.write(line)
-            if (sol.depth == best[0].depth) & (sol.strike == best[0].strike) & (sol.dip == best[0].dip):
-                rmisf=relativeMisfit(sol.misfit,best[0].misfit)
-                if (rmisf > rmisfmax):
-                    rmisfmax = rmisf
-                line=str(sol.rake)+" "+str(rmisf)+"\n"
-                frak.write(line)
-        fstr.flush()
-        fstr.close()
-        fdip.flush()
-        fdip.close()
-        frak.flush()
-        frak.close()
-        mmmax=strDecim(rmisfmax*1.2,3)
-        mmm=strDecim(rmisfmax*0.2,3)
-        mmmin=strDecim(-rmisfmax*0.2,3)
-        if (abs(float(mmmin))<0.001):
-            mmmin='-0.001'
-            mmmax='0.011'
-            mmm='0.001'
-        # Misfit vs Strike
-        plstr1=str(best[0].strike-float(inv_param['MISFIT_SDS_RANGE'])-float(inv_param['MISFIT_SDS_TICK']))
-        plstr2=str(best[0].strike+float(inv_param['MISFIT_SDS_RANGE'])+float(inv_param['MISFIT_SDS_TICK']))
-        mcrg=str(inv_param['MISFIT_SDS_RANGE'])
-        mctk=str(inv_param['MISFIT_SDS_TICK'])
-        line="psxy < "+fstrmis+" -X-4.5 -Y-4.5 -JX3.5/2.5 -R"+plstr1+"/"+plstr2
-        line=line+"/"+mmmin+"/"+mmmax+" -K -Sc0.1 -W1/0 -G255 -O -P -BSneWa"+mcrg+"f"+mctk
-        line=line+":'Strike [deg]':/f"+mmm+"a"+mmm+":'Rel.Misfit': >>"+fplot+"\n"
-        f.write(line)
-        line="psxy <<beststrike -X0 -Y0 -JX -R -K -Sc0.1 -W1/0 -G0 -O -P >>"+fplot+"\n"
-        f.write(line)
-        f.write(str(best[0].strike)+" 0\n")
-        f.write("beststrike\n")
-        # Misfit vs Dip
-        pldip1=str(best[0].dip-float(inv_param['MISFIT_SDS_RANGE'])-float(inv_param['MISFIT_SDS_TICK']))
-        pldip2=str(best[0].dip+float(inv_param['MISFIT_SDS_RANGE'])+float(inv_param['MISFIT_SDS_TICK']))
-        line="psxy < "+fdipmis+" -X4 -Y0 -JX -R"+pldip1+"/"+pldip2
-        line=line+"/"+mmmin+"/"+mmmax+" -K -Sc0.1 -W1/0 -G255 -O -P -BSnewa"+mcrg+"f"+mctk
-        line=line+":'Dip [deg]':/f"+mmm+"a"+mmm+":'': >>"+fplot+"\n"
-        f.write(line)
-        line="psxy <<bestdip -X0 -Y0 -JX -R -K -Sc0.1 -W1/0 -G0 -O -P >>"+fplot+"\n"
-        f.write(line)
-        f.write(str(best[0].dip)+" 0\n")
-        f.write("bestdip\n")
-        # Misfit vs Rake
-        plrak1=str(best[0].rake-float(inv_param['MISFIT_SDS_RANGE'])-float(inv_param['MISFIT_SDS_TICK']))
-        plrak2=str(best[0].rake+float(inv_param['MISFIT_SDS_RANGE'])+float(inv_param['MISFIT_SDS_TICK']))
-        line="psxy < "+frakmis+" -X4 -Y0 -JX -R"+plrak1+"/"+plrak2
-        line=line+"/"+mmmin+"/"+mmmax+" -K -Sc0.1 -W1/0 -G255 -O -P -BSnewa"+mcrg+"f"+mctk
-        line=line+":'Rake [deg]':/f"+mmm+"a"+mmm+":'': >>"+fplot+"\n"
-        f.write(line)
-        line="psxy <<bestrake -X0 -Y0 -JX -R -K -Sc0.1 -W1/0 -G0 -O -P >>"+fplot+"\n"
-        f.write(line)
-        f.write(str(best[0].rake)+" 0\n")
-        f.write("bestrake\n")
-        shiftx,shifty="-13.5","-4"
-    elif (inv_step == '2'):
-        line="psmeca "+fmeca+" -X0 -Y-3.5 -JX3/3 -R-1/1/-1/1 -P -V -W3/255/0/0 "
-        line=line+"-G255/0/0 -Sa14 -o -K -O >>"+fplot+"\n"
-        f.write(line)
-        # Misfit vs Location
-        rmisfmax=0
-        rmi=0.2
-        fen=open(fenmis,'w')
-        ftim=open(ftimmis,'w')
-        eastmin=float(inv_param['ORIG_EAST_SHIFT'])+float(inv_param['REL_EAST_1'])
-        eastmax=float(inv_param['ORIG_EAST_SHIFT'])+float(inv_param['REL_EAST_2'])
-        northmin=float(inv_param['ORIG_NORTH_SHIFT'])+float(inv_param['REL_NORTH_1'])
-        northmax=float(inv_param['ORIG_NORTH_SHIFT'])+float(inv_param['REL_NORTH_2'])
-        plen=str(1.2*int(0.001*max(1000,abs(float(best[0].rest)),abs(float(best[0].rnor)),\
-             abs(eastmin),abs(eastmax),abs(northmin),abs(northmax))))
-        # plen=str(1.2*int(0.001*max(abs(float(best[0].rest)),abs(float(best[0].rnor)),\
-        # abs(eastmin),abs(eastmax),abs(northmin),abs(northmax))))
-        locrgl=loctkl=str(float(plen)/3)
-        ptimemin=float(inv_param['ORIG_TIME'])+float(inv_param['REL_TIME_1'])
-        ptimemax=float(inv_param['ORIG_TIME'])+float(inv_param['REL_TIME_2'])
-        ptime1=str(-2+round(min(float(best[0].time),ptimemin)))
-        ptime2=str(2+round(max(float(best[0].time),ptimemax)))
-        timrgl=timtkl=str(round((float(ptime2)-float(ptime1))/4))
-        for sol in all:
-            if (sol.strike == best[0].strike) & (sol.dip == best[0].dip) & (sol.rake == best[0].rake):
-                rmisf=relativeMisfit(sol.misfit,best[0].misfit)
-                if (rmisf > rmisfmax):
-                    rmisfmax = rmisf
-                if (rmisf > rmi):
-                    rmisf=rmi
-                prmisf=(0.2-rmisf)*1.25
-                if (prmisf <= 0):
-                    prmisf=0
-                line=str(float(sol.rest)/1000)+" "+str(float(sol.rnor)/1000)+" "+str(prmisf)+"\n"
-                fen.write(line)
-                ftim.write("0 "+str(sol.time)+" "+str(prmisf)+"\n")
-        fen.flush()
-        fen.close()
-        ftim.flush()
-        ftim.close()
-        line="psxy <<startpoints -X7.5 -Y1.5 -JX6/6 -R-"+plen+"/"+plen
-        line=line+"/-"+plen+"/"+plen+" -K -Sx0.3 -W2/100 -G100 -O -P -BSWnea"+locrgl+"f"+loctkl
-        line=line+":'East [km]':/f"+locrgl+"a"+loctkl+":'North [km]': >>"+fplot+"\n"
-        f.write(line)
-        f.write("0 0\n")
-        f.write("startpoints\n")
-        line="psxy <"+fenmis+" -X0 -Y0 -JX -R -K -Sc -W1/100 -G100 -O -P >>"+fplot+"\n"
-        f.write(line)
-        line="psxy << bestsol -X0 -Y0 -JX -R -K -Sc0.25 -W5/255/0/0 -O -P >>"+fplot+"\n"
-        f.write(line)
-        f.write(str(0.001*float(best[0].rest))+" "+str(0.001*float(best[0].rnor))+"\n")
-        f.write("bestsol\n")
-        line="psxy <"+ftimmis+" -X8.5 -Y0 -JX1/6 -Sc -R-2/2/"+ptime1+"/"+ptime2+" -K -O -P -BWsne:'':"
-        line=line+"/f"+timrgl+"a"+timtkl+":'Time [s]': >>"+fplot+"\n"
-        f.write(line)
-        line="psxy << bestsolt -X0 -Y0 -JX -R -K -Sc0.25 -W5/255/0/0 -O -P >>"+fplot+"\n"
-        f.write(line)
-        f.write("0 "+str(float(best[0].time))+"\n")
-        f.write("bestsolt\n")
-        shiftx,shifty="-16","-5"
-    else:
-        shiftx,shifty="0","-7"
-    # Fit header
-    maxstatplot = int(inv_param['MAX_STAT_2_PLOT'])
-    f.write("pstext <<fits -X"+shiftx+" -Y"+shifty+" -JX17/2 -R0/17/0/3 -K -O >>"+fplot+"\n")
-    nstatplot=len(traces)
-    ncomp=len(inv_param['COMP_2_USE'])
-    spacex=0.5
-    jumpx=((13-((ncomp-1)*spacex))/ncomp)+spacex
-    if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
-        fitdata_type="Amplitude Spectra"
-    else:
-        fitdata_type="Seismograms"
-    # if (nst > maxstatplot):
-    if (nstatplot > maxstatplot):
-        nstatplot=maxstatplot
-        f.write("0 2 12 0 0 5 Fit of "+fitdata_type+" (Closest "+str(maxstatplot)+" stations)\n")
-    else:
-        f.write("0 2 12 0 0 5 Fit of "+fitdata_type+"\n")
-    f.write("0 1 10 0 0 5 Stat Dist Az Amax\n")
-    usedcomp = inv_param['COMP_2_USE']
-    i=0
-    for letter in usedcomp:
-        f.write(str(4.5+(i*jumpx))+" 1 10 0 0 5 "+comp_names[letter]+"\n")
-        i=i+1
-    f.write("fits\n")
-    # Fit spectra or seismograms
-    checkInvParam('DATA_PLOT_STEP1',inv_param['DATA_PLOT_STEP'+inv_step],('amsp','seis'))
-    checkInvParam('FILT_PLOT_STEP1',inv_param['FILT_PLOT_STEP'+inv_step],('plain','tapered','filtered'))
-    checkInvParam('AMPL_PLOT_STEP1',inv_param['AMPL_PLOT_STEP'+inv_step],('amax','norm'))
 
-    if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
-        x1,x2,y1,y2="0",inv_param['BP_F4_STEP'+inv_step],"0",str(amaxf)
-        scale = asp_r = "/".join((x1,x2,y1,y2))
-        asp_rd = asp_rs = asp_r
-        tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
-    else:
-        if inv_param['SW_TRACES0TIME'].upper=='TRUE':
-            traces0time=0.
-            x1,x2=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
-        else:
-            traces0time=float(getParseTime(inv_param))
-            x1=str(float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
-            x2=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
-        x10,x20=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
-        y1,y2=str(-amaxf),str(amaxf)
-        scale = asp_r = "/".join((x1,x2,y1,y2))
-        if inv_param['FILT_PLOT_STEP'+inv_step]=="plain":
-            tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
-        elif inv_param['FILT_PLOT_STEP'+inv_step]=="tapered":
-            tr_name="seit"
-        else:
-            tr_name="seif"
-    tr_name=tr_name+inv_step
+    if inv_param['GMT_VERSION']=='5':
 
-    asp_jxx = str(float(jumpx-(2*spacex)))
-    asp_jxy = str(float(12.0/float(nstatplot)))
-    asp_jx = asp_jxx+"/"+asp_jxy
-    last_x=last_y=0
-    istat=0
-    jumpy=float(12.0/float(nstatplot))
+        f=open(fgmtplot,'w')
+        f.write("#!/bin/bash\n")
 
-    amax=amaxf
-    amaxstat=[]
-    for i in range(nstatplot):
-        istat=istat+1
-        amaxst=0
-        for component in usedcomp:
-            fdtrace=os.path.join(dinv,"dcd"+tr_name+"-"+str(istat)+"-"+component+".table")
-            fstrace=os.path.join(dinv,"dcs"+tr_name+"-"+str(istat)+"-"+component+".table")
-            if os.path.isfile(fdtrace):
-                fdat=open(fdtrace,'r')
-                for line in fdat:
-                    x,y=line.split()
-                    dat=abs(float(y))
-                    if (dat>=amaxst):
-                        amaxst=dat
-                fdat.close()
-                fsyn=open(fstrace,'r')
-                for line in fsyn:
-                    x,y=line.split()
-                    dat=abs(float(y))
-                    if (dat>=amaxst):
-                        amaxst=dat
-                fsyn.close()
-        amaxstat.append(amaxst)
+        f.write("gmt gmtset MAP_DEGREE_SYMBOL colon\n")
+        f.write("gmt gmtset MAP_GRID_CROSS_SIZE_PRIMARY 0.4c\n")
+        f.write("gmt gmtset PS_LINE_JOIN round\n")
+        f.write("gmt gmtset MAP_TICK_LENGTH 0.1c\n")
+        f.write("gmt gmtset MAP_TICK_PEN 0.24p\n")
+        f.write("gmt gmtset MAP_FRAME_WIDTH 0.05c\n")
+        f.write("gmt gmtset MAP_FRAME_TYPE plain\n")
 
-    f.write("pstext <<disaz -K -O -X0 -Y-12 -JX17/12 -R0/17/0/"+str(nstatplot)+" -P >>"+fplot+"\n")
-    for i in range(nstatplot):
-        # print 'here amax',amaxstat[i]
-        line="0 "+str(nstatplot-i-0.5)+" 8 0 0 5 "+str(i+1)+" "+traces[i].stat
-        line=line+" "+strDecim(traces[i].dist,1)+" "+strDecim(traces[i].azi,1)
-        if ['AMPL_PLOT_STEP'+inv_step]=='amax':
-            line=line+" "+strDecim((amax)*1000000,3)+"\n"
-            # line=line+" "+strDecim((amax/100000),3)+"\n"
-        else:
-            line=line+" "+strDecim(((amaxstat[i])*1000000),3)+"\n"
-            # line=line+" "+strDecim(((amaxstat[i])/100000),3)+"\n"
+        line="gmt pstext <"+feqinfo+" -X2 -Y21 -JX10/6 -R0/14/0/21 -K -P >"+fplot+"\n"
         f.write(line)
-    f.write("disaz\n")
-    if (inv_step == '1'):
-        faz=open(fazi,"w")
-        for trace in traces:
-            faz.write(str(trace.azi)+" "+str(trace.stat)+" "+str(trace.comp)+" "+str(trace.quality)+"\n")
-        faz.flush()
-        faz.close()
-    istat=0
-    for i in range(nstatplot):
-        if inv_param['AMPL_PLOT_STEP'+inv_step]=="amax":
-            if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
-                asp_rd = "/".join((x1,x2,str(-amaxf*3),str(amaxf)))
-                asp_rs = "/".join((x1,x2,str(-amaxf*2),str(amaxf*2)))
-                asp_rt = "/".join((x10,x20,"0","4"))
+        if (inv_step == '1'):
+            # Misfit vs Depth
+            fdep=open(fdepmis,'w')
+            rmisfmax=0
+            for sol in all:
+                if (sol.strike == best[0].strike) & (sol.dip == best[0].dip) & (sol.rake == best[0].rake):
+                    rmisf=relativeMisfit(sol.misfit,best[0].misfit)
+                    if (rmisf > rmisfmax):
+                        rmisfmax = rmisf
+                    line=str(float(sol.depth)/1000)+" "+str(rmisf)+"\n"
+                    fdep.write(line)
+            fdep.flush()
+            fdep.close()
+            mmmax=strDecim(rmisfmax*1.2,3)
+            mmm=strDecim(rmisfmax*0.2,3)
+            mmmin=strDecim(-rmisfmax*0.2,3)
+            if (abs(float(mmmin))<0.001):
+                mmmin='-0.001'
+                mmmax='0.011'
+                mmm='0.001'
+            line="gmt psmeca "+fmeca+" -X0 -Y-3.5 -JX3/3 -R-1/1/-1/1 -P -V -W2,255/0/0 -T0"
+            line=line+" -G255 -Sa14 -K -O >>"+fplot+"\n"
+            f.write(line)
+            rd1=str(float(inv_param['DEPTH_UPPERLIM'])-float(inv_param['DEPTH_STEP']))
+            rd2=str(float(inv_param['DEPTH_BOTTOMLIM'])+float(inv_param['DEPTH_STEP']))
+            deps=str(inv_param['DEPTH_STEP'])
+            line="gmt psxy < "+fdepmis+" -X10 -Y5 -JX7/2.5 -R"+rd1+"/"+rd2
+            line=line+"/"+mmmin+"/"+mmmax+" -K -Sc0.1 -Wthin,0 -G255 -O -P "
+            line=line+"-BSneW -Bxa"+deps+"f"+deps+'+l"Depth [km]" -Bya'+mmm+"f"+mmm+'+l"Rel.Misfit" >>'+fplot+"\n"
+            f.write(line)
+            line="gmt psmeca "+fselmeca+" -X0 -Y0 -JX -R -K -O -Sa2"
+            line=line+" -T0 -Wthin,255/0/0 -G255 -P >>"+fplot+"\n"
+            f.write(line)
+            # Misfit vs strike-dip-slip (copying to files)
+            rmisfmax=0
+            fstr=open(fstrmis,'w')
+            fdip=open(fdipmis,'w')
+            frak=open(frakmis,'w')
+            for sol in all:
+                if (sol.depth == best[0].depth) & (sol.dip == best[0].dip) & (sol.rake == best[0].rake):
+                    rmisf=relativeMisfit(sol.misfit,best[0].misfit)
+                    if (rmisf > rmisfmax):
+                        rmisfmax = rmisf
+                    line=str(sol.strike)+" "+str(rmisf)+"\n"
+                    fstr.write(line)
+                if (sol.depth == best[0].depth) & (sol.strike == best[0].strike) & (sol.rake == best[0].rake):
+                    rmisf=relativeMisfit(sol.misfit,best[0].misfit)
+                    if (rmisf > rmisfmax):
+                        rmisfmax = rmisf
+                    line=str(sol.dip)+" "+str(rmisf)+"\n"
+                    fdip.write(line)
+                if (sol.depth == best[0].depth) & (sol.strike == best[0].strike) & (sol.dip == best[0].dip):
+                    rmisf=relativeMisfit(sol.misfit,best[0].misfit)
+                    if (rmisf > rmisfmax):
+                        rmisfmax = rmisf
+                    line=str(sol.rake)+" "+str(rmisf)+"\n"
+                    frak.write(line)
+            fstr.flush()
+            fstr.close()
+            fdip.flush()
+            fdip.close()
+            frak.flush()
+            frak.close()
+            mmmax=strDecim(rmisfmax*1.2,3)
+            mmm=strDecim(rmisfmax*0.2,3)
+            mmmin=strDecim(-rmisfmax*0.2,3)
+            if (abs(float(mmmin))<0.001):
+                mmmin='-0.001'
+                mmmax='0.011'
+                mmm='0.001'
+            # Misfit vs Strike
+            plstr1=str(best[0].strike-float(inv_param['MISFIT_SDS_RANGE'])-float(inv_param['MISFIT_SDS_TICK']))
+            plstr2=str(best[0].strike+float(inv_param['MISFIT_SDS_RANGE'])+float(inv_param['MISFIT_SDS_TICK']))
+            mcrg=str(inv_param['MISFIT_SDS_RANGE'])
+            mctk=str(inv_param['MISFIT_SDS_TICK'])
+            line="gmt psxy < "+fstrmis+" -X-4.5 -Y-4.5 -JX3.5/2.5 -R"+plstr1+"/"+plstr2
+            line=line+"/"+mmmin+"/"+mmmax+" -K -Sc0.1 -Wthin,0 -G255 -O -P -BSneW -Bxa"+mcrg+"f"+mctk
+            line=line+'+l"Strike [deg]" -Bya'+mmm+"f"+mmm+'+l"Rel.Misfit" >>'+fplot+"\n"
+            f.write(line)
+            line="gmt psxy <<beststrike -X0 -Y0 -JX -R -K -Sc0.1 -Wthin,0 -G0 -O -P >>"+fplot+"\n"
+            f.write(line)
+            f.write(str(best[0].strike)+" 0\n")
+            f.write("beststrike\n")
+            # Misfit vs Dip
+            pldip1=str(best[0].dip-float(inv_param['MISFIT_SDS_RANGE'])-float(inv_param['MISFIT_SDS_TICK']))
+            pldip2=str(best[0].dip+float(inv_param['MISFIT_SDS_RANGE'])+float(inv_param['MISFIT_SDS_TICK']))
+            line="gmt psxy < "+fdipmis+" -X4 -Y0 -JX -R"+pldip1+"/"+pldip2
+            line=line+"/"+mmmin+"/"+mmmax+" -K -Sc0.1 -Wthin,0 -G255 -O -P -BSnew -Bxa"+mcrg+"f"+mctk
+            line=line+'+l"Dip [deg]" -Bya'+mmm+"f"+mmm+" >>"+fplot+"\n"
+            f.write(line)
+            line="gmt psxy <<bestdip -X0 -Y0 -JX -R -K -Sc0.1 -Wthin,0 -G0 -O -P >>"+fplot+"\n"
+            f.write(line)
+            f.write(str(best[0].dip)+" 0\n")
+            f.write("bestdip\n")
+            # Misfit vs Rake
+            plrak1=str(best[0].rake-float(inv_param['MISFIT_SDS_RANGE'])-float(inv_param['MISFIT_SDS_TICK']))
+            plrak2=str(best[0].rake+float(inv_param['MISFIT_SDS_RANGE'])+float(inv_param['MISFIT_SDS_TICK']))
+            line="gmt psxy < "+frakmis+" -X4 -Y0 -JX -R"+plrak1+"/"+plrak2
+            line=line+"/"+mmmin+"/"+mmmax+" -K -Sc0.1 -Wthin,0 -G255 -O -P -BSnew -Bxa"+mcrg+"f"+mctk
+            line=line+'+l"Rake [deg]" -Bya'+mmm+"f"+mmm+" >>"+fplot+"\n"
+            f.write(line)
+            line="gmt psxy <<bestrake -X0 -Y0 -JX -R -K -Sc0.1 -Wthin,0 -G0 -O -P >>"+fplot+"\n"
+            f.write(line)
+            f.write(str(best[0].rake)+" 0\n")
+            f.write("bestrake\n")
+            shiftx,shifty="-13.5","-4"
+        elif (inv_step == '2'):
+            line="gmt psmeca "+fmeca+" -X0 -Y-3.5 -JX3/3 -R-1/1/-1/1 -P -V -W2,255/0/0 "
+            line=line+"-G255/0/0 -Sa14 -K -O >>"+fplot+"\n"
+            f.write(line)
+            # Misfit vs Location
+            rmisfmax=0
+            rmi=0.2
+            fen=open(fenmis,'w')
+            ftim=open(ftimmis,'w')
+            eastmin=float(inv_param['ORIG_EAST_SHIFT'])+float(inv_param['REL_EAST_1'])
+            eastmax=float(inv_param['ORIG_EAST_SHIFT'])+float(inv_param['REL_EAST_2'])
+            northmin=float(inv_param['ORIG_NORTH_SHIFT'])+float(inv_param['REL_NORTH_1'])
+            northmax=float(inv_param['ORIG_NORTH_SHIFT'])+float(inv_param['REL_NORTH_2'])
+            plen=str(1.2*int(0.001*max(1000,abs(float(best[0].rest)),abs(float(best[0].rnor)),\
+                 abs(eastmin),abs(eastmax),abs(northmin),abs(northmax))))
+            # plen=str(1.2*int(0.001*max(abs(float(best[0].rest)),abs(float(best[0].rnor)),\
+            # abs(eastmin),abs(eastmax),abs(northmin),abs(northmax))))
+            locrgl=loctkl=str(float(plen)/3)
+            ptimemin=float(inv_param['ORIG_TIME'])+float(inv_param['REL_TIME_1'])
+            ptimemax=float(inv_param['ORIG_TIME'])+float(inv_param['REL_TIME_2'])
+            ptime1=str(-2+round(min(float(best[0].time),ptimemin)))
+            ptime2=str(2+round(max(float(best[0].time),ptimemax)))
+            timrgl=timtkl=str(round((float(ptime2)-float(ptime1))/4))
+            for sol in all:
+                if (sol.strike == best[0].strike) & (sol.dip == best[0].dip) & (sol.rake == best[0].rake):
+                    rmisf=relativeMisfit(sol.misfit,best[0].misfit)
+                    if (rmisf > rmisfmax):
+                        rmisfmax = rmisf
+                    if (rmisf > rmi):
+                        rmisf=rmi
+                    prmisf=(0.2-rmisf)*1.25
+                    if (prmisf <= 0):
+                        prmisf=0
+                    line=str(float(sol.rest)/1000)+" "+str(float(sol.rnor)/1000)+" "+str(prmisf)+"\n"
+                    fen.write(line)
+                    ftim.write("0 "+str(sol.time)+" "+str(prmisf)+"\n")
+            fen.flush()
+            fen.close()
+            ftim.flush()
+            ftim.close()
+            line="gmt psxy <<startpoints -X7.5 -Y1.5 -JX6/6 -R-"+plen+"/"+plen
+            line=line+"/-"+plen+"/"+plen+" -K -Sx0.3 -W2,100 -G100 -O -P -BSWne -Bxa"+locrgl+"f"+loctkl
+            line=line+'+l"East [km]" -Bya'+locrgl+"f"+loctkl+'+l"North [km]" >>'+fplot+"\n"
+            f.write(line)
+            f.write("0 0\n")
+            f.write("startpoints\n")
+            line="gmt psxy <"+fenmis+" -X0 -Y0 -JX -R -K -Sc -Wthin,100 -G100 -O -P >>"+fplot+"\n"
+            f.write(line)
+            line="gmt psxy << bestsol -X0 -Y0 -JX -R -K -Sc0.25 -W5,255/0/0 -O -P >>"+fplot+"\n"
+            f.write(line)
+            f.write(str(0.001*float(best[0].rest))+" "+str(0.001*float(best[0].rnor))+"\n")
+            f.write("bestsol\n")
+            line="gmt psxy <"+ftimmis+" -X8.5 -Y0 -JX1/6 -Sc -R-2/2/"+ptime1+"/"+ptime2+" -K -O -P -BWsne "
+            line=line+"-Byf"+timrgl+"a"+timtkl+'+l"Time [s]" >>'+fplot+"\n"
+            f.write(line)
+            line="gmt psxy << bestsolt -X0 -Y0 -JX -R -K -Sc0.25 -W5,255/0/0 -O -P >>"+fplot+"\n"
+            f.write(line)
+            f.write("0 "+str(float(best[0].time))+"\n")
+            f.write("bestsolt\n")
+            shiftx,shifty="-16","-5"
         else:
-            if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
-                asp_rd = asp_rs = asp_r = "/".join((x1,x2,"0",str(float(amaxstat[i]))))
-            else:
-                asp_rd = "/".join((x1,x2,str(-float(amaxstat[i])*3),str(float(amaxstat[i]))))
-                asp_rs = "/".join((x1,x2,str(-float(amaxstat[i])*2),str(float(amaxstat[i])*2)))
-                asp_rt = "/".join((x10,x20,"0","4"))
-        istat=istat+1
-        icomp=0
-        for component in usedcomp:
-            icomp=icomp+1
-            fdtrace=os.path.join(dinv,"dcd"+tr_name+"-"+str(istat)+"-"+component+".table")
-            fstrace=os.path.join(dinv,"dcs"+tr_name+"-"+str(istat)+"-"+component+".table")
-            fttrace=os.path.join(dinv,"taper-"+str(istat)+"-"+component)
-            if os.path.isfile(fdtrace):
-                next_x=4.5+((icomp-1)*jumpx)
-                next_y=0.05+((nstatplot-istat)*jumpy)
-                asp_x=str(next_x-last_x)
-                asp_y=str(next_y-last_y)
-                last_x=next_x
-                last_y=next_y
-                if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
-                    line="psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BWSNE -JX"+asp_jx
-                    linedata=line+" -R"+asp_rd+" -P -K -O -W1/255/0/0 -G200/0/0 >>"+fplot+"\n"
-                else:
-                    line="psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BWSNE -JX"+asp_jx
-                    linedata=line+" -R"+asp_rd+" -P -K -O -W2/255/0/0 >>"+fplot+"\n"
-                f.write(linedata)
-                linesynt="psxy <"+fstrace+" -R"+asp_rs+" -BWSNE -X0 -Y0 -JX -P -K -O -W1/0 >>"+fplot+"\n"
-                f.write(linesynt)
-                if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
-                    linesynt="psxy <"+fttrace+" -R"+asp_rt+" -BWSNE -X0 -Y0 -JX -P -K -O -W1/100 -G150 >>"+fplot+"\n"
-                    f.write(linesynt)
-            # else:
-            #     print fdtrace+" not found"
-    icomp=0
-    for comp in usedcomp:
-        icomp=icomp+1
-        next_x=4.5+((icomp-1)*jumpx)
-        next_y=0.0
-        asp_x=str(next_x-last_x)
-        asp_y=str(next_y-last_y)
-        last_x=next_x
-        last_y=next_y
+            shiftx,shifty="0","-7"
+        # Fit header
+        maxstatplot = int(inv_param['MAX_STAT_2_PLOT'])
+        f.write("gmt pstext <<fits -X"+shiftx+" -Y"+shifty+" -JX17/2 -R0/17/0/3 -K -O >>"+fplot+"\n")
+        nstatplot=len(traces)
+        ncomp=len(inv_param['COMP_2_USE'])
+        spacex=0.5
+        jumpx=((13-((ncomp-1)*spacex))/ncomp)+spacex
         if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
-            line="psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O "\
-                 +"-BSa"+inv_param['BP_F4_STEP'+inv_step]+"f"+inv_param['BP_F4_STEP'+inv_step]\
-                 +":'Frequency [Hz]': >>"+fplot+"\n"
+            fitdata_type="Amplitude Spectra"
         else:
-            line="psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O -BSa"\
-                 +inv_param['TICK_PLOT_STEP'+inv_step]+"f"+inv_param['TICK_PLOT_STEP'+inv_step]\
-                 +":'Time [s]': >>"+fplot+"\n"
+            fitdata_type="Seismograms"
+        # if (nst > maxstatplot):
+        if (nstatplot > maxstatplot):
+            nstatplot=maxstatplot
+            f.write("0 2 12 0 0 5 Fit of "+fitdata_type+" (Closest "+str(maxstatplot)+" stations)\n")
+        else:
+            f.write("0 2 12 0 0 5 Fit of "+fitdata_type+"\n")
+        f.write("0 1 10 0 0 5 Stat Dist Az Amax\n")
+        usedcomp = inv_param['COMP_2_USE']
+        i=0
+        for letter in usedcomp:
+            f.write(str(4.5+(i*jumpx))+" 1 10 0 0 5 "+comp_names[letter]+"\n")
+            i=i+1
+        f.write("fits\n")
+        # Fit spectra or seismograms
+        checkInvParam('DATA_PLOT_STEP1',inv_param['DATA_PLOT_STEP'+inv_step],('amsp','seis'))
+        checkInvParam('FILT_PLOT_STEP1',inv_param['FILT_PLOT_STEP'+inv_step],('plain','tapered','filtered'))
+        checkInvParam('AMPL_PLOT_STEP1',inv_param['AMPL_PLOT_STEP'+inv_step],('amax','norm'))
+
+        if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+            x1,x2,y1,y2="0",inv_param['BP_F4_STEP'+inv_step],"0",str(amaxf)
+            scale = asp_r = "/".join((x1,x2,y1,y2))
+            asp_rd = asp_rs = asp_r
+            tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
+        else:
+            if inv_param['SW_TRACES0TIME'].upper=='TRUE':
+                traces0time=0.
+                x1=inv_param['START_PLOT_STEP'+inv_step]
+                x2=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+            else:
+                traces0time=float(getParseTime(inv_param))
+                x1=str(float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
+                x2=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
+            x10,x20=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+            y1,y2=str(-amaxf),str(amaxf)
+            scale = asp_r = "/".join((x1,x2,y1,y2))
+            if inv_param['FILT_PLOT_STEP'+inv_step]=="plain":
+                tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
+            elif inv_param['FILT_PLOT_STEP'+inv_step]=="tapered":
+                tr_name="seit"
+            else:
+                tr_name="seif"
+        tr_name=tr_name+inv_step
+
+        asp_jxx = str(float(jumpx-(2*spacex)))
+        asp_jxy = str(float(12.0/float(nstatplot)))
+        asp_jx = asp_jxx+"/"+asp_jxy
+        last_x=last_y=0
+        istat=0
+        jumpy=float(12.0/float(nstatplot))
+
+        amax=amaxf
+        amaxstat=[]
+        for i in range(nstatplot):
+            istat=istat+1
+            amaxst=0
+            for component in usedcomp:
+                fdtrace=os.path.join(dinv,"dcd"+tr_name+"-"+str(istat)+"-"+component+".table")
+                fstrace=os.path.join(dinv,"dcs"+tr_name+"-"+str(istat)+"-"+component+".table")
+                if os.path.isfile(fdtrace):
+                    fdat=open(fdtrace,'r')
+                    for line in fdat:
+                        x,y=line.split()
+                        dat=abs(float(y))
+                        if (dat>=amaxst):
+                            amaxst=dat
+                    fdat.close()
+                    fsyn=open(fstrace,'r')
+                    for line in fsyn:
+                        x,y=line.split()
+                        dat=abs(float(y))
+                        if (dat>=amaxst):
+                            amaxst=dat
+                    fsyn.close()
+            amaxstat.append(amaxst)
+
+        f.write("gmt pstext <<disaz -K -O -X0 -Y-12 -JX17/12 -R0/17/0/"+str(nstatplot)+" -P >>"+fplot+"\n")
+        for i in range(nstatplot):
+            # print 'here amax',amaxstat[i]
+            line="0 "+str(nstatplot-i-0.5)+" 8 0 0 5 "+str(i+1)+" "+traces[i].stat
+            line=line+" "+strDecim(traces[i].dist,1)+" "+strDecim(traces[i].azi,1)
+            if ['AMPL_PLOT_STEP'+inv_step]=='amax':
+                line=line+" "+strDecim((amax)*1000000,3)+"\n"
+                # line=line+" "+strDecim((amax/100000),3)+"\n"
+            else:
+                line=line+" "+strDecim(((amaxstat[i])*1000000),3)+"\n"
+                # line=line+" "+strDecim(((amaxstat[i])/100000),3)+"\n"
+            f.write(line)
+        f.write("disaz\n")
+        if (inv_step == '1'):
+            faz=open(fazi,"w")
+            for trace in traces:
+                faz.write(str(trace.azi)+" "+str(trace.stat)+" "+str(trace.comp)+" "+str(trace.quality)+"\n")
+            faz.flush()
+            faz.close()
+        istat=0
+        for i in range(nstatplot):
+            if inv_param['AMPL_PLOT_STEP'+inv_step]=="amax":
+                if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
+                    asp_rd = "/".join((x1,x2,str(-amaxf*3),str(amaxf)))
+                    asp_rs = "/".join((x1,x2,str(-amaxf*2),str(amaxf*2)))
+                    asp_rt = "/".join((x10,x20,"0","4"))
+            else:
+                if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                    asp_rd = asp_rs = asp_r = "/".join((x1,x2,"0",str(float(amaxstat[i]))))
+                else:
+                    asp_rd = "/".join((x1,x2,str(-float(amaxstat[i])*3),str(float(amaxstat[i]))))
+                    asp_rs = "/".join((x1,x2,str(-float(amaxstat[i])*2),str(float(amaxstat[i])*2)))
+                    asp_rt = "/".join((x10,x20,"0","4"))
+            istat=istat+1
+            icomp=0
+            for component in usedcomp:
+                icomp=icomp+1
+                fdtrace=os.path.join(dinv,"dcd"+tr_name+"-"+str(istat)+"-"+component+".table")
+                fstrace=os.path.join(dinv,"dcs"+tr_name+"-"+str(istat)+"-"+component+".table")
+                fttrace=os.path.join(dinv,"taper-"+str(istat)+"-"+component)
+                if os.path.isfile(fdtrace):
+                    next_x=4.5+((icomp-1)*jumpx)
+                    next_y=0.05+((nstatplot-istat)*jumpy)
+                    asp_x=str(next_x-last_x)
+                    asp_y=str(next_y-last_y)
+                    last_x=next_x
+                    last_y=next_y
+                    if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                        line="gmt psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BSWEN -JX"+asp_jx
+                        linedata=line+" -R"+asp_rd+" -P -K -O -Wthin,255/0/0 -G200/0/0 >>"+fplot+"\n"
+                    else:
+                        line="gmt psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BSWEN -JX"+asp_jx
+                        linedata=line+" -R"+asp_rd+" -P -K -O -Wthin,255/0/0 >>"+fplot+"\n"
+                    f.write(linedata)
+                    linesynt="gmt psxy <"+fstrace+" -R"+asp_rs+" -BSWEN -X0 -Y0 -JX -P -K -O -Wthin,0 >>"+fplot+"\n"
+                    f.write(linesynt)
+                    if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
+                        linesynt="gmt psxy <"+fttrace+" -R"+asp_rt+" -BSWEN -X0 -Y0 -JX -P -K -O -Wthin,100 -G150 >>"+fplot+"\n"
+                        f.write(linesynt)
+                # else:
+                #     print fdtrace+" not found"
+        icomp=0
+        for comp in usedcomp:
+            icomp=icomp+1
+            next_x=4.5+((icomp-1)*jumpx)
+            next_y=0.0
+            asp_x=str(next_x-last_x)
+            asp_y=str(next_y-last_y)
+            last_x=next_x
+            last_y=next_y
+            if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                line="gmt psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O "\
+                     +"-BS -Bxa"+inv_param['BP_F4_STEP'+inv_step]+"f"+inv_param['BP_F4_STEP'+inv_step]\
+                     +'+l"Frequency [Hz]" >>'+fplot+"\n"
+            else:
+                line="gmt psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O -BS -Bxa"\
+                     +inv_param['TICK_PLOT_STEP'+inv_step]+"f"+inv_param['TICK_PLOT_STEP'+inv_step]\
+                     +'+l"Time [s]" >>'+fplot+"\n"
+            f.write(line)
+            f.write("0 0\n0 0\nxscale\n")
+        f.write("gmt pstext <<endplot -O -X0 -Y0 -JX -R -P >>"+fplot+"\n")
+        f.write("endplot\n")
+        f.flush()
+        f.close()
+    
+    else:
+
+        f=open(fgmtplot,'w')
+        f.write("#!/bin/bash\n")
+        line="pstext <"+feqinfo+" -X2 -Y21 -JX10/6 -R0/14/0/21 -K -P >"+fplot+"\n"
         f.write(line)
-        f.write("0 0\n0 0\nxscale\n")
-    f.write("pstext <<endplot -O -X0 -Y0 -JX -R -P >>"+fplot+"\n")
-    f.write("endplot\n")
-    f.flush()
-    f.close()
+        if (inv_step == '1'):
+            # Misfit vs Depth
+            fdep=open(fdepmis,'w')
+            rmisfmax=0
+            for sol in all:
+                if (sol.strike == best[0].strike) & (sol.dip == best[0].dip) & (sol.rake == best[0].rake):
+                    rmisf=relativeMisfit(sol.misfit,best[0].misfit)
+                    if (rmisf > rmisfmax):
+                        rmisfmax = rmisf
+                    line=str(float(sol.depth)/1000)+" "+str(rmisf)+"\n"
+                    fdep.write(line)
+            fdep.flush()
+            fdep.close()
+            mmmax=strDecim(rmisfmax*1.2,3)
+            mmm=strDecim(rmisfmax*0.2,3)
+            mmmin=strDecim(-rmisfmax*0.2,3)
+            if (abs(float(mmmin))<0.001):
+                mmmin='-0.001'
+                mmmax='0.011'
+                mmm='0.001'
+            line="psmeca "+fmeca+" -X0 -Y-3.5 -JX3/3 -R-1/1/-1/1 -P -V -W3/255/0/0 -T0"
+            line=line+" -G255 -Sa14 -o -K -O >>"+fplot+"\n"
+            f.write(line)
+            rd1=str(float(inv_param['DEPTH_UPPERLIM'])-float(inv_param['DEPTH_STEP']))
+            rd2=str(float(inv_param['DEPTH_BOTTOMLIM'])+float(inv_param['DEPTH_STEP']))
+            deps=str(inv_param['DEPTH_STEP'])
+            line="psxy < "+fdepmis+" -X10 -Y5 -JX7/2.5 -R"+rd1+"/"+rd2
+            line=line+"/"+mmmin+"/"+mmmax+" -K -Sc0.1 -W1/0 -G255 -O -P "
+            line=line+"-BSneWa"+deps+"f"+deps+":'Depth [km]':/f"+mmm+"a"+mmm+":'Rel.Misfit': >>"+fplot+"\n"
+            f.write(line)
+            line="psmeca "+fselmeca+" -X0 -Y0 -JX -R -K -O -Sa2 -o"
+            line=line+" -T0 -W2/255/0/0 -G255 -P >>"+fplot+"\n"
+            f.write(line)
+            # Misfit vs strike-dip-slip (copying to files)
+            rmisfmax=0
+            fstr=open(fstrmis,'w')
+            fdip=open(fdipmis,'w')
+            frak=open(frakmis,'w')
+            for sol in all:
+                if (sol.depth == best[0].depth) & (sol.dip == best[0].dip) & (sol.rake == best[0].rake):
+                    rmisf=relativeMisfit(sol.misfit,best[0].misfit)
+                    if (rmisf > rmisfmax):
+                        rmisfmax = rmisf
+                    line=str(sol.strike)+" "+str(rmisf)+"\n"
+                    fstr.write(line)
+                if (sol.depth == best[0].depth) & (sol.strike == best[0].strike) & (sol.rake == best[0].rake):
+                    rmisf=relativeMisfit(sol.misfit,best[0].misfit)
+                    if (rmisf > rmisfmax):
+                        rmisfmax = rmisf
+                    line=str(sol.dip)+" "+str(rmisf)+"\n"
+                    fdip.write(line)
+                if (sol.depth == best[0].depth) & (sol.strike == best[0].strike) & (sol.dip == best[0].dip):
+                    rmisf=relativeMisfit(sol.misfit,best[0].misfit)
+                    if (rmisf > rmisfmax):
+                        rmisfmax = rmisf
+                    line=str(sol.rake)+" "+str(rmisf)+"\n"
+                    frak.write(line)
+            fstr.flush()
+            fstr.close()
+            fdip.flush()
+            fdip.close()
+            frak.flush()
+            frak.close()
+            mmmax=strDecim(rmisfmax*1.2,3)
+            mmm=strDecim(rmisfmax*0.2,3)
+            mmmin=strDecim(-rmisfmax*0.2,3)
+            if (abs(float(mmmin))<0.001):
+                mmmin='-0.001'
+                mmmax='0.011'
+                mmm='0.001'
+            # Misfit vs Strike
+            plstr1=str(best[0].strike-float(inv_param['MISFIT_SDS_RANGE'])-float(inv_param['MISFIT_SDS_TICK']))
+            plstr2=str(best[0].strike+float(inv_param['MISFIT_SDS_RANGE'])+float(inv_param['MISFIT_SDS_TICK']))
+            mcrg=str(inv_param['MISFIT_SDS_RANGE'])
+            mctk=str(inv_param['MISFIT_SDS_TICK'])
+            line="psxy < "+fstrmis+" -X-4.5 -Y-4.5 -JX3.5/2.5 -R"+plstr1+"/"+plstr2
+            line=line+"/"+mmmin+"/"+mmmax+" -K -Sc0.1 -W1/0 -G255 -O -P -BSneWa"+mcrg+"f"+mctk
+            line=line+":'Strike [deg]':/f"+mmm+"a"+mmm+":'Rel.Misfit': >>"+fplot+"\n"
+            f.write(line)
+            line="psxy <<beststrike -X0 -Y0 -JX -R -K -Sc0.1 -W1/0 -G0 -O -P >>"+fplot+"\n"
+            f.write(line)
+            f.write(str(best[0].strike)+" 0\n")
+            f.write("beststrike\n")
+            # Misfit vs Dip
+            pldip1=str(best[0].dip-float(inv_param['MISFIT_SDS_RANGE'])-float(inv_param['MISFIT_SDS_TICK']))
+            pldip2=str(best[0].dip+float(inv_param['MISFIT_SDS_RANGE'])+float(inv_param['MISFIT_SDS_TICK']))
+            line="psxy < "+fdipmis+" -X4 -Y0 -JX -R"+pldip1+"/"+pldip2
+            line=line+"/"+mmmin+"/"+mmmax+" -K -Sc0.1 -W1/0 -G255 -O -P -BSnewa"+mcrg+"f"+mctk
+            line=line+":'Dip [deg]':/f"+mmm+"a"+mmm+":'': >>"+fplot+"\n"
+            f.write(line)
+            line="psxy <<bestdip -X0 -Y0 -JX -R -K -Sc0.1 -W1/0 -G0 -O -P >>"+fplot+"\n"
+            f.write(line)
+            f.write(str(best[0].dip)+" 0\n")
+            f.write("bestdip\n")
+            # Misfit vs Rake
+            plrak1=str(best[0].rake-float(inv_param['MISFIT_SDS_RANGE'])-float(inv_param['MISFIT_SDS_TICK']))
+            plrak2=str(best[0].rake+float(inv_param['MISFIT_SDS_RANGE'])+float(inv_param['MISFIT_SDS_TICK']))
+            line="psxy < "+frakmis+" -X4 -Y0 -JX -R"+plrak1+"/"+plrak2
+            line=line+"/"+mmmin+"/"+mmmax+" -K -Sc0.1 -W1/0 -G255 -O -P -BSnewa"+mcrg+"f"+mctk
+            line=line+":'Rake [deg]':/f"+mmm+"a"+mmm+":'': >>"+fplot+"\n"
+            f.write(line)
+            line="psxy <<bestrake -X0 -Y0 -JX -R -K -Sc0.1 -W1/0 -G0 -O -P >>"+fplot+"\n"
+            f.write(line)
+            f.write(str(best[0].rake)+" 0\n")
+            f.write("bestrake\n")
+            shiftx,shifty="-13.5","-4"
+        elif (inv_step == '2'):
+            line="psmeca "+fmeca+" -X0 -Y-3.5 -JX3/3 -R-1/1/-1/1 -P -V -W3/255/0/0 "
+            line=line+"-G255/0/0 -Sa14 -o -K -O >>"+fplot+"\n"
+            f.write(line)
+            # Misfit vs Location
+            rmisfmax=0
+            rmi=0.2
+            fen=open(fenmis,'w')
+            ftim=open(ftimmis,'w')
+            eastmin=float(inv_param['ORIG_EAST_SHIFT'])+float(inv_param['REL_EAST_1'])
+            eastmax=float(inv_param['ORIG_EAST_SHIFT'])+float(inv_param['REL_EAST_2'])
+            northmin=float(inv_param['ORIG_NORTH_SHIFT'])+float(inv_param['REL_NORTH_1'])
+            northmax=float(inv_param['ORIG_NORTH_SHIFT'])+float(inv_param['REL_NORTH_2'])
+            plen=str(1.2*int(0.001*max(1000,abs(float(best[0].rest)),abs(float(best[0].rnor)),\
+                 abs(eastmin),abs(eastmax),abs(northmin),abs(northmax))))
+            # plen=str(1.2*int(0.001*max(abs(float(best[0].rest)),abs(float(best[0].rnor)),\
+            # abs(eastmin),abs(eastmax),abs(northmin),abs(northmax))))
+            locrgl=loctkl=str(float(plen)/3)
+            ptimemin=float(inv_param['ORIG_TIME'])+float(inv_param['REL_TIME_1'])
+            ptimemax=float(inv_param['ORIG_TIME'])+float(inv_param['REL_TIME_2'])
+            ptime1=str(-2+round(min(float(best[0].time),ptimemin)))
+            ptime2=str(2+round(max(float(best[0].time),ptimemax)))
+            timrgl=timtkl=str(round((float(ptime2)-float(ptime1))/4))
+            for sol in all:
+                if (sol.strike == best[0].strike) & (sol.dip == best[0].dip) & (sol.rake == best[0].rake):
+                    rmisf=relativeMisfit(sol.misfit,best[0].misfit)
+                    if (rmisf > rmisfmax):
+                        rmisfmax = rmisf
+                    if (rmisf > rmi):
+                        rmisf=rmi
+                    prmisf=(0.2-rmisf)*1.25
+                    if (prmisf <= 0):
+                        prmisf=0
+                    line=str(float(sol.rest)/1000)+" "+str(float(sol.rnor)/1000)+" "+str(prmisf)+"\n"
+                    fen.write(line)
+                    ftim.write("0 "+str(sol.time)+" "+str(prmisf)+"\n")
+            fen.flush()
+            fen.close()
+            ftim.flush()
+            ftim.close()
+            line="psxy <<startpoints -X7.5 -Y1.5 -JX6/6 -R-"+plen+"/"+plen
+            line=line+"/-"+plen+"/"+plen+" -K -Sx0.3 -W2/100 -G100 -O -P -BSWnea"+locrgl+"f"+loctkl
+            line=line+":'East [km]':/f"+locrgl+"a"+loctkl+":'North [km]': >>"+fplot+"\n"
+            f.write(line)
+            f.write("0 0\n")
+            f.write("startpoints\n")
+            line="psxy <"+fenmis+" -X0 -Y0 -JX -R -K -Sc -W1/100 -G100 -O -P >>"+fplot+"\n"
+            f.write(line)
+            line="psxy << bestsol -X0 -Y0 -JX -R -K -Sc0.25 -W5/255/0/0 -O -P >>"+fplot+"\n"
+            f.write(line)
+            f.write(str(0.001*float(best[0].rest))+" "+str(0.001*float(best[0].rnor))+"\n")
+            f.write("bestsol\n")
+            line="psxy <"+ftimmis+" -X8.5 -Y0 -JX1/6 -Sc -R-2/2/"+ptime1+"/"+ptime2+" -K -O -P -BWsne:'':"
+            line=line+"/f"+timrgl+"a"+timtkl+":'Time [s]': >>"+fplot+"\n"
+            f.write(line)
+            line="psxy << bestsolt -X0 -Y0 -JX -R -K -Sc0.25 -W5/255/0/0 -O -P >>"+fplot+"\n"
+            f.write(line)
+            f.write("0 "+str(float(best[0].time))+"\n")
+            f.write("bestsolt\n")
+            shiftx,shifty="-16","-5"
+        else:
+            shiftx,shifty="0","-7"
+        # Fit header
+        maxstatplot = int(inv_param['MAX_STAT_2_PLOT'])
+        f.write("pstext <<fits -X"+shiftx+" -Y"+shifty+" -JX17/2 -R0/17/0/3 -K -O >>"+fplot+"\n")
+        nstatplot=len(traces)
+        ncomp=len(inv_param['COMP_2_USE'])
+        spacex=0.5
+        jumpx=((13-((ncomp-1)*spacex))/ncomp)+spacex
+        if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+            fitdata_type="Amplitude Spectra"
+        else:
+            fitdata_type="Seismograms"
+        # if (nst > maxstatplot):
+        if (nstatplot > maxstatplot):
+            nstatplot=maxstatplot
+            f.write("0 2 12 0 0 5 Fit of "+fitdata_type+" (Closest "+str(maxstatplot)+" stations)\n")
+        else:
+            f.write("0 2 12 0 0 5 Fit of "+fitdata_type+"\n")
+        f.write("0 1 10 0 0 5 Stat Dist Az Amax\n")
+        usedcomp = inv_param['COMP_2_USE']
+        i=0
+        for letter in usedcomp:
+            f.write(str(4.5+(i*jumpx))+" 1 10 0 0 5 "+comp_names[letter]+"\n")
+            i=i+1
+        f.write("fits\n")
+        # Fit spectra or seismograms
+        checkInvParam('DATA_PLOT_STEP1',inv_param['DATA_PLOT_STEP'+inv_step],('amsp','seis'))
+        checkInvParam('FILT_PLOT_STEP1',inv_param['FILT_PLOT_STEP'+inv_step],('plain','tapered','filtered'))
+        checkInvParam('AMPL_PLOT_STEP1',inv_param['AMPL_PLOT_STEP'+inv_step],('amax','norm'))
+
+        if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+            x1,x2,y1,y2="0",inv_param['BP_F4_STEP'+inv_step],"0",str(amaxf)
+            scale = asp_r = "/".join((x1,x2,y1,y2))
+            asp_rd = asp_rs = asp_r
+            tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
+        else:
+            if inv_param['SW_TRACES0TIME'].upper=='TRUE':
+                traces0time=0.
+                x1=inv_param['START_PLOT_STEP'+inv_step]
+                x2=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+            else:
+                traces0time=float(getParseTime(inv_param))
+                x1=str(float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
+                x2=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
+            x10,x20=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+            y1,y2=str(-amaxf),str(amaxf)
+            scale = asp_r = "/".join((x1,x2,y1,y2))
+            if inv_param['FILT_PLOT_STEP'+inv_step]=="plain":
+                tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
+            elif inv_param['FILT_PLOT_STEP'+inv_step]=="tapered":
+                tr_name="seit"
+            else:
+                tr_name="seif"
+        tr_name=tr_name+inv_step
+
+        asp_jxx = str(float(jumpx-(2*spacex)))
+        asp_jxy = str(float(12.0/float(nstatplot)))
+        asp_jx = asp_jxx+"/"+asp_jxy
+        last_x=last_y=0
+        istat=0
+        jumpy=float(12.0/float(nstatplot))
+
+        amax=amaxf
+        amaxstat=[]
+        for i in range(nstatplot):
+            istat=istat+1
+            amaxst=0
+            for component in usedcomp:
+                fdtrace=os.path.join(dinv,"dcd"+tr_name+"-"+str(istat)+"-"+component+".table")
+                fstrace=os.path.join(dinv,"dcs"+tr_name+"-"+str(istat)+"-"+component+".table")
+                if os.path.isfile(fdtrace):
+                    fdat=open(fdtrace,'r')
+                    for line in fdat:
+                        x,y=line.split()
+                        dat=abs(float(y))
+                        if (dat>=amaxst):
+                            amaxst=dat
+                    fdat.close()
+                    fsyn=open(fstrace,'r')
+                    for line in fsyn:
+                        x,y=line.split()
+                        dat=abs(float(y))
+                        if (dat>=amaxst):
+                            amaxst=dat
+                    fsyn.close()
+            amaxstat.append(amaxst)
+
+        f.write("pstext <<disaz -K -O -X0 -Y-12 -JX17/12 -R0/17/0/"+str(nstatplot)+" -P >>"+fplot+"\n")
+        for i in range(nstatplot):
+            # print 'here amax',amaxstat[i]
+            line="0 "+str(nstatplot-i-0.5)+" 8 0 0 5 "+str(i+1)+" "+traces[i].stat
+            line=line+" "+strDecim(traces[i].dist,1)+" "+strDecim(traces[i].azi,1)
+            if ['AMPL_PLOT_STEP'+inv_step]=='amax':
+                line=line+" "+strDecim((amax)*1000000,3)+"\n"
+                # line=line+" "+strDecim((amax/100000),3)+"\n"
+            else:
+                line=line+" "+strDecim(((amaxstat[i])*1000000),3)+"\n"
+                # line=line+" "+strDecim(((amaxstat[i])/100000),3)+"\n"
+            f.write(line)
+        f.write("disaz\n")
+        if (inv_step == '1'):
+            faz=open(fazi,"w")
+            for trace in traces:
+                faz.write(str(trace.azi)+" "+str(trace.stat)+" "+str(trace.comp)+" "+str(trace.quality)+"\n")
+            faz.flush()
+            faz.close()
+        istat=0
+        for i in range(nstatplot):
+            if inv_param['AMPL_PLOT_STEP'+inv_step]=="amax":
+                if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
+                    asp_rd = "/".join((x1,x2,str(-amaxf*3),str(amaxf)))
+                    asp_rs = "/".join((x1,x2,str(-amaxf*2),str(amaxf*2)))
+                    asp_rt = "/".join((x10,x20,"0","4"))
+            else:
+                if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                    asp_rd = asp_rs = asp_r = "/".join((x1,x2,"0",str(float(amaxstat[i]))))
+                else:
+                    asp_rd = "/".join((x1,x2,str(-float(amaxstat[i])*3),str(float(amaxstat[i]))))
+                    asp_rs = "/".join((x1,x2,str(-float(amaxstat[i])*2),str(float(amaxstat[i])*2)))
+                    asp_rt = "/".join((x10,x20,"0","4"))
+            istat=istat+1
+            icomp=0
+            for component in usedcomp:
+                icomp=icomp+1
+                fdtrace=os.path.join(dinv,"dcd"+tr_name+"-"+str(istat)+"-"+component+".table")
+                fstrace=os.path.join(dinv,"dcs"+tr_name+"-"+str(istat)+"-"+component+".table")
+                fttrace=os.path.join(dinv,"taper-"+str(istat)+"-"+component)
+                if os.path.isfile(fdtrace):
+                    next_x=4.5+((icomp-1)*jumpx)
+                    next_y=0.05+((nstatplot-istat)*jumpy)
+                    asp_x=str(next_x-last_x)
+                    asp_y=str(next_y-last_y)
+                    last_x=next_x
+                    last_y=next_y
+                    if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                        line="psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BWSNE -JX"+asp_jx
+                        linedata=line+" -R"+asp_rd+" -P -K -O -W1/255/0/0 -G200/0/0 >>"+fplot+"\n"
+                    else:
+                        line="psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BWSNE -JX"+asp_jx
+                        linedata=line+" -R"+asp_rd+" -P -K -O -W2/255/0/0 >>"+fplot+"\n"
+                    f.write(linedata)
+                    linesynt="psxy <"+fstrace+" -R"+asp_rs+" -BWSNE -X0 -Y0 -JX -P -K -O -W1/0 >>"+fplot+"\n"
+                    f.write(linesynt)
+                    if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
+                        linesynt="psxy <"+fttrace+" -R"+asp_rt+" -BWSNE -X0 -Y0 -JX -P -K -O -W1/100 -G150 >>"+fplot+"\n"
+                        f.write(linesynt)
+                # else:
+                #     print fdtrace+" not found"
+        icomp=0
+        for comp in usedcomp:
+            icomp=icomp+1
+            next_x=4.5+((icomp-1)*jumpx)
+            next_y=0.0
+            asp_x=str(next_x-last_x)
+            asp_y=str(next_y-last_y)
+            last_x=next_x
+            last_y=next_y
+            if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                line="psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O "\
+                     +"-BSa"+inv_param['BP_F4_STEP'+inv_step]+"f"+inv_param['BP_F4_STEP'+inv_step]\
+                     +":'Frequency [Hz]': >>"+fplot+"\n"
+            else:
+                line="psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O -BSa"\
+                     +inv_param['TICK_PLOT_STEP'+inv_step]+"f"+inv_param['TICK_PLOT_STEP'+inv_step]\
+                     +":'Time [s]': >>"+fplot+"\n"
+            f.write(line)
+            f.write("0 0\n0 0\nxscale\n")
+        f.write("pstext <<endplot -O -X0 -Y0 -JX -R -P >>"+fplot+"\n")
+        f.write("endplot\n")
+        f.flush()
+        f.close()
+
     cmd = "chmod a+x "+fgmtplot
     os.system(cmd)
     cmd = fgmtplot
@@ -6041,7 +6714,10 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
     f.close()
     # File meca.dat
     f=open(fmeca,'w')
-    line="0 0 "+str(round(best[0].strike))+" "+str(round(best[0].dip))+" "+str(round(best[0].rake))+" 1 0 0 N"
+    if inv_param['GMT_VERSION']=='5':
+        line="0 0 10 "+str(round(best[0].strike))+" "+str(round(best[0].dip))+" "+str(round(best[0].rake))+" 1 0 0 N"
+    else:
+        line="0 0 "+str(round(best[0].strike))+" "+str(round(best[0].dip))+" "+str(round(best[0].rake))+" 1 0 0 N"
     f.write(line)
     f.flush()
     f.close()
@@ -6061,8 +6737,12 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
                 tdepth=tdepth+sdepth
             if not adepth in depths:
                 depths.append(adepth)
-                line=str(float(sol.depth)/1000)+" "+str(rmisf)+" "+str(round(float(sol.strike)))+" "
-                line=line+str(round(float(sol.dip)))+" "+str(round(float(sol.rake)))+" 1 0 0\n"
+                if inv_param['GMT_VERSION']=='5':
+                    line=str(float(sol.depth)/1000)+" "+str(rmisf)+" 10 "+str(round(float(sol.strike)))+" "
+                    line=line+str(round(float(sol.dip)))+" "+str(round(float(sol.rake)))+" 1 0 0\n"
+                else:
+                    line=str(float(sol.depth)/1000)+" "+str(rmisf)+" "+str(round(float(sol.strike)))+" "
+                    line=line+str(round(float(sol.dip)))+" "+str(round(float(sol.rake)))+" 1 0 0\n"
                 fsel.write(line)
         line=str(sol.depth)+" "+str(rmisf)+" \n"
         fall.write(line)
@@ -6258,319 +6938,643 @@ def plotEikSolution(inv_step,inv_param,all,best,traces):
     f.close()
     # File ptsolution.gmt
     # General info
-    f=open(fgmtplot,'w')
-    f.write("#!/bin/bash\n")
-    line="pstext <"+feqinfo+" -X2 -Y21 -JX10/6 -R0/14/0/21 -K -P >"+fplot+"\n"
-    f.write(line)
-    if (inv_step == '3'):
-        line="psmeca "+fmeca+" -X0 -Y-3.5 -JX3/3 -R-1/1/-1/1 -P -V -W3/255/0/0 "
-        line=line+"-G255/0/0 -Sa14 -o -K -O >>"+fplot+"\n"
+
+    if inv_param['GMT_VERSION']=='5':
+
+        f=open(fgmtplot,'w')
+        f.write("#!/bin/bash\n")
+        line="gmt pstext <"+feqinfo+" -X2 -Y21 -JX10/6 -R0/14/0/21 -K -P >"+fplot+"\n"
         f.write(line)
-        line="psmeca "+fmeca+" -X0 -Y0 -T1 -JX -R -P -V -W10/0 -Sa14 -o -K -O >>"+fplot+"\n"
-        f.write(line)
-        # Outline (copying to file)
-        fbord=open(fborder,'w')
-        center_north,center_east,center_down=center[0],center[1],center[2]
-        ipob=0
-        for point_on_border in outline:
-            ipob=ipob+1
-            north=0.001*(float(point_on_border.north)-float(center_north))
-            east=0.001*(float(point_on_border.east)-float(center_east))
-            up=-0.001*(float(point_on_border.down)-float(center_down))
-            distance=math.sqrt(north*north+east*east+up*up)
-            gamma=math.acos((east*math.sin(math.radians(best[0].strike))+\
-                  north*math.cos(math.radians(best[0].strike)))/distance)
-            alongstrike=distance*math.cos(gamma)
-            downdip=distance*math.sin(gamma)
-            if (up<0):
-                downdip=-downdip
-            fbord.write(str(alongstrike)+" "+str(downdip)+"\n")
-            if (ipob==1):
-                last_bordline=str(alongstrike)+" "+str(downdip)+"\n"
-        fbord.write(last_bordline)
-        fbord.flush()
-        fbord.close()
-        # Discretized source (copying to file)
-        fdisc=open(fdiscrete,'w')
-        print "DISCRETE_TIME"
-        print "DURATION "+str(duration)
-        print "START    "+str(discrete_source_tmin)
-        print "END      "+str(discrete_source_tmax)
-        for point_inside in tdsm:
-            # north=0.001*(float(point_inside.north)-float(center_north))
-            # east=0.001*(float(point_inside.east)-float(center_east))
-            # up=-0.001*(float(point_inside.down)-float(center_down))
-            # time=float(point_inside.time)-discrete_source_tmin
-            # print"point inside "+str(point_inside.time)+" "+str(time)
-            # distance=math.sqrt(north*north+east*east+up*up)
-            # gamma=math.acos((east*math.sin(math.radians(best[0].strike))+\
-            # north*math.cos(math.radians(best[0].strike)))/distance)
-            # alongstrike=distance*math.cos(gamma)
-            # downdip=distance*math.sin(gamma)
-            # if (up<0):
-            #  downdip=-downdip
-            # fdisc.write(str(alongstrike)+" "+str(downdip)+" "+str(time)+"\n")
-            salongstrike=str(0.001*float(point_inside.alongstrike))
-            supdip=str(-0.001*float(point_inside.downdip))
-            stime=str(point_inside.time)
-            fdisc.write(salongstrike+" "+supdip+" "+stime+"\n")
-        fdisc.flush()
-        fdisc.close()
-        # Misfit vs radius-rrv-nukl-risetime (copying to files)
-        rmisfmax=0
-        frad=open(fradmis,'w')
-        frrv=open(frrvmis,'w')
-        fnuk=open(fnukmis,'w')
-        fris=open(frismis,'w')
-        for sol in all:
-            if (sol.depth == best[0].depth) & (sol.strike == best[0].strike) & \
-               (sol.dip == best[0].dip) & (sol.rake == best[0].rake):
-                rmisf=relativeMisfit(sol.misfit,best[0].misfit)
-                if (sol.relruptvel == best[0].relruptvel) & (sol.risetime == best[0].risetime):
-                    bestrnkx=float(best[0].nuklx)/float(best[0].radius)
-                    bestrnky=float(best[0].nukly)/float(best[0].radius)
-                    solnkx=float(sol.nuklx)/float(sol.radius)
-                    solnky=float(sol.nukly)/float(sol.radius)
-                    rnklim=0.1
-                    # if (abs(bestrnkx-solnkx)<rnklim) and (abs(bestrnky-solnky)<rnklim):
-                    #    frad.write(str(0.001*float(sol.radius))+" "+str(rmisf)+"\n")
-                    #    if (rmisf > rmisfmax):
-                    #       rmisfmax = rmisf
-                    frad.write(str(0.001*float(sol.radius))+" "+str(rmisf)+"\n")
-                    if (rmisf > rmisfmax):
-                        rmisfmax = rmisf
-                if (sol.radius == best[0].radius) & (sol.nuklx == best[0].nuklx) & \
-                   (sol.nukly == best[0].nukly) & (sol.risetime == best[0].risetime):
-                    frrv.write(str(sol.relruptvel)+" "+str(rmisf)+"\n")
-                    if (rmisf > rmisfmax):
-                        rmisfmax = rmisf
-                if (sol.radius == best[0].radius) & (sol.nuklx == best[0].nuklx) & \
-                   (sol.nukly == best[0].nukly) & (sol.relruptvel == best[0].relruptvel):
-                    fris.write(str(sol.risetime)+" "+str(rmisf)+"\n")
-                    if (rmisf > rmisfmax):
-                        rmisfmax = rmisf
-                if (sol.radius == best[0].radius) & (sol.relruptvel == best[0].relruptvel) & \
-                   (sol.risetime == best[0].risetime):
-                    rrmisf=(0.1-rmisf)*2
-                    if (rrmisf>0):
-                        fnuk.write(str(0.001*float(sol.nuklx))+" "+str(0.001*float(sol.nukly))+" "+str(rrmisf)+"\n")
-        fris.flush()
-        fris.close()
-        frad.flush()
-        frad.close()
-        frrv.flush()
-        frrv.close()
-        fnuk.flush()
-        fnuk.close()
-        mmmax=strDecim(rmisfmax*1.2,3)
-        mmm=strDecim(rmisfmax*0.2,3)
-        mmmin=strDecim(-rmisfmax*0.2,3)
-        if (abs(float(mmmin))<0.001):
-            mmmin='-0.001'
-            mmmax='0.011'
-            mmm='0.002'
-        # Misfit vs Radius
-        f.write("psxy < "+fradmis+" -X9.5 -Y0.5 -JX3.5l/2.5 -R0.1/1000/"+mmmin+"/"+mmmax+" -K -Sc0.1 -W1/0\
-                 -G255 -O -P -BSneWa10f10:'Radius [km]':/f"+mmm+"a"+mmm+":'Rel.Misfit': >>"+fplot+"\n")
-        f.write("psxy <<bestradius -X0 -Y0 -JX -R -K -Sc0.1 -W1/0 -G0 -O -P >>"+fplot+"\n")
-        f.write(str(0.001*float(best[0].radius))+" 0\n")
-        f.write("bestradius\n")
-        # Misfit vs RelRuptVel
-        f.write("psxy < "+frrvmis+" -X4.0 -Y0 -JX3.5/2.5 -R0.0/1.5/"+mmmin+"/"+mmmax+" -K -Sc0.1 -W1/0\
-                 -G255 -O -P -BSnewa0.5f0.5:'RelRuptVel':/f"+mmm+"a"+mmm+":'Rel.Misfit': >>"+fplot+"\n")
-        f.write("psxy <<bestrrv -X0 -Y0 -JX -R -K -Sc0.1 -W1/0 -G0 -O -P >>"+fplot+"\n")
-        f.write(str(float(best[0].relruptvel))+" 0\n")
-        f.write("bestrrv\n")
-        # Misfit vs Nucleation
-        plnuk=str((3.5/3)*float(best[0].radius))
-        plnuko=str(0.1*round(0.01*float(plnuk)))
-        nukrg=nuktk=str(0.001*int(0.5*float(best[0].radius)))
-        # f.write("psxy << circ_fault -X-2 -Y4.5 -JX3.5/3.5 -R-"+plnuko+"/"+plnuko+"/-"+plnuko+"/"+plnuko\
-        # +" -K -Sc3 -W1/225 -G225 -O -P -BSWna"+nukrg+"f"+nuktk+":'along strike [km]':/f"\
-        #   +nukrg+"a"+nuktk+":'downdip [km]': >>"+fplot+"\n")
-        # f.write("0 0\n")
-        # f.write("circ_fault\n")
-        f.write("psxy < "+fborder+" -X-2 -Y4.5 -JX3.5/3.5 -R-"+plnuko+"/"+plnuko+"/-"+plnuko+"/"+plnuko\
-                +" -K -W1/0 -G255 -O -P -BSWna"+nukrg+"f"+nuktk+":'along strike [km]':/f"\
-                +nukrg+"a"+nuktk+":'downdip [km]': >>"+fplot+"\n")
-        # f.write("psxy < "+fnukmis+" -X0 -Y0 -R -JX -K -Sc -W1/0 -G255 -O -P >>"+fplot+"\n")
-        f.write("pscontour <"+fdiscrete+" -C"+fcolor+" -W1/0 -I -Gd2 -X0 -Y0 -R -JX -K -O -P >>"+fplot+"\n")
-        f.write("#psxy < "+fdiscrete+" -X0 -Y0 -R -JX -K -Sx.025 -W1/0 -G0 -O -P >>"+fplot+"\n")
-        f.write("psxy <<bestnukl -X0 -Y0 -JX -R -K -Sx0.2 -W2/0 -O -P >>"+fplot+"\n")
-        f.write(str(0.001*float(best[0].nuklx))+" "+str(-0.001*float(best[0].nukly))+" \n")
-        f.write("bestnukl\n")
-        plnukz1=str(0.001*(-float(best[0].depth)-math.sin(math.radians(float(best[0].dip)))*float(plnuk)))
-        plnukz2=str(0.001*(-float(best[0].depth)+math.sin(math.radians(float(best[0].dip)))*float(plnuk)))
-        nukrgz=nuktkz=str(0.1*round(0.01*0.5*float(best[0].radius)*math.sin(math.radians(float(best[0].dip)))))
-        f.write("psxy << z_axis -X0 -Y0 -JX -R-"+plnuk+"/"+plnuk+"/"+plnukz1+"/"+plnukz2\
-                +" -K -Sc0.3 -W1/225 -G225 -O -P -BE"+nukrg+"f"+nuktk+":' ':/f"\
-                +nukrgz+"a"+nuktkz+":'depth [km]': >>"+fplot+"\n")
-        f.write("100 100\n")
-        f.write("z_axis\n")
-        shiftx,shifty="-11.5","-8.5"
-    else:
-        shiftx,shifty="0","-7"
-    # Fit header
-    maxstatplot = int(inv_param['MAX_STAT_2_PLOT'])
-    f.write("pstext <<fits -X"+shiftx+" -Y"+shifty+" -JX17/2 -R0/17/0/3 -K -O >>"+fplot+"\n")
-    nstatplot=len(traces)
-    ncomp=len(inv_param['COMP_2_USE'])
-    spacex=0.5
-    jumpx=((13-((ncomp-1)*spacex))/ncomp)+spacex
-    if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
-        fitdata_type="Amplitude Spectra"
-    else:
-        fitdata_type="Seismograms"
-    # if (nst > maxstatplot):
-    if (nstatplot > maxstatplot):
-        nstatplot=maxstatplot
-        f.write("0 2 12 0 0 5 Fit of "+fitdata_type+" (Closest "+str(maxstatplot)+" stations)\n")
-    else:
-        f.write("0 2 12 0 0 5 Fit of "+fitdata_type+"\n")
-    f.write("0 1 10 0 0 5 Stat Dist Az Amax\n")
-    usedcomp = inv_param['COMP_2_USE']
-    i=0
-    for letter in usedcomp:
-        f.write(str(4.5+(i*jumpx))+" 1 10 0 0 5 "+comp_names[letter]+"\n")
-        i=i+1
-    f.write("fits\n")
-    # Fit spectra or seismograms
-    checkInvParam('DATA_PLOT_STEP1',inv_param['DATA_PLOT_STEP'+inv_step],('amsp','seis'))
-    checkInvParam('FILT_PLOT_STEP1',inv_param['FILT_PLOT_STEP'+inv_step],('plain','tapered','filtered'))
-    checkInvParam('AMPL_PLOT_STEP1',inv_param['AMPL_PLOT_STEP'+inv_step],('amax','norm'))
-
-    if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
-        x1,x2,y1,y2="0",inv_param['BP_F4_STEP'+inv_step],"0",str(amaxf)
-        scale = asp_r = "/".join((x1,x2,y1,y2))
-        asp_rd = asp_rs = asp_r
-        tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
-    else:
-        if inv_param['SW_TRACES0TIME'].upper=='TRUE':
-            traces0time=0.
-            x1,x2=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+        if (inv_step == '3'):
+            line="gmt psmeca "+fmeca+" -X0 -Y-3.5 -JX3/3 -R-1/1/-1/1 -P -V -Wthin,255/0/0 "
+            line=line+"-G255/0/0 -Sa14 -K -O >>"+fplot+"\n"
+            f.write(line)
+            line="gmt psmeca "+fmeca+" -X0 -Y0 -T1 -JX -R -P -V -W5,0 -Sa14 -K -O >>"+fplot+"\n"
+            f.write(line)
+            # Outline (copying to file)
+            fbord=open(fborder,'w')
+            center_north,center_east,center_down=center[0],center[1],center[2]
+            ipob=0
+            for point_on_border in outline:
+                ipob=ipob+1
+                north=0.001*(float(point_on_border.north)-float(center_north))
+                east=0.001*(float(point_on_border.east)-float(center_east))
+                up=-0.001*(float(point_on_border.down)-float(center_down))
+                distance=math.sqrt(north*north+east*east+up*up)
+                gamma=math.acos((east*math.sin(math.radians(best[0].strike))+\
+                      north*math.cos(math.radians(best[0].strike)))/distance)
+                alongstrike=distance*math.cos(gamma)
+                downdip=distance*math.sin(gamma)
+                if (up<0):
+                    downdip=-downdip
+                fbord.write(str(alongstrike)+" "+str(downdip)+"\n")
+                if (ipob==1):
+                    last_bordline=str(alongstrike)+" "+str(downdip)+"\n"
+            fbord.write(last_bordline)
+            fbord.flush()
+            fbord.close()
+            # Discretized source (copying to file)
+            fdisc=open(fdiscrete,'w')
+            print "DISCRETE_TIME"
+            print "DURATION "+str(duration)
+            print "START    "+str(discrete_source_tmin)
+            print "END      "+str(discrete_source_tmax)
+            for point_inside in tdsm:
+                # north=0.001*(float(point_inside.north)-float(center_north))
+                # east=0.001*(float(point_inside.east)-float(center_east))
+                # up=-0.001*(float(point_inside.down)-float(center_down))
+                # time=float(point_inside.time)-discrete_source_tmin
+                # print"point inside "+str(point_inside.time)+" "+str(time)
+                # distance=math.sqrt(north*north+east*east+up*up)
+                # gamma=math.acos((east*math.sin(math.radians(best[0].strike))+\
+                # north*math.cos(math.radians(best[0].strike)))/distance)
+                # alongstrike=distance*math.cos(gamma)
+                # downdip=distance*math.sin(gamma)
+                # if (up<0):
+                #  downdip=-downdip
+                # fdisc.write(str(alongstrike)+" "+str(downdip)+" "+str(time)+"\n")
+                salongstrike=str(0.001*float(point_inside.alongstrike))
+                supdip=str(-0.001*float(point_inside.downdip))
+                stime=str(point_inside.time)
+                fdisc.write(salongstrike+" "+supdip+" "+stime+"\n")
+            fdisc.flush()
+            fdisc.close()
+            # Misfit vs radius-rrv-nukl-risetime (copying to files)
+            rmisfmax=0
+            frad=open(fradmis,'w')
+            frrv=open(frrvmis,'w')
+            fnuk=open(fnukmis,'w')
+            fris=open(frismis,'w')
+            for sol in all:
+                if (sol.depth == best[0].depth) & (sol.strike == best[0].strike) & \
+                   (sol.dip == best[0].dip) & (sol.rake == best[0].rake):
+                    rmisf=relativeMisfit(sol.misfit,best[0].misfit)
+                    if (sol.relruptvel == best[0].relruptvel) & (sol.risetime == best[0].risetime):
+                        bestrnkx=float(best[0].nuklx)/float(best[0].radius)
+                        bestrnky=float(best[0].nukly)/float(best[0].radius)
+                        solnkx=float(sol.nuklx)/float(sol.radius)
+                        solnky=float(sol.nukly)/float(sol.radius)
+                        rnklim=0.1
+                        # if (abs(bestrnkx-solnkx)<rnklim) and (abs(bestrnky-solnky)<rnklim):
+                        #    frad.write(str(0.001*float(sol.radius))+" "+str(rmisf)+"\n")
+                        #    if (rmisf > rmisfmax):
+                        #       rmisfmax = rmisf
+                        frad.write(str(0.001*float(sol.radius))+" "+str(rmisf)+"\n")
+                        if (rmisf > rmisfmax):
+                            rmisfmax = rmisf
+                    if (sol.radius == best[0].radius) & (sol.nuklx == best[0].nuklx) & \
+                       (sol.nukly == best[0].nukly) & (sol.risetime == best[0].risetime):
+                        frrv.write(str(sol.relruptvel)+" "+str(rmisf)+"\n")
+                        if (rmisf > rmisfmax):
+                            rmisfmax = rmisf
+                    if (sol.radius == best[0].radius) & (sol.nuklx == best[0].nuklx) & \
+                       (sol.nukly == best[0].nukly) & (sol.relruptvel == best[0].relruptvel):
+                        fris.write(str(sol.risetime)+" "+str(rmisf)+"\n")
+                        if (rmisf > rmisfmax):
+                            rmisfmax = rmisf
+                    if (sol.radius == best[0].radius) & (sol.relruptvel == best[0].relruptvel) & \
+                       (sol.risetime == best[0].risetime):
+                        rrmisf=(0.1-rmisf)*2
+                        if (rrmisf>0):
+                            fnuk.write(str(0.001*float(sol.nuklx))+" "+str(0.001*float(sol.nukly))+" "+str(rrmisf)+"\n")
+            fris.flush()
+            fris.close()
+            frad.flush()
+            frad.close()
+            frrv.flush()
+            frrv.close()
+            fnuk.flush()
+            fnuk.close()
+            mmmax=strDecim(rmisfmax*1.2,3)
+            mmm=strDecim(rmisfmax*0.2,3)
+            mmmin=strDecim(-rmisfmax*0.2,3)
+            if (abs(float(mmmin))<0.001):
+                mmmin='-0.001'
+                mmmax='0.011'
+                mmm='0.002'
+            # Misfit vs Radius
+            f.write("gmt psxy < "+fradmis+" -X9.5 -Y0.5 -JX3.5l/2.5 -R0.1/1000/"+mmmin+"/"+mmmax+' -K -Sc0.1 -Wthin,0\
+                     -G255 -O -P -BSneW -Bxa10f10+l"Radius [km]" -Byf'+mmm+"a"+mmm+'+l"Rel.Misfit" >>'+fplot+"\n")
+            f.write("gmt psxy <<bestradius -X0 -Y0 -JX -R -K -Sc0.1 -Wthin,0 -G0 -O -P >>"+fplot+"\n")
+            f.write(str(0.001*float(best[0].radius))+" 0\n")
+            f.write("bestradius\n")
+            # Misfit vs RelRuptVel
+            f.write("gmt psxy < "+frrvmis+" -X4.0 -Y0 -JX3.5/2.5 -R0.0/1.5/"+mmmin+"/"+mmmax+' -K -Sc0.1 -Wthin,0\
+                     -G255 -O -P -BSnew -Bxa0.5f0.5+l"RelRuptVel" -Byf'+mmm+"a"+mmm+'+l"Rel.Misfit" >>'+fplot+"\n")
+            f.write("gmt psxy <<bestrrv -X0 -Y0 -JX -R -K -Sc0.1 -Wthin,0 -G0 -O -P >>"+fplot+"\n")
+            f.write(str(float(best[0].relruptvel))+" 0\n")
+            f.write("bestrrv\n")
+            # Misfit vs Nucleation
+            plnuk=str((3.5/3)*float(best[0].radius))
+            plnuko=str(0.1*round(0.01*float(plnuk)))
+            nukrg=nuktk=str(0.001*int(0.5*float(best[0].radius)))
+            # f.write("psxy << circ_fault -X-2 -Y4.5 -JX3.5/3.5 -R-"+plnuko+"/"+plnuko+"/-"+plnuko+"/"+plnuko\
+            # +" -K -Sc3 -W1/225 -G225 -O -P -BSWna"+nukrg+"f"+nuktk+":'along strike [km]':/f"\
+            #   +nukrg+"a"+nuktk+":'downdip [km]': >>"+fplot+"\n")
+            # f.write("0 0\n")
+            # f.write("circ_fault\n")
+            f.write("gmt psxy < "+fborder+" -X-2 -Y4.5 -JX3.5/3.5 -R-"+plnuko+"/"+plnuko+"/-"+plnuko+"/"+plnuko\
+                    +" -K -Wthin,0 -G255 -O -P -BSWn -Bxa"+nukrg+"f"+nuktk+'+l"along strike [km]" -Byf'\
+                    +nukrg+"a"+nuktk+'+l"downdip [km]" >>'+fplot+"\n")
+            # f.write("psxy < "+fnukmis+" -X0 -Y0 -R -JX -K -Sc -W1/0 -G255 -O -P >>"+fplot+"\n")
+            f.write("gmt pscontour <"+fdiscrete+" -C"+fcolor+" -W1/0 -I -Gd2 -X0 -Y0 -R -JX -K -O -P >>"+fplot+"\n")
+            f.write("#gmt psxy < "+fdiscrete+" -X0 -Y0 -R -JX -K -Sx.025 -Wthin,0 -G0 -O -P >>"+fplot+"\n")
+            f.write("gmt psxy <<bestnukl -X0 -Y0 -JX -R -K -Sx0.2 -Wthin,0 -O -P >>"+fplot+"\n")
+            f.write(str(0.001*float(best[0].nuklx))+" "+str(-0.001*float(best[0].nukly))+" \n")
+            f.write("bestnukl\n")
+            plnukz1=str(0.001*(-float(best[0].depth)-math.sin(math.radians(float(best[0].dip)))*float(plnuk)))
+            plnukz2=str(0.001*(-float(best[0].depth)+math.sin(math.radians(float(best[0].dip)))*float(plnuk)))
+            nukrgz=nuktkz=str(0.1*round(0.01*0.5*float(best[0].radius)*math.sin(math.radians(float(best[0].dip)))))
+            f.write("gmt psxy << z_axis -X0 -Y0 -JX -R-"+plnuk+"/"+plnuk+"/"+plnukz1+"/"+plnukz2\
+                    +" -K -Sc0.3 -Wthin,225 -G225 -O -P -BE -Bx"+nukrg+"f"+nuktk+" -Byf"\
+                    +nukrgz+"a"+nuktkz+'+l"depth [km]" >>'+fplot+"\n")
+            f.write("100 100\n")
+            f.write("z_axis\n")
+            shiftx,shifty="-11.5","-8.5"
         else:
-            traces0time=float(getParseTime(inv_param))
-            x1=str(float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
-            x2=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
-        x10,x20=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
-        # x1,x2=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
-        y1,y2=str(-amaxf),str(amaxf)
-        scale = asp_r = "/".join((x1,x2,y1,y2))
-        if inv_param['FILT_PLOT_STEP'+inv_step]=="plain":
-            tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
-        elif inv_param['FILT_PLOT_STEP'+inv_step]=="tapered":
-            tr_name="seit"
-        else:
-            tr_name="seif"
-    tr_name=tr_name+inv_step
-
-    asp_jxx = str(float(jumpx-(2*spacex)))
-    asp_jxy = str(float(12.0/float(nstatplot)))
-    asp_jx = asp_jxx+"/"+asp_jxy
-    last_x=last_y=0
-    istat=0
-    jumpy=float(12.0/float(nstatplot))
-
-    amax=amaxf
-    amaxstat=[]
-    for i in range(nstatplot):
-        istat=istat+1
-        amaxst=0
-        for component in usedcomp:
-            fdtrace=os.path.join(dinv,"d"+tr_name+"-"+str(istat)+"-"+component+".table")
-            fstrace=os.path.join(dinv,"s"+tr_name+"-"+str(istat)+"-"+component+".table")
-            if os.path.isfile(fdtrace):
-                fdat=open(fdtrace,'r')
-                for line in fdat:
-                    x,y=line.split()
-                    dat=abs(float(y))
-                    if (dat>=amaxst):
-                        amaxst=dat
-                fdat.close()
-                fsyn=open(fstrace,'r')
-                for line in fsyn:
-                    x,y=line.split()
-                    dat=abs(float(y))
-                    if (dat>=amaxst):
-                        amaxst=dat
-                fsyn.close()
-        amaxstat.append(amaxst)
-
-    f.write("pstext <<disaz -K -O -X0 -Y-12 -JX17/12 -R0/17/0/"+str(nstatplot)+" -P >>"+fplot+"\n")
-    for i in range(nstatplot):
-        line="0 "+str(nstatplot-i-0.5)+" 8 0 0 5 "+str(i+1)+" "+traces[i].stat
-        line=line+" "+strDecim(traces[i].dist,1)+" "+strDecim(traces[i].azi,1)
-        if ['AMPL_PLOT_STEP'+inv_step]=='amax':
-            line=line+" "+strDecim((amax/100000),3)+"\n"
-        else:
-            line=line+" "+strDecim(((amaxstat[i])/100000),3)+"\n"
-        f.write(line)
-    f.write("disaz\n")
-
-    istat=0
-    for i in range(nstatplot):
-        if inv_param['AMPL_PLOT_STEP'+inv_step]=="amax":
-            if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
-                asp_rd = "/".join((x1,x2,str(-amaxf*3),str(amaxf)))
-                asp_rs = "/".join((x1,x2,str(-amaxf*2),str(amaxf*2)))
-                asp_rt = "/".join((x10,x20,"0","4"))
-        else:
-            if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
-                asp_rd = asp_rs = asp_r = "/".join((x1,x2,"0",str(float(amaxstat[i]))))
-            else:
-                asp_rd = "/".join((x1,x2,str(-float(amaxstat[i])*3),str(float(amaxstat[i]))))
-                asp_rs = "/".join((x1,x2,str(-float(amaxstat[i])*2),str(float(amaxstat[i])*2)))
-                asp_rt = "/".join((x10,x20,"0","4"))
-        istat=istat+1
-        icomp=0
-        for component in usedcomp:
-            icomp=icomp+1
-            fdtrace=os.path.join(dinv,"d"+tr_name+"-"+str(istat)+"-"+component+".table")
-            fstrace=os.path.join(dinv,"s"+tr_name+"-"+str(istat)+"-"+component+".table")
-            fttrace=os.path.join(dinv,"taper-"+str(istat)+"-"+component)
-            if os.path.isfile(fdtrace):
-                next_x=4.5+((icomp-1)*jumpx)
-                next_y=0.05+((nstatplot-istat)*jumpy)
-                asp_x=str(next_x-last_x)
-                asp_y=str(next_y-last_y)
-                last_x=next_x
-                last_y=next_y
-                if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
-                    line="psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BWSNE -JX"+asp_jx
-                    linedata=line+" -R"+asp_rd+" -P -K -O -W1/255/0/0 -G200/0/0 >>"+fplot+"\n"
-                else:
-                    line="psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BWSNE -JX"+asp_jx
-                    linedata=line+" -R"+asp_rd+" -P -K -O -W2/255/0/0 >>"+fplot+"\n"
-                f.write(linedata)
-                linesynt="psxy <"+fstrace+" -R"+asp_rs+" -BWSNE -X0 -Y0 -JX -P -K -O -W1/0 >>"+fplot+"\n"
-                f.write(linesynt)
-                if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
-                    linesynt="psxy <"+fttrace+" -R"+asp_rt+" -BWSNE -X0 -Y0 -JX -P -K -O -W1/100 -G150 >>"+fplot+"\n"
-                    f.write(linesynt)
-            # else:
-            #     print fdtrace+" not found"
-    icomp=0
-    for comp in usedcomp:
-        icomp=icomp+1
-        next_x=4.5+((icomp-1)*jumpx)
-        next_y=0.0
-        asp_x=str(next_x-last_x)
-        asp_y=str(next_y-last_y)
-        last_x=next_x
-        last_y=next_y
+            shiftx,shifty="0","-7"
+        # Fit header
+        maxstatplot = int(inv_param['MAX_STAT_2_PLOT'])
+        f.write("gmt pstext <<fits -X"+shiftx+" -Y"+shifty+" -JX17/2 -R0/17/0/3 -K -O >>"+fplot+"\n")
+        nstatplot=len(traces)
+        ncomp=len(inv_param['COMP_2_USE'])
+        spacex=0.5
+        jumpx=((13-((ncomp-1)*spacex))/ncomp)+spacex
         if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
-            line="psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O "+\
-                 "-BSa"+inv_param['BP_F4_STEP'+inv_step]+"f"+inv_param['BP_F4_STEP'+inv_step]+\
-                 ":'Frequency [Hz]': >>"+fplot+"\n"
+            fitdata_type="Amplitude Spectra"
         else:
-            line="psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O -BSa"
-            line=line+inv_param['TICK_PLOT_STEP'+inv_step]+"f"+inv_param['TICK_PLOT_STEP'+inv_step]+":'Time [s]': >>"+fplot+"\n"
+            fitdata_type="Seismograms"
+        # if (nst > maxstatplot):
+        if (nstatplot > maxstatplot):
+            nstatplot=maxstatplot
+            f.write("0 2 12 0 0 5 Fit of "+fitdata_type+" (Closest "+str(maxstatplot)+" stations)\n")
+        else:
+            f.write("0 2 12 0 0 5 Fit of "+fitdata_type+"\n")
+        f.write("0 1 10 0 0 5 Stat Dist Az Amax\n")
+        usedcomp = inv_param['COMP_2_USE']
+        i=0
+        for letter in usedcomp:
+            f.write(str(4.5+(i*jumpx))+" 1 10 0 0 5 "+comp_names[letter]+"\n")
+            i=i+1
+        f.write("fits\n")
+        # Fit spectra or seismograms
+        checkInvParam('DATA_PLOT_STEP1',inv_param['DATA_PLOT_STEP'+inv_step],('amsp','seis'))
+        checkInvParam('FILT_PLOT_STEP1',inv_param['FILT_PLOT_STEP'+inv_step],('plain','tapered','filtered'))
+        checkInvParam('AMPL_PLOT_STEP1',inv_param['AMPL_PLOT_STEP'+inv_step],('amax','norm'))
+    
+        if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+            x1,x2,y1,y2="0",inv_param['BP_F4_STEP'+inv_step],"0",str(amaxf)
+            scale = asp_r = "/".join((x1,x2,y1,y2))
+            asp_rd = asp_rs = asp_r
+            tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
+        else:
+            if inv_param['SW_TRACES0TIME'].upper=='TRUE':
+                traces0time=0.
+                x1=inv_param['START_PLOT_STEP'+inv_step]
+                x2=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+            else:
+                traces0time=float(getParseTime(inv_param))
+                x1=str(float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
+                x2=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
+            x10=inv_param['START_PLOT_STEP'+inv_step]
+            x20=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+            # x1,x2=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+            y1,y2=str(-amaxf),str(amaxf)
+            scale = asp_r = "/".join((x1,x2,y1,y2))
+            if inv_param['FILT_PLOT_STEP'+inv_step]=="plain":
+                tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
+            elif inv_param['FILT_PLOT_STEP'+inv_step]=="tapered":
+                tr_name="seit"
+            else:
+                tr_name="seif"
+        tr_name=tr_name+inv_step
+    
+        asp_jxx = str(float(jumpx-(2*spacex)))
+        asp_jxy = str(float(12.0/float(nstatplot)))
+        asp_jx = asp_jxx+"/"+asp_jxy
+        last_x=last_y=0
+        istat=0
+        jumpy=float(12.0/float(nstatplot))
+    
+        amax=amaxf
+        amaxstat=[]
+        for i in range(nstatplot):
+            istat=istat+1
+            amaxst=0
+            for component in usedcomp:
+                fdtrace=os.path.join(dinv,"d"+tr_name+"-"+str(istat)+"-"+component+".table")
+                fstrace=os.path.join(dinv,"s"+tr_name+"-"+str(istat)+"-"+component+".table")
+                if os.path.isfile(fdtrace):
+                    fdat=open(fdtrace,'r')
+                    for line in fdat:
+                        x,y=line.split()
+                        dat=abs(float(y))
+                        if (dat>=amaxst):
+                            amaxst=dat
+                    fdat.close()
+                    fsyn=open(fstrace,'r')
+                    for line in fsyn:
+                        x,y=line.split()
+                        dat=abs(float(y))
+                        if (dat>=amaxst):
+                            amaxst=dat
+                    fsyn.close()
+            amaxstat.append(amaxst)
+    
+        f.write("gmt pstext <<disaz -K -O -X0 -Y-12 -JX17/12 -R0/17/0/"+str(nstatplot)+" -P >>"+fplot+"\n")
+        for i in range(nstatplot):
+            line="0 "+str(nstatplot-i-0.5)+" 8 0 0 5 "+str(i+1)+" "+traces[i].stat
+            line=line+" "+strDecim(traces[i].dist,1)+" "+strDecim(traces[i].azi,1)
+            if ['AMPL_PLOT_STEP'+inv_step]=='amax':
+                line=line+" "+strDecim((amax/100000),3)+"\n"
+            else:
+                line=line+" "+strDecim(((amaxstat[i])/100000),3)+"\n"
+            f.write(line)
+        f.write("disaz\n")
+    
+        istat=0
+        for i in range(nstatplot):
+            if inv_param['AMPL_PLOT_STEP'+inv_step]=="amax":
+                if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
+                    asp_rd = "/".join((x1,x2,str(-amaxf*3),str(amaxf)))
+                    asp_rs = "/".join((x1,x2,str(-amaxf*2),str(amaxf*2)))
+                    asp_rt = "/".join((x10,x20,"0","4"))
+            else:
+                if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                    asp_rd = asp_rs = asp_r = "/".join((x1,x2,"0",str(float(amaxstat[i]))))
+                else:
+                    asp_rd = "/".join((x1,x2,str(-float(amaxstat[i])*3),str(float(amaxstat[i]))))
+                    asp_rs = "/".join((x1,x2,str(-float(amaxstat[i])*2),str(float(amaxstat[i])*2)))
+                    asp_rt = "/".join((x10,x20,"0","4"))
+            istat=istat+1
+            icomp=0
+            for component in usedcomp:
+                icomp=icomp+1
+                fdtrace=os.path.join(dinv,"d"+tr_name+"-"+str(istat)+"-"+component+".table")
+                fstrace=os.path.join(dinv,"s"+tr_name+"-"+str(istat)+"-"+component+".table")
+                fttrace=os.path.join(dinv,"taper-"+str(istat)+"-"+component)
+                if os.path.isfile(fdtrace):
+                    next_x=4.5+((icomp-1)*jumpx)
+                    next_y=0.05+((nstatplot-istat)*jumpy)
+                    asp_x=str(next_x-last_x)
+                    asp_y=str(next_y-last_y)
+                    last_x=next_x
+                    last_y=next_y
+                    if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                        line="gmt psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BWSNE -JX"+asp_jx
+                        linedata=line+" -R"+asp_rd+" -P -K -O -Wthin,255/0/0 -G200/0/0 >>"+fplot+"\n"
+                    else:
+                        line="gmt psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BWSNE -JX"+asp_jx
+                        linedata=line+" -R"+asp_rd+" -P -K -O -Wthin,255/0/0 >>"+fplot+"\n"
+                    f.write(linedata)
+                    linesynt="gmt psxy <"+fstrace+" -R"+asp_rs+" -BWSNE -X0 -Y0 -JX -P -K -O -Wthin,0 >>"+fplot+"\n"
+                    f.write(linesynt)
+                    if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
+                        linesynt="gmt psxy <"+fttrace+" -R"+asp_rt+" -BWSNE -X0 -Y0 -JX -P -K -O -Wthin,100 -G150 >>"+fplot+"\n"
+                        f.write(linesynt)
+                # else:
+                #     print fdtrace+" not found"
+        icomp=0
+        for comp in usedcomp:
+            icomp=icomp+1
+            next_x=4.5+((icomp-1)*jumpx)
+            next_y=0.0
+            asp_x=str(next_x-last_x)
+            asp_y=str(next_y-last_y)
+            last_x=next_x
+            last_y=next_y
+            if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                line="gmt psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O "+\
+                     "-BS -Bxa"+inv_param['BP_F4_STEP'+inv_step]+"f"+inv_param['BP_F4_STEP'+inv_step]+\
+                     '+l"Frequency [Hz]" >>'+fplot+"\n"
+            else:
+                line="gmt psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O -BS -Bxa"
+                line=line+inv_param['TICK_PLOT_STEP'+inv_step]+"f"+inv_param['TICK_PLOT_STEP'+inv_step]+'+l"Time [s]" >>'+fplot+"\n"
+            f.write(line)
+            f.write("0 0\n0 0\nxscale\n")
+        f.write("gmt pstext <<endplot -O -X0 -Y0 -JX -R -P >>"+fplot+"\n")
+        f.write("endplot\n")
+        f.flush()
+        f.close()
+
+    else:
+
+        f=open(fgmtplot,'w')
+        f.write("#!/bin/bash\n")
+        line="pstext <"+feqinfo+" -X2 -Y21 -JX10/6 -R0/14/0/21 -K -P >"+fplot+"\n"
         f.write(line)
-        f.write("0 0\n0 0\nxscale\n")
-    f.write("pstext <<endplot -O -X0 -Y0 -JX -R -P >>"+fplot+"\n")
-    f.write("endplot\n")
-    f.flush()
-    f.close()
+        if (inv_step == '3'):
+            line="psmeca "+fmeca+" -X0 -Y-3.5 -JX3/3 -R-1/1/-1/1 -P -V -W3/255/0/0 "
+            line=line+"-G255/0/0 -Sa14 -o -K -O >>"+fplot+"\n"
+            f.write(line)
+            line="psmeca "+fmeca+" -X0 -Y0 -T1 -JX -R -P -V -W10/0 -Sa14 -o -K -O >>"+fplot+"\n"
+            f.write(line)
+            # Outline (copying to file)
+            fbord=open(fborder,'w')
+            center_north,center_east,center_down=center[0],center[1],center[2]
+            ipob=0
+            for point_on_border in outline:
+                ipob=ipob+1
+                north=0.001*(float(point_on_border.north)-float(center_north))
+                east=0.001*(float(point_on_border.east)-float(center_east))
+                up=-0.001*(float(point_on_border.down)-float(center_down))
+                distance=math.sqrt(north*north+east*east+up*up)
+                gamma=math.acos((east*math.sin(math.radians(best[0].strike))+\
+                      north*math.cos(math.radians(best[0].strike)))/distance)
+                alongstrike=distance*math.cos(gamma)
+                downdip=distance*math.sin(gamma)
+                if (up<0):
+                    downdip=-downdip
+                fbord.write(str(alongstrike)+" "+str(downdip)+"\n")
+                if (ipob==1):
+                    last_bordline=str(alongstrike)+" "+str(downdip)+"\n"
+            fbord.write(last_bordline)
+            fbord.flush()
+            fbord.close()
+            # Discretized source (copying to file)
+            fdisc=open(fdiscrete,'w')
+            print "DISCRETE_TIME"
+            print "DURATION "+str(duration)
+            print "START    "+str(discrete_source_tmin)
+            print "END      "+str(discrete_source_tmax)
+            for point_inside in tdsm:
+                # north=0.001*(float(point_inside.north)-float(center_north))
+                # east=0.001*(float(point_inside.east)-float(center_east))
+                # up=-0.001*(float(point_inside.down)-float(center_down))
+                # time=float(point_inside.time)-discrete_source_tmin
+                # print"point inside "+str(point_inside.time)+" "+str(time)
+                # distance=math.sqrt(north*north+east*east+up*up)
+                # gamma=math.acos((east*math.sin(math.radians(best[0].strike))+\
+                # north*math.cos(math.radians(best[0].strike)))/distance)
+                # alongstrike=distance*math.cos(gamma)
+                # downdip=distance*math.sin(gamma)
+                # if (up<0):
+                #  downdip=-downdip
+                # fdisc.write(str(alongstrike)+" "+str(downdip)+" "+str(time)+"\n")
+                salongstrike=str(0.001*float(point_inside.alongstrike))
+                supdip=str(-0.001*float(point_inside.downdip))
+                stime=str(point_inside.time)
+                fdisc.write(salongstrike+" "+supdip+" "+stime+"\n")
+            fdisc.flush()
+            fdisc.close()
+            # Misfit vs radius-rrv-nukl-risetime (copying to files)
+            rmisfmax=0
+            frad=open(fradmis,'w')
+            frrv=open(frrvmis,'w')
+            fnuk=open(fnukmis,'w')
+            fris=open(frismis,'w')
+            for sol in all:
+                if (sol.depth == best[0].depth) & (sol.strike == best[0].strike) & \
+                   (sol.dip == best[0].dip) & (sol.rake == best[0].rake):
+                    rmisf=relativeMisfit(sol.misfit,best[0].misfit)
+                    if (sol.relruptvel == best[0].relruptvel) & (sol.risetime == best[0].risetime):
+                        bestrnkx=float(best[0].nuklx)/float(best[0].radius)
+                        bestrnky=float(best[0].nukly)/float(best[0].radius)
+                        solnkx=float(sol.nuklx)/float(sol.radius)
+                        solnky=float(sol.nukly)/float(sol.radius)
+                        rnklim=0.1
+                        # if (abs(bestrnkx-solnkx)<rnklim) and (abs(bestrnky-solnky)<rnklim):
+                        #    frad.write(str(0.001*float(sol.radius))+" "+str(rmisf)+"\n")
+                        #    if (rmisf > rmisfmax):
+                        #       rmisfmax = rmisf
+                        frad.write(str(0.001*float(sol.radius))+" "+str(rmisf)+"\n")
+                        if (rmisf > rmisfmax):
+                            rmisfmax = rmisf
+                    if (sol.radius == best[0].radius) & (sol.nuklx == best[0].nuklx) & \
+                       (sol.nukly == best[0].nukly) & (sol.risetime == best[0].risetime):
+                        frrv.write(str(sol.relruptvel)+" "+str(rmisf)+"\n")
+                        if (rmisf > rmisfmax):
+                            rmisfmax = rmisf
+                    if (sol.radius == best[0].radius) & (sol.nuklx == best[0].nuklx) & \
+                       (sol.nukly == best[0].nukly) & (sol.relruptvel == best[0].relruptvel):
+                        fris.write(str(sol.risetime)+" "+str(rmisf)+"\n")
+                        if (rmisf > rmisfmax):
+                            rmisfmax = rmisf
+                    if (sol.radius == best[0].radius) & (sol.relruptvel == best[0].relruptvel) & \
+                       (sol.risetime == best[0].risetime):
+                        rrmisf=(0.1-rmisf)*2
+                        if (rrmisf>0):
+                            fnuk.write(str(0.001*float(sol.nuklx))+" "+str(0.001*float(sol.nukly))+" "+str(rrmisf)+"\n")
+            fris.flush()
+            fris.close()
+            frad.flush()
+            frad.close()
+            frrv.flush()
+            frrv.close()
+            fnuk.flush()
+            fnuk.close()
+            mmmax=strDecim(rmisfmax*1.2,3)
+            mmm=strDecim(rmisfmax*0.2,3)
+            mmmin=strDecim(-rmisfmax*0.2,3)
+            if (abs(float(mmmin))<0.001):
+                mmmin='-0.001'
+                mmmax='0.011'
+                mmm='0.002'
+            # Misfit vs Radius
+            f.write("psxy < "+fradmis+" -X9.5 -Y0.5 -JX3.5l/2.5 -R0.1/1000/"+mmmin+"/"+mmmax+" -K -Sc0.1 -W1/0\
+                     -G255 -O -P -BSneWa10f10:'Radius [km]':/f"+mmm+"a"+mmm+":'Rel.Misfit': >>"+fplot+"\n")
+            f.write("psxy <<bestradius -X0 -Y0 -JX -R -K -Sc0.1 -W1/0 -G0 -O -P >>"+fplot+"\n")
+            f.write(str(0.001*float(best[0].radius))+" 0\n")
+            f.write("bestradius\n")
+            # Misfit vs RelRuptVel
+            f.write("psxy < "+frrvmis+" -X4.0 -Y0 -JX3.5/2.5 -R0.0/1.5/"+mmmin+"/"+mmmax+" -K -Sc0.1 -W1/0\
+                     -G255 -O -P -BSnewa0.5f0.5:'RelRuptVel':/f"+mmm+"a"+mmm+":'Rel.Misfit': >>"+fplot+"\n")
+            f.write("psxy <<bestrrv -X0 -Y0 -JX -R -K -Sc0.1 -W1/0 -G0 -O -P >>"+fplot+"\n")
+            f.write(str(float(best[0].relruptvel))+" 0\n")
+            f.write("bestrrv\n")
+            # Misfit vs Nucleation
+            plnuk=str((3.5/3)*float(best[0].radius))
+            plnuko=str(0.1*round(0.01*float(plnuk)))
+            nukrg=nuktk=str(0.001*int(0.5*float(best[0].radius)))
+            # f.write("psxy << circ_fault -X-2 -Y4.5 -JX3.5/3.5 -R-"+plnuko+"/"+plnuko+"/-"+plnuko+"/"+plnuko\
+            # +" -K -Sc3 -W1/225 -G225 -O -P -BSWna"+nukrg+"f"+nuktk+":'along strike [km]':/f"\
+            #   +nukrg+"a"+nuktk+":'downdip [km]': >>"+fplot+"\n")
+            # f.write("0 0\n")
+            # f.write("circ_fault\n")
+            f.write("psxy < "+fborder+" -X-2 -Y4.5 -JX3.5/3.5 -R-"+plnuko+"/"+plnuko+"/-"+plnuko+"/"+plnuko\
+                    +" -K -W1/0 -G255 -O -P -BSWna"+nukrg+"f"+nuktk+":'along strike [km]':/f"\
+                    +nukrg+"a"+nuktk+":'downdip [km]': >>"+fplot+"\n")
+            # f.write("psxy < "+fnukmis+" -X0 -Y0 -R -JX -K -Sc -W1/0 -G255 -O -P >>"+fplot+"\n")
+            f.write("pscontour <"+fdiscrete+" -C"+fcolor+" -W1/0 -I -Gd2 -X0 -Y0 -R -JX -K -O -P >>"+fplot+"\n")
+            f.write("#psxy < "+fdiscrete+" -X0 -Y0 -R -JX -K -Sx.025 -W1/0 -G0 -O -P >>"+fplot+"\n")
+            f.write("psxy <<bestnukl -X0 -Y0 -JX -R -K -Sx0.2 -W2/0 -O -P >>"+fplot+"\n")
+            f.write(str(0.001*float(best[0].nuklx))+" "+str(-0.001*float(best[0].nukly))+" \n")
+            f.write("bestnukl\n")
+            plnukz1=str(0.001*(-float(best[0].depth)-math.sin(math.radians(float(best[0].dip)))*float(plnuk)))
+            plnukz2=str(0.001*(-float(best[0].depth)+math.sin(math.radians(float(best[0].dip)))*float(plnuk)))
+            nukrgz=nuktkz=str(0.1*round(0.01*0.5*float(best[0].radius)*math.sin(math.radians(float(best[0].dip)))))
+            f.write("psxy << z_axis -X0 -Y0 -JX -R-"+plnuk+"/"+plnuk+"/"+plnukz1+"/"+plnukz2\
+                    +" -K -Sc0.3 -W1/225 -G225 -O -P -BE"+nukrg+"f"+nuktk+":' ':/f"\
+                    +nukrgz+"a"+nuktkz+":'depth [km]': >>"+fplot+"\n")
+            f.write("100 100\n")
+            f.write("z_axis\n")
+            shiftx,shifty="-11.5","-8.5"
+        else:
+            shiftx,shifty="0","-7"
+        # Fit header
+        maxstatplot = int(inv_param['MAX_STAT_2_PLOT'])
+        f.write("pstext <<fits -X"+shiftx+" -Y"+shifty+" -JX17/2 -R0/17/0/3 -K -O >>"+fplot+"\n")
+        nstatplot=len(traces)
+        ncomp=len(inv_param['COMP_2_USE'])
+        spacex=0.5
+        jumpx=((13-((ncomp-1)*spacex))/ncomp)+spacex
+        if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+            fitdata_type="Amplitude Spectra"
+        else:
+            fitdata_type="Seismograms"
+        # if (nst > maxstatplot):
+        if (nstatplot > maxstatplot):
+            nstatplot=maxstatplot
+            f.write("0 2 12 0 0 5 Fit of "+fitdata_type+" (Closest "+str(maxstatplot)+" stations)\n")
+        else:
+            f.write("0 2 12 0 0 5 Fit of "+fitdata_type+"\n")
+        f.write("0 1 10 0 0 5 Stat Dist Az Amax\n")
+        usedcomp = inv_param['COMP_2_USE']
+        i=0
+        for letter in usedcomp:
+            f.write(str(4.5+(i*jumpx))+" 1 10 0 0 5 "+comp_names[letter]+"\n")
+            i=i+1
+        f.write("fits\n")
+        # Fit spectra or seismograms
+        checkInvParam('DATA_PLOT_STEP1',inv_param['DATA_PLOT_STEP'+inv_step],('amsp','seis'))
+        checkInvParam('FILT_PLOT_STEP1',inv_param['FILT_PLOT_STEP'+inv_step],('plain','tapered','filtered'))
+        checkInvParam('AMPL_PLOT_STEP1',inv_param['AMPL_PLOT_STEP'+inv_step],('amax','norm'))
+    
+        if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+            x1,x2,y1,y2="0",inv_param['BP_F4_STEP'+inv_step],"0",str(amaxf)
+            scale = asp_r = "/".join((x1,x2,y1,y2))
+            asp_rd = asp_rs = asp_r
+            tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
+        else:
+            if inv_param['SW_TRACES0TIME'].upper=='TRUE':
+                traces0time=0.
+                x1=inv_param['START_PLOT_STEP'+inv_step],
+                x2=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+            else:
+                traces0time=float(getParseTime(inv_param))
+                x1=str(float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
+                x2=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step])+traces0time)
+            x10=inv_param['START_PLOT_STEP'+inv_step]
+            x20=str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+            # x1,x2=inv_param['START_PLOT_STEP'+inv_step],str(float(inv_param['LEN_PLOT_STEP'+inv_step])-float(inv_param['START_PLOT_STEP'+inv_step]))
+            y1,y2=str(-amaxf),str(amaxf)
+            scale = asp_r = "/".join((x1,x2,y1,y2))
+            if inv_param['FILT_PLOT_STEP'+inv_step]=="plain":
+                tr_name=inv_param['DATA_PLOT_STEP'+inv_step]
+            elif inv_param['FILT_PLOT_STEP'+inv_step]=="tapered":
+                tr_name="seit"
+            else:
+                tr_name="seif"
+        tr_name=tr_name+inv_step
+    
+        asp_jxx = str(float(jumpx-(2*spacex)))
+        asp_jxy = str(float(12.0/float(nstatplot)))
+        asp_jx = asp_jxx+"/"+asp_jxy
+        last_x=last_y=0
+        istat=0
+        jumpy=float(12.0/float(nstatplot))
+    
+        amax=amaxf
+        amaxstat=[]
+        for i in range(nstatplot):
+            istat=istat+1
+            amaxst=0
+            for component in usedcomp:
+                fdtrace=os.path.join(dinv,"d"+tr_name+"-"+str(istat)+"-"+component+".table")
+                fstrace=os.path.join(dinv,"s"+tr_name+"-"+str(istat)+"-"+component+".table")
+                if os.path.isfile(fdtrace):
+                    fdat=open(fdtrace,'r')
+                    for line in fdat:
+                        x,y=line.split()
+                        dat=abs(float(y))
+                        if (dat>=amaxst):
+                            amaxst=dat
+                    fdat.close()
+                    fsyn=open(fstrace,'r')
+                    for line in fsyn:
+                        x,y=line.split()
+                        dat=abs(float(y))
+                        if (dat>=amaxst):
+                            amaxst=dat
+                    fsyn.close()
+            amaxstat.append(amaxst)
+    
+        f.write("pstext <<disaz -K -O -X0 -Y-12 -JX17/12 -R0/17/0/"+str(nstatplot)+" -P >>"+fplot+"\n")
+        for i in range(nstatplot):
+            line="0 "+str(nstatplot-i-0.5)+" 8 0 0 5 "+str(i+1)+" "+traces[i].stat
+            line=line+" "+strDecim(traces[i].dist,1)+" "+strDecim(traces[i].azi,1)
+            if ['AMPL_PLOT_STEP'+inv_step]=='amax':
+                line=line+" "+strDecim((amax/100000),3)+"\n"
+            else:
+                line=line+" "+strDecim(((amaxstat[i])/100000),3)+"\n"
+            f.write(line)
+        f.write("disaz\n")
+    
+        istat=0
+        for i in range(nstatplot):
+            if inv_param['AMPL_PLOT_STEP'+inv_step]=="amax":
+                if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
+                    asp_rd = "/".join((x1,x2,str(-amaxf*3),str(amaxf)))
+                    asp_rs = "/".join((x1,x2,str(-amaxf*2),str(amaxf*2)))
+                    asp_rt = "/".join((x10,x20,"0","4"))
+            else:
+                if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                    asp_rd = asp_rs = asp_r = "/".join((x1,x2,"0",str(float(amaxstat[i]))))
+                else:
+                    asp_rd = "/".join((x1,x2,str(-float(amaxstat[i])*3),str(float(amaxstat[i]))))
+                    asp_rs = "/".join((x1,x2,str(-float(amaxstat[i])*2),str(float(amaxstat[i])*2)))
+                    asp_rt = "/".join((x10,x20,"0","4"))
+            istat=istat+1
+            icomp=0
+            for component in usedcomp:
+                icomp=icomp+1
+                fdtrace=os.path.join(dinv,"d"+tr_name+"-"+str(istat)+"-"+component+".table")
+                fstrace=os.path.join(dinv,"s"+tr_name+"-"+str(istat)+"-"+component+".table")
+                fttrace=os.path.join(dinv,"taper-"+str(istat)+"-"+component)
+                if os.path.isfile(fdtrace):
+                    next_x=4.5+((icomp-1)*jumpx)
+                    next_y=0.05+((nstatplot-istat)*jumpy)
+                    asp_x=str(next_x-last_x)
+                    asp_y=str(next_y-last_y)
+                    last_x=next_x
+                    last_y=next_y
+                    if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                        line="psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BWSNE -JX"+asp_jx
+                        linedata=line+" -R"+asp_rd+" -P -K -O -W1/255/0/0 -G200/0/0 >>"+fplot+"\n"
+                    else:
+                        line="psxy <"+fdtrace+" -X"+asp_x+" -Y"+asp_y+" -BWSNE -JX"+asp_jx
+                        linedata=line+" -R"+asp_rd+" -P -K -O -W2/255/0/0 >>"+fplot+"\n"
+                    f.write(linedata)
+                    linesynt="psxy <"+fstrace+" -R"+asp_rs+" -BWSNE -X0 -Y0 -JX -P -K -O -W1/0 >>"+fplot+"\n"
+                    f.write(linesynt)
+                    if inv_param['DATA_PLOT_STEP'+inv_step]=="seis":
+                        linesynt="psxy <"+fttrace+" -R"+asp_rt+" -BWSNE -X0 -Y0 -JX -P -K -O -W1/100 -G150 >>"+fplot+"\n"
+                        f.write(linesynt)
+                # else:
+                #     print fdtrace+" not found"
+        icomp=0
+        for comp in usedcomp:
+            icomp=icomp+1
+            next_x=4.5+((icomp-1)*jumpx)
+            next_y=0.0
+            asp_x=str(next_x-last_x)
+            asp_y=str(next_y-last_y)
+            last_x=next_x
+            last_y=next_y
+            if inv_param['DATA_PLOT_STEP'+inv_step]=="amsp":
+                line="psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O "+\
+                     "-BSa"+inv_param['BP_F4_STEP'+inv_step]+"f"+inv_param['BP_F4_STEP'+inv_step]+\
+                     ":'Frequency [Hz]': >>"+fplot+"\n"
+            else:
+                line="psxy <<xscale -X"+asp_x+" -Y"+asp_y+" -JX"+asp_jx+" -R -P -K -O -BSa"
+                line=line+inv_param['TICK_PLOT_STEP'+inv_step]+"f"+inv_param['TICK_PLOT_STEP'+inv_step]+":'Time [s]': >>"+fplot+"\n"
+            f.write(line)
+            f.write("0 0\n0 0\nxscale\n")
+        f.write("pstext <<endplot -O -X0 -Y0 -JX -R -P >>"+fplot+"\n")
+        f.write("endplot\n")
+        f.flush()
+        f.close()
+
     cmd = "chmod a+x "+fgmtplot
     os.system(cmd)
     cmd = fgmtplot

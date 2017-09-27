@@ -223,3 +223,4 @@ MT_STEP          float
 LEVEL_RELAMP     positive
 MIN_DEPTH_GFDB   positive
 MAX_DEPTH_GFDB   positive
+GMT_VERSION      4|5
