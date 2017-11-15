@@ -329,6 +329,14 @@ if __name__ == '__main__':
         default='H,L',
         help='select and prioritize instrument codes (default: %default)')
 
+    parser.add_option(
+        '--radius-min',
+        dest='radius_min',
+        metavar='VALUE',
+        default=0.0,
+        type=float,
+        help='minimum radius [km]')
+
     (options, args) = parser.parse_args(sys.argv[1:])
 
     if len(args) not in (9, 6, 5):
@@ -518,7 +526,7 @@ if __name__ == '__main__':
     station_query_conf = dict(
         latitude=lat,
         longitude=lon,
-        minradius=0.,
+        minradius=options.radius_min*km*cake.m2d,
         maxradius=radius*cake.m2d,
         channel=','.join('?%s?' % s for s in priority_band_code))
 
@@ -533,7 +541,7 @@ if __name__ == '__main__':
 
     output_units = 'M'
 
-    sites = options.sites.split(',')
+    sites = [x.strip() for x in options.sites.split(',') if x.strip()]
 
     for site in sites:
         if site not in g_sites_available:
@@ -602,7 +610,7 @@ if __name__ == '__main__':
 
         sxs.append(sx)
 
-    if all(sx is None for sx in sxs):
+    if all(sx is None for sx in sxs) and not options.local_data:
         sys.exit(1)
 
     if tinc is None:
