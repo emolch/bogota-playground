@@ -578,15 +578,22 @@ if __name__ == '__main__':
 
             extra_args.update(station_query_conf)
 
+            if site == 'geonet':
+                extra_args.update(
+                    starttime=tmin,
+                    endtime=tmax)
+            else:
+                extra_args.update(
+                    startbefore=tmax,
+                    endafter=tmin,
+                    includerestricted=(
+                        site in g_user_credentials or site in g_auth_tokens))
+
             logger.info('downloading channel information (%s)' % site)
             sx = ws.station(
                 site=site,
-                startbefore=tmax,
-                endafter=tmin,
                 format='text',
                 level='channel',
-                includerestricted=(
-                    site in g_user_credentials or site in g_auth_tokens),
                 **extra_args)
 
         except ws.EmptyResult:
