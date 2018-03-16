@@ -503,6 +503,9 @@ if __name__ == '__main__':
                             % options.window)
             sys.exit(1)
 
+    if event is not None:
+        event.name = eventname
+
     tlen = tmax - tmin
     tfade = tfade_factor / fmin
 
